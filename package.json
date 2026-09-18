@@ -11,7 +11,7 @@
     "test:e2e": "playwright test",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
-    "lint": "npm-run-all --parallel lint:*",
+    "lint": "npm-run-all lint:*",
     "lint:eslint": "eslint . --fix --cache",
     "lint:stylelint": "stylelint \"**/*.{css,scss,vue}\" --fix --cache",
     "format": "prettier --write --experimental-cli src/"
