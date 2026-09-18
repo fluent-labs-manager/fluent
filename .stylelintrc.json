@@ -1,0 +1,125 @@
+{
+  "extends": [
+    "stylelint-config-standard",
+    "stylelint-config-standard-scss",
+    "stylelint-config-recommended-vue"
+  ],
+  "plugins": ["stylelint-order"],
+  "customSyntax": "postcss-html",
+  "rules": {
+    "color-named": "never",
+    "color-no-invalid-hex": true,
+    "unit-no-unknown": true,
+    "property-no-unknown": true,
+    "declaration-no-important": true,
+
+    "selector-class-pattern": [
+      "^([a-z][a-z0-9]*)(-[a-z0-9]+)*(__[a-z0-9]+(-[a-z0-9]+)*)?(--[a-z0-9]+(-[a-z0-9]+)*)?$",
+      {
+        "message": "Use BEM naming: block__element--modifier"
+      }
+    ],
+
+    "scss/at-rule-no-unknown": true,
+    "scss/dollar-variable-pattern": "^[a-z][a-z0-9-]*$",
+    "scss/no-duplicate-dollar-variables": true,
+
+    "order/order": [
+      "custom-properties",
+      "dollar-variables",
+      "declarations",
+      "rules",
+      "at-rules"
+    ],
+    "order/properties-order": [
+      "content",
+
+      "position",
+      "top",
+      "right",
+      "bottom",
+      "left",
+      "z-index",
+
+      "display",
+      "flex",
+      "flex-direction",
+      "flex-wrap",
+      "flex-flow",
+      "justify-content",
+      "align-items",
+      "align-content",
+      "gap",
+      "grid",
+      "grid-template",
+      "grid-template-columns",
+      "grid-template-rows",
+      "grid-area",
+
+      "width",
+      "min-width",
+      "max-width",
+      "height",
+      "min-height",
+      "max-height",
+
+      "margin",
+      "margin-top",
+      "margin-right",
+      "margin-bottom",
+      "margin-left",
+
+      "padding",
+      "padding-top",
+      "padding-right",
+      "padding-bottom",
+      "padding-left",
+
+      "border",
+      "border-radius",
+      "outline",
+
+      "background",
+      "background-color",
+      "background-image",
+
+      "color",
+      "font",
+      "font-size",
+      "font-weight",
+      "font-family",
+      "line-height",
+      "letter-spacing",
+      "text-align",
+      "text-decoration",
+      "text-transform",
+      "white-space",
+
+      "opacity",
+      "cursor",
+      "pointer-events",
+      "overflow",
+      "overflow-x",
+      "overflow-y",
+
+      "transition",
+      "animation",
+      "transform"
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["*.vue", "**/*.vue"],
+      "customSyntax": "postcss-html"
+    },
+    {
+      "files": ["*.css", "**/*.css"],
+      "customSyntax": "postcss"
+    },
+    {
+      "files": ["*.scss", "**/*.scss"],
+      "customSyntax": "postcss-scss"
+    }
+  ],
+  "ignoreFiles": ["dist/**", "node_modules/**", "public/**"]
+}
