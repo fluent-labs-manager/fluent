@@ -51,29 +51,14 @@ The project uses a three-layer linting setup:
 
 | Tool          | Scope                                                   |
 |---------------|---------------------------------------------------------|
-| **oxlint**    | Fast Rust-based linter — catches common JS/TS issues    |
 | **ESLint**    | TypeScript + Vue rules with Prettier integration        |
 | **Stylelint** | CSS/SCSS inside `.vue` files and standalone stylesheets |
 | **Prettier**  | Formatter for JS/TS/Vue/JSON/MD/YAML                    |
 
-### Run all linters (with auto-fix)
+### Run linters (with auto-fix)
 
 ```sh
 npm run lint
-```
-
-Runs `oxlint` then `eslint` sequentially. Both apply fixes automatically.
-
-### Run ESLint only
-
-```sh
-npm run lint:eslint
-```
-
-### Run oxlint only
-
-```sh
-npm run lint:oxlint
 ```
 
 ### Format all source files
@@ -148,7 +133,6 @@ fluent/
 ├── eslint.config.ts
 ├── .prettierrc
 ├── .stylelintrc.json
-├── .oxlintrc.json
 ├── vite.config.ts
 ├── vitest.config.ts
 └── playwright.config.ts

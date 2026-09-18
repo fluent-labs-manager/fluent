@@ -2,6 +2,8 @@ import tseslint from 'typescript-eslint'
 import eslintPluginPrettier from 'eslint-plugin-prettier'
 import eslintConfigPrettier from 'eslint-config-prettier'
 import pluginVue from 'eslint-plugin-vue'
+import pluginPlaywright from 'eslint-plugin-playwright';
+import pluginVitest from '@vitest/eslint-plugin';
 import vueParser from 'vue-eslint-parser'
 
 export default [
@@ -11,6 +13,16 @@ export default [
   // TypeScript strict + stylistic (type-checked)
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
+
+  {
+    files: ['e2e/**/*.{test,spec}.{js,ts,jsx,tsx}'],
+    ...pluginPlaywright.configs['flat/recommended'],
+  },
+
+  {
+    files: ['src/**/__tests__/*.{js,ts,jsx,tsx}'],
+    ...pluginVitest.configs.recommended,
+  },
 
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.vue'],
@@ -42,7 +54,10 @@ export default [
   {
     rules: {
       '@typescript-eslint/prefer-promise-reject-errors': 'off',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_' },
+      ],
       '@typescript-eslint/explicit-function-return-type': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/strict-boolean-expressions': 'error',
@@ -96,6 +111,14 @@ export default [
 
   // Ignores
   {
-    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**', 'node_modules/', '*.config.*', 'scripts/', 'public/']
+    ignores: [
+      '**/dist/**',
+      '**/dist-ssr/**',
+      '**/coverage/**',
+      'node_modules/',
+      '*.config.*',
+      'scripts/',
+      'public/',
+    ],
   },
-]
+];
