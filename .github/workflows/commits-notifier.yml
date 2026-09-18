@@ -1,0 +1,38 @@
+name: Commits notifications
+on: [ push ]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare commit message
+        id: prepare
+        env:
+          COMMITS_JSON: ${{ toJSON(github.event.commits) }}
+        run: |
+          COUNT=$(echo "$COMMITS_JSON" | jq length)
+          
+          COMMIT_LIST=$(echo "$COMMITS_JSON" | \
+            jq -r '.[] | "- " + (."message" | split("\n")[0])' | \
+            paste -sd '\n' -)
+          
+          echo "count=$COUNT" >> $GITHUB_OUTPUT
+          echo "commit_list<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMIT_LIST" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Send TG message
+        uses: appleboy/telegram-action@214f06cfa3d3a588c1472116889437e7c6fd29b1
+        with:
+          to: ${{ secrets.CHAT_ID }}
+          token: ${{ secrets.BOT_TOKEN }}
+          message: |
+            New commits in ${{ github.repository }}
+            
+            ${{ github.actor }} has pushed ${{ steps.prepare.outputs.count }} commit(-s) to ${{ github.ref_name }}
+
+            ${{ steps.prepare.outputs.commit_list }}
+
+            🔗 ${{ github.server_url }}/${{ github.repository }}/commits/${{ github.ref_name }}
+            
+            #commit
