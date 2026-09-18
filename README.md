@@ -101,7 +101,7 @@ npm run test:e2e
 npm run test:e2e -- --project=chromium
 
 # Run a specific test file
-npm run test:e2e -- e2e/example.spec.ts
+npm run test:e2e -- e2e/vue.spec.ts
 
 # Run in headed mode (see the browser)
 npm run test:e2e -- --headed
