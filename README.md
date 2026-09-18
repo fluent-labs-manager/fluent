@@ -1,73 +1,146 @@
-# fluent
+# Fluent
 
-This template should help get you started developing with Vue 3 in Vite.
+Frontend application built with **Vue 3**, **TypeScript**, and **Vite**.
 
-## Recommended IDE Setup
+---
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Requirements
 
-## Recommended Browser Setup
+| Tool    | Version                      |
+|---------|------------------------------|
+| Node.js | `^22.18.0` or `>=24.12.0`   |
+| npm     | `>=10`                       |
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+---
 
-## Type Support for `.vue` Imports in TS
+## Getting Started
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
+### Install dependencies
 
 ```sh
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+### Start development server
 
 ```sh
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+Runs the app at `http://localhost:5173` with hot-reload.
+
+### Build for production
 
 ```sh
 npm run build
 ```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+Output is placed in `dist/`.
+
+### Preview the production build locally
 
 ```sh
-npm run test:unit
+npm run preview
 ```
 
-### Run End-to-End Tests with [Playwright](https://playwright.dev)
+---
 
-```sh
-# Install browsers for the first run
-npx playwright install
+## Linting & Formatting
 
-# When testing on CI, must build the project first
-npm run build
+The project uses a three-layer linting setup:
 
-# Runs the end-to-end tests
-npm run test:e2e
-# Runs the tests only on Chromium
-npm run test:e2e -- --project=chromium
-# Runs the tests of a specific file
-npm run test:e2e -- tests/example.spec.ts
-# Runs the tests in debug mode
-npm run test:e2e -- --debug
-```
+| Tool          | Scope                                                   |
+|---------------|---------------------------------------------------------|
+| **ESLint**    | TypeScript + Vue rules with Prettier integration        |
+| **Stylelint** | CSS/SCSS inside `.vue` files and standalone stylesheets |
+| **Prettier**  | Formatter for JS/TS/Vue/JSON/MD/YAML                    |
 
-### Lint with [ESLint](https://eslint.org/)
+### Run linters (with auto-fix)
 
 ```sh
 npm run lint
 ```
+
+### Format all source files
+
+```sh
+npm run format
+```
+
+Runs Prettier over `src/`.
+
+---
+
+## Testing
+
+### Unit tests — [Vitest](https://vitest.dev/)
+
+```sh
+# Run once
+npm run test:unit
+
+# Watch mode
+npm run test:unit -- --watch
+
+# With coverage
+npm run test:unit -- --coverage
+```
+
+Unit test files live under `src/**/__tests__/`: `*.spec.ts` / `*.test.ts`.
+
+### End-to-end tests — [Playwright](https://playwright.dev)
+
+```sh
+# First run: install browsers
+npx playwright install
+
+# Run all e2e tests
+npm run test:e2e
+
+# Run on Chromium only
+npm run test:e2e -- --project=chromium
+
+# Run a specific test file
+npm run test:e2e -- e2e/vue.spec.ts
+
+# Run in headed mode (see the browser)
+npm run test:e2e -- --headed
+
+# Run in debug mode
+npm run test:e2e -- --debug
+```
+
+> **Note:** on CI, build the project first with `npm run build` before running e2e tests.
+
+E2e test files are located in `e2e/`.
+
+---
+
+## Project Structure
+
+```markdown
+fluent/
+├── e2e/ # Playwright end-to-end tests
+├── public/ # Static assets
+├── src/
+│ ├── assets/
+│ ├── components/
+│ ├── router/
+│ ├── stores/ # Pinia stores
+│ ├── views/
+│ ├── App.vue
+│ └── main.ts
+├── eslint.config.ts
+├── .prettierrc
+├── .stylelintrc.json
+├── vite.config.ts
+├── vitest.config.ts
+└── playwright.config.ts
+```
+
+---
+
+## Browser DevTools
+
+- **Chromium** (Chrome, Edge, Brave): [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
+- **Firefox**: [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
