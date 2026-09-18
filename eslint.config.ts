@@ -96,6 +96,6 @@ export default [
 
   // Ignores
   {
-    ignores: ['dist/', 'node_modules/', '*.config.*', 'scripts/', 'public/'],
+    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**', 'node_modules/', '*.config.*', 'scripts/', 'public/']
   },
 ]
