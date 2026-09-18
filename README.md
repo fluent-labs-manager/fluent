@@ -86,7 +86,7 @@ npm run test:unit -- --watch
 npm run test:unit -- --coverage
 ```
 
-Unit test files live next to the source files they test: `*.spec.ts` / `*.test.ts`.
+Unit test files live under `src/**/__tests__/`: `*.spec.ts` / `*.test.ts`.
 
 ### End-to-end tests — [Playwright](https://playwright.dev)
 
