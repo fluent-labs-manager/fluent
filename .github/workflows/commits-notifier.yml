@@ -22,7 +22,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Send TG message
-        uses: appleboy/telegram-action@master
+        uses: appleboy/telegram-action@214f06cfa3d3a588c1472116889437e7c6fd29b1
         with:
           to: ${{ secrets.CHAT_ID }}
           token: ${{ secrets.BOT_TOKEN }}
