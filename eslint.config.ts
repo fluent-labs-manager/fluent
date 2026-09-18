@@ -21,7 +21,10 @@ export default [
 
   {
     files: ['src/**/__tests__/*.{js,ts,jsx,tsx}'],
-    ...pluginVitest.configs.recommended,
+    plugins: {
+      vitest: pluginVitest,
+    },
+    rules: pluginVitest.configs.recommended.rules,
   },
 
   {
