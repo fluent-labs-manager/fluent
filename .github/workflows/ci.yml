@@ -1,9 +1,14 @@
 name: "Fluent CI"
+
 on:
   pull_request:
     types: [ opened, synchronize, reopened ]
   push:
     branches: [ main ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   markdown-formatting:
