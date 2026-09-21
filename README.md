@@ -6,10 +6,10 @@ Frontend application built with **Vue 3**, **TypeScript**, and **Vite**.
 
 ## Requirements
 
-| Tool    | Version                      |
-|---------|------------------------------|
-| Node.js | `^22.18.0` or `>=24.12.0`   |
-| npm     | `>=10`                       |
+| Tool    | Version                   |
+|---------|---------------------------|
+| Node.js | `^22.18.0` or `>=24.12.0` |
+| npm     | `>=10`                    |
 
 ---
 
@@ -142,5 +142,6 @@ fluent/
 
 ## Browser DevTools
 
-- **Chromium** (Chrome, Edge, Brave): [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
+- **Chromium** (Chrome, Edge,
+  Brave): [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
 - **Firefox**: [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
