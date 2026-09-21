@@ -6,10 +6,10 @@ Frontend application built with **Vue 3**, **TypeScript**, and **Vite**.
 
 ## Requirements
 
-| Tool    | Version                      |
-|---------|------------------------------|
-| Node.js | `^22.18.0` or `>=24.12.0`   |
-| npm     | `>=10`                       |
+| Tool    | Version                   |
+|---------|---------------------------|
+| Node.js | `^22.18.0` or `>=24.12.0` |
+| npm     | `>=10`                    |
 
 ---
 
