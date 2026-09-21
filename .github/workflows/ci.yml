@@ -70,11 +70,12 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
+      - uses: actions/checkout@v6
       - name: Prepare commit message
         id: prepare
         env:
           COMMITS_JSON: ${ { toJSON(github.event.commits) } }
-        run: ../scripts/prepare-commits.sh
+        run: .github/scripts/prepare-commits.sh
 
       - name: Send TG message
         uses: appleboy/telegram-action@214f06cfa3d3a588c1472116889437e7c6fd29b1
