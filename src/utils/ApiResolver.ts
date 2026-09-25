@@ -1,8 +1,9 @@
 import axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { AxiosResponse } from 'axios';
 import apiConf from '../api/api.conf';
 import type { ApiErrorData } from '@/api/interfaces/ApiErrorData.ts';
 import type { RequestConfig } from '@/api/interfaces/RequestConfig.ts';
+import type { RequestOptions } from '@/api/interfaces/RequestOptions.ts';
 
 function isApiErrorData(value: unknown): value is ApiErrorData {
   return typeof value === 'object' && value !== null;
@@ -26,16 +27,10 @@ class ApiResolverUtil {
     this.endpoint = endpoint;
   }
 
-  async request<S>(
-    url: string,
-    method: string,
-    data?: unknown,
-    jwt?: string,
-    responseType?: AxiosRequestConfig['responseType'],
-    customHeaders?: Record<string, string>,
-  ): Promise<S> {
-    const fullUrl = `${this.apiUrl}/${this.endpoint}/${url}`;
+  async request<S>(options: RequestOptions): Promise<S> {
+    const { url, method, data, jwt, responseType, customHeaders } = options;
 
+    const fullUrl = `${this.apiUrl}/${this.endpoint}/${url}`;
     const headers: Record<string, string> = {};
 
     if (jwt !== undefined && jwt !== '') {
