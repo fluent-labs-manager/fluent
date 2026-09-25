@@ -18,9 +18,11 @@ function getErrorMessage(data: unknown, fallback: string): string {
 }
 
 class ApiResolverUtil {
+  private readonly apiUrl: string;
   private readonly endpoint: string;
 
-  constructor(endpoint: string) {
+  constructor(endpoint: string, apiUrl: string = apiConf.endpoint) {
+    this.apiUrl = apiUrl;
     this.endpoint = endpoint;
   }
 
@@ -32,7 +34,7 @@ class ApiResolverUtil {
     responseType?: AxiosRequestConfig['responseType'],
     customHeaders?: Record<string, string>,
   ): Promise<S> {
-    const fullUrl = `${apiConf.endpoint}/${this.endpoint}/${url}`;
+    const fullUrl = `${this.apiUrl}/${this.endpoint}/${url}`;
 
     const headers: Record<string, string> = {};
 
