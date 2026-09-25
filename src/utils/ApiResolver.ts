@@ -21,7 +21,7 @@ class ApiResolverUtil {
   private readonly apiUrl: string;
   private readonly endpoint: string;
 
-  constructor(endpoint: string, apiUrl: string = apiConf.endpoint) {
+  constructor(endpoint: string, apiUrl: string = apiConf.apiUrl) {
     this.apiUrl = apiUrl;
     this.endpoint = endpoint;
   }
