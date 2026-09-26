@@ -45,3 +45,5 @@ playwright-report/
 .env
 *.conf.ts
 *.conf.js
+
+!test.api.conf.ts
