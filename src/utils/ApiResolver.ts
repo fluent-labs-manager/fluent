@@ -1,9 +1,9 @@
 import axios from 'axios';
 import type { AxiosResponse } from 'axios';
-import apiConf from '../api/api.conf';
 import type { ApiErrorData } from '@/api/interfaces/ApiErrorData.ts';
 import type { RequestConfig } from '@/api/interfaces/RequestConfig.ts';
 import type { RequestOptions } from '@/api/interfaces/RequestOptions.ts';
+import apiConf from '@/api/api.conf.ts';
 
 function isApiErrorData(value: unknown): value is ApiErrorData {
   return typeof value === 'object' && value !== null;
