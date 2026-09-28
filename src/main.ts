@@ -15,6 +15,7 @@ Sentry.init({
   integrations: [Sentry.browserTracingIntegration({ router })],
   tracesSampleRate: import.meta.env.MODE === 'production' ? 0.2 : 1.0,
   tracePropagationTargets: ['localhost', apiConf.apiUrl],
+  environment: 'production',
 });
 
 app.use(createPinia());
