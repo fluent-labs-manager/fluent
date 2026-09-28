@@ -28,7 +28,8 @@ class ApiResolverUtil {
   }
 
   async request<S>(options: RequestOptions): Promise<S> {
-    const { url, method, data, jwt, responseType, customHeaders } = options;
+    const { url, method, data, jwt, timeout, responseType, customHeaders } =
+      options;
 
     const fullUrl = `${this.apiUrl}/${this.endpoint}/${url}`;
     const headers: Record<string, string> = {};
@@ -46,6 +47,7 @@ class ApiResolverUtil {
       method,
       data,
       headers,
+      timeout,
       responseType: responseType ?? 'json',
     };
 

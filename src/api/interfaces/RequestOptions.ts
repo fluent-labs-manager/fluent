@@ -6,6 +6,7 @@ export interface RequestOptions {
   method: AllowedHttpMethods;
   data?: unknown;
   jwt?: string;
+  timeout?: number;
   responseType?: AxiosRequestConfig['responseType'];
   customHeaders?: Record<string, string>;
 }
