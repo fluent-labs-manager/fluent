@@ -58,7 +58,7 @@ describe('ApiResolverUtil', () => {
       );
     });
 
-    it('передаёт тело, тип ответа и пользовательские заголовки', async () => {
+    it('передаёт тело, таймаут, тип ответа и пользовательские заголовки', async () => {
       const data = { query: 'developer' };
       mockedAxios.mockResolvedValueOnce({ data: {} });
 
@@ -66,6 +66,7 @@ describe('ApiResolverUtil', () => {
         url: 'search',
         method: 'POST',
         data,
+        timeout: 5_000,
         responseType: 'blob',
         customHeaders: { 'X-Request-Id': 'request-1' },
       });
@@ -73,6 +74,7 @@ describe('ApiResolverUtil', () => {
       expect(mockedAxios).toHaveBeenCalledWith(
         expect.objectContaining({
           data,
+          timeout: 5_000,
           responseType: 'blob',
           headers: { 'X-Request-Id': 'request-1' },
         }),
