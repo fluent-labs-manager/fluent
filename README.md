@@ -116,17 +116,28 @@ E2e test files are located in `e2e/`.
 
 ---
 
+## Documentation
+
+Project documentation is available in [`docs/readme.md`](docs/readme.md).
+
+---
+
 ## Project Structure
 
 ```markdown
 fluent/
-├── e2e/ # Playwright end-to-end tests
-├── public/ # Static assets
+├── docs/
+│ └── readme.md                             # Documentation index
+├── e2e/                                    # Playwright end-to-end tests
+├── public/                                 # Static assets
 ├── src/
+│ ├── __tests__/                            # Unit tests
+│ ├── api/                                  # API configuration and request types
 │ ├── assets/
 │ ├── components/
 │ ├── router/
-│ ├── stores/ # Pinia stores
+│ ├── stores/                               # Pinia stores
+│ ├── utils/                                # Shared utilities
 │ ├── views/
 │ ├── App.vue
 │ └── main.ts
