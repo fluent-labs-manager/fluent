@@ -1,0 +1,21 @@
+name: "Setup Node.js & environment"
+description: "Setup Node.js for action & create api.conf.ts from api.conf.example.ts"
+author: scobca
+
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '24'
+        cache: 'npm'
+
+    - name: Install dependencies
+      shell: bash
+      run: npm ci
+
+    - name: Generate api.conf.ts
+      shell: bash
+      run: bash .github/scripts/generate-api-conf.sh
