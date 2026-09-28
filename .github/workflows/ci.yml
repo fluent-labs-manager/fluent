@@ -14,6 +14,7 @@ jobs:
   markdown-formatting:
     timeout-minutes: 5
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v6
 
@@ -24,46 +25,44 @@ jobs:
           config_file: .markdownlint.yaml
 
   code-linting:
+    timeout-minutes: 5
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: 'npm'
+      - name: Prepare action environment
+        uses: ./.github/actions/setup-node
 
-      - run: npm ci
-      - run: npm run lint:ci
+      - name: Lint
+        run: npm run lint:ci
 
   code-unit-testing:
     timeout-minutes: 5
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: 'npm'
+      - name: Prepare action environment
+        uses: ./.github/actions/setup-node
 
-      - run: npm ci
-      - run: npm run test:unit:ci
+      - name: Unit tests
+        run: npm run test:unit:ci
 
   create-build:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     needs: [ code-linting, code-unit-testing ]
+
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: 'npm'
+      - name: Prepare action environment
+        uses: ./.github/actions/setup-node
 
-      - run: npm ci
-      - run: npm run build
+      - name: Create build
+        run: npm run build
 
   send-commits-notification:
     runs-on: ubuntu-latest
