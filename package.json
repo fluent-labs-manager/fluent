@@ -21,6 +21,7 @@
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
+    "@sentry/vue": "^11.1.0",
     "axios": "^1.20.0",
     "pinia": "^4.0.2",
     "vue": "rc",
