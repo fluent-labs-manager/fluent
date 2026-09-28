@@ -14,7 +14,7 @@ function getErrorMessage(data: unknown, fallback: string): string {
     return fallback;
   }
 
-  const [, messageAfterColon] = data.message.split(':');
+  const [, messageAfterColon] = data.message.split(':').map((m) => m.trim());
   return messageAfterColon ?? data.message;
 }
 
