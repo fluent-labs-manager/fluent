@@ -117,7 +117,7 @@ describe('ApiResolverUtil', () => {
         method: 'GET',
       });
 
-      expect(result).toEqual({ status: 404, message: ' Not found' });
+      expect(result).toEqual({ status: 404, message: 'Not found' });
     });
 
     it('берёт status из тела Axios-ошибки и fallback message', async () => {
