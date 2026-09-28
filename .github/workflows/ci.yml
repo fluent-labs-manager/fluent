@@ -28,6 +28,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Generate api.conf.ts
+        run: bash .github/scripts/generate-api-conf.sh
+
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -41,6 +44,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+
+      - name: Generate api.conf.ts
+        run: bash .github/scripts/generate-api-conf.sh
 
       - uses: actions/setup-node@v4
         with:
