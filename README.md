@@ -127,18 +127,29 @@ Project documentation is available in [`docs/readme.md`](docs/readme.md).
 ```markdown
 fluent/
 ├── docs/
-│ └── readme.md                             # Documentation index
+│ ├── readme.md                             # Documentation index
+│ ├── data.md                               # Data layer, API stubs, mock modes
+│ └── styles.md                             # Design tokens and fonts
 ├── e2e/                                    # Playwright end-to-end tests
-├── public/                                 # Static assets
+├── public/                                 # Static assets served as-is (favicon)
 ├── src/
-│ ├── __tests__/                            # Unit tests
+│ ├── __tests__/                            # Unit tests (mirror src/: api/, components/, stores/, utils/, views/)
 │ ├── api/                                  # API configuration and request types
+│ │ ├── courses/                            # Course.dto.ts
+│ │ ├── semesters/                          # Semester.dto.ts, SemestersApi.ts (stub for now)
+│ │ └── users/                              # User.dto.ts, UsersApi.ts (stub for now)
 │ ├── assets/
-│ ├── components/
+│ │ ├── fonts/                              # Web fonts (woff2)
+│ │ └── base.css                            # Global styles, design tokens, @font-face
+│ ├── components/                           # Reusable UI components
+│ ├── composables/                          # Data loading for pages (useSemesters)
+│ ├── layouts/                              # Page layouts (sidebar + content)
+│ ├── mocks/                                # Temporary mock data for API stubs
 │ ├── router/
-│ ├── stores/                               # Pinia stores
-│ ├── utils/                                # Shared utilities
-│ ├── views/
+│ ├── stores/                               # Pinia stores (current user)
+│ ├── types/                                # Shared UI types (UserRole, SemesterFilter, IconName, NavItem, ...)
+│ ├── utils/                                # Shared utilities (ApiResolver, GradeFormatter, ProgressPercentage)
+│ ├── views/                                # Pages (lazy-loaded by the router)
 │ ├── App.vue
 │ └── main.ts
 ├── eslint.config.ts
