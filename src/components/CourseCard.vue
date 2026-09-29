@@ -3,8 +3,9 @@ import { computed } from 'vue';
 
 import AppIcon from '@/components/AppIcon.vue';
 import ProgressBar from '@/components/ProgressBar.vue';
-import type { Course, UserRole } from '@/types/course.ts';
-import { formatPercent, getPercent } from '@/utils/progress.ts';
+import type { Course } from '@/api/courses/Course.dto.ts';
+import type { UserRole } from '@/types/UserRole.ts';
+import { formatPercent, getPercent } from '@/utils/ProgressPercentage.ts';
 
 const props = defineProps<{
   course: Course;

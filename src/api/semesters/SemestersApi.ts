@@ -1,6 +1,6 @@
 import { semesters } from '@/mocks/courses.ts';
 import { getMockMode, mockDelay } from '@/mocks/mockMode.ts';
-import type { Semester } from '@/types/course.ts';
+import type { Semester } from '@/api/semesters/Semester.dto.ts';
 import { ApiRequestError } from '@/utils/ApiResolver.ts';
 
 /**

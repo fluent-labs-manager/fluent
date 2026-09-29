@@ -2,10 +2,11 @@ import { describe, it, expect } from 'vitest';
 
 import { mount } from '@vue/test-utils';
 import CourseCard from '@/components/CourseCard.vue';
-import type { Course, UserRole } from '@/types/course.ts';
+import type { Course } from '@/api/courses/Course.dto.ts';
+import type { UserRole } from '@/types/UserRole.ts';
 
 const course: Course = {
-  id: 'course',
+  id: 1,
   title: 'Курс',
   teacher: 'Преподаватель',
   completedLabs: 2,

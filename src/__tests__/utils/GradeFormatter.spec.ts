@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatGrade } from '@/utils/format.ts';
+import { formatGrade } from '@/utils/GradeFormatter.ts';
 
 describe('formatGrade', () => {
   it('выводит два знака после запятой через запятую', () => {

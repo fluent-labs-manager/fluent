@@ -1,20 +1,12 @@
 <script setup lang="ts">
-import type { RouteLocationRaw } from 'vue-router';
-
-import AppIcon, { type IconName } from '@/components/AppIcon.vue';
-import type { User } from '@/types/course.ts';
+import AppIcon from '@/components/AppIcon.vue';
+import type { User } from '@/api/users/User.dto.ts';
+import type { NavItem } from '@/types/NavItem.ts';
 
 defineProps<{
-  // null, пока пользователь загружается или если загрузка не удалась
+  //null, пока пользователь загружается
   user: User | null;
 }>();
-
-interface NavItem {
-  label: string;
-  icon: IconName;
-  // TODO: добавить маршруты, когда появятся соответствующие страницы
-  to?: RouteLocationRaw;
-}
 
 const navItems: NavItem[] = [
   { label: 'Главная', icon: 'home', to: { name: 'home' } },

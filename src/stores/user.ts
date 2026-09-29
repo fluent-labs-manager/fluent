@@ -1,9 +1,9 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
 
-import { getCurrentUserStub } from '@/api/user.ts';
-import type { User } from '@/types/course.ts';
-import { getApiErrorMessage } from '@/utils/apiError.ts';
+import { getCurrentUserStub } from '@/api/users/UsersApi.ts';
+import type { User } from '@/api/users/User.dto.ts';
+import { ApiRequestError } from '@/utils/ApiResolver.ts';
 
 // придёт авторизация через ITMO ID.
 export const useUserStore = defineStore('user', () => {
@@ -23,7 +23,11 @@ export const useUserStore = defineStore('user', () => {
     try {
       user.value = await getCurrentUserStub();
     } catch (loadError: unknown) {
-      error.value = getApiErrorMessage(loadError);
+      // TODO: обработать 401 — отправить пользователя на вход через ITMO ID.
+      error.value =
+        loadError instanceof ApiRequestError
+          ? loadError.message
+          : 'Не удалось загрузить пользователя';
     } finally {
       isLoading.value = false;
     }

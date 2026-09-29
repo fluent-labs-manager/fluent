@@ -1,6 +1,6 @@
 import { currentUser } from '@/mocks/user.ts';
 import { mockDelay } from '@/mocks/mockMode.ts';
-import type { User } from '@/types/course.ts';
+import type { User } from '@/api/users/User.dto.ts';
 
 /**
  * временная заглушка: текущий пользователь

@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createPinia, setActivePinia } from 'pinia';
 import { useUserStore } from '@/stores/user.ts';
-import { getCurrentUserStub } from '@/api/user.ts';
+import { getCurrentUserStub } from '@/api/users/UsersApi.ts';
 import { ApiRequestError } from '@/utils/ApiResolver.ts';
 import { studentFixture } from '../fixtures.ts';
 
-vi.mock('@/api/user.ts', () => ({ getCurrentUserStub: vi.fn() }));
+vi.mock('@/api/users/UsersApi.ts', () => ({ getCurrentUserStub: vi.fn() }));
 
 const mockedGetCurrentUser = vi.mocked(getCurrentUserStub);
 
@@ -35,6 +35,15 @@ describe('useUserStore', () => {
     await store.loadUser();
 
     expect(mockedGetCurrentUser).toHaveBeenCalledTimes(1);
+  });
+
+  it('для ошибки не из ApiResolver сохраняет общее сообщение', async () => {
+    mockedGetCurrentUser.mockRejectedValue(new Error('boom'));
+    const store = useUserStore();
+
+    await store.loadUser();
+
+    expect(store.error).toBe('Не удалось загрузить пользователя');
   });
 
   it('сохраняет текст ошибки и разрешает повторную загрузку', async () => {

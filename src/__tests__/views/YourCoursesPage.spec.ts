@@ -3,13 +3,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import { createPinia } from 'pinia';
 import YourCoursesPage from '@/views/YourCoursesPage.vue';
-import { getSemestersStub } from '@/api/semesters.ts';
-import { getCurrentUserStub } from '@/api/user.ts';
+import { getSemestersStub } from '@/api/semesters/SemestersApi.ts';
+import { getCurrentUserStub } from '@/api/users/UsersApi.ts';
 import { ApiRequestError } from '@/utils/ApiResolver.ts';
 import { semestersFixture, studentFixture } from '../fixtures.ts';
 
-vi.mock('@/api/semesters.ts', () => ({ getSemestersStub: vi.fn() }));
-vi.mock('@/api/user.ts', () => ({ getCurrentUserStub: vi.fn() }));
+vi.mock('@/api/semesters/SemestersApi.ts', () => ({
+  getSemestersStub: vi.fn(),
+}));
+vi.mock('@/api/users/UsersApi.ts', () => ({ getCurrentUserStub: vi.fn() }));
 
 const mockedGetSemesters = vi.mocked(getSemestersStub);
 const mockedGetCurrentUser = vi.mocked(getCurrentUserStub);
@@ -71,6 +73,15 @@ describe('YourCoursesPage', () => {
 
       expect(wrapper.find('[role="alert"]').exists()).toBe(false);
       expect(wrapper.findAll('.course-card')).toHaveLength(2);
+    });
+
+    it('для ошибки не из ApiResolver показывает общее сообщение', async () => {
+      mockedGetSemesters.mockRejectedValue(new Error('boom'));
+      const wrapper = await mountPage();
+
+      expect(wrapper.find('[role="alert"]').text()).toContain(
+        'Не удалось загрузить дисциплины',
+      );
     });
 
     it('показывает ошибку, если не удалось загрузить пользователя', async () => {

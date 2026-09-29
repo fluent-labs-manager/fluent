@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import { getPercent } from '@/utils/progress.ts';
+import { getPercent } from '@/utils/ProgressPercentage.ts';
 
 const props = defineProps<{
   value: number;

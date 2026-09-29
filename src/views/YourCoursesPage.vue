@@ -6,9 +6,11 @@ import CourseCard from '@/components/CourseCard.vue';
 import SemesterProgress from '@/components/SemesterProgress.vue';
 import { useSemesters } from '@/composables/useSemesters.ts';
 import { useUserStore } from '@/stores/user.ts';
-import type { Course, Semester, UserRole } from '@/types/course.ts';
-
-type SemesterFilter = 'current' | 'all';
+import type { Course } from '@/api/courses/Course.dto.ts';
+import type { Semester } from '@/api/semesters/Semester.dto.ts';
+import type { SemesterFilter } from '@/types/SemesterFilter.ts';
+import type { SemesterFilterOption } from '@/types/SemesterFilterOption.ts';
+import type { UserRole } from '@/types/UserRole.ts';
 
 const filter = ref<SemesterFilter>('current');
 const {
@@ -34,7 +36,7 @@ const currentSemester = computed<Semester | undefined>(() =>
   semesters.value.find((semester) => semester.isCurrent),
 );
 
-const filters = computed<{ value: SemesterFilter; label: string }[]>(() => [
+const filters = computed<SemesterFilterOption[]>(() => [
   {
     value: 'current',
     label: currentSemester.value?.title ?? 'Текущий семестр',

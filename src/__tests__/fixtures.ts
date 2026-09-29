@@ -1,8 +1,9 @@
-import type { Semester, User } from '@/types/course.ts';
+import type { Semester } from '@/api/semesters/Semester.dto.ts';
+import type { User } from '@/api/users/User.dto.ts';
 
-// сестовые данные. не зависят от src/mocks/
+// тестовые данные. не зависят от src/mocks/
 export const studentFixture: User = {
-  id: 'u-test',
+  id: 100,
   name: 'Тестовый Студент',
   group: 'P0000',
   role: 'student',
@@ -10,20 +11,20 @@ export const studentFixture: User = {
 
 export const semestersFixture: Semester[] = [
   {
-    id: 'current',
+    id: 10,
     title: 'Осень 2026',
     isCurrent: true,
     averageGrade: 4.5,
     courses: [
       {
-        id: 'course-a',
+        id: 11,
         title: 'Курс А',
         teacher: 'Преподаватель А',
         completedLabs: 1,
         totalLabs: 3,
       },
       {
-        id: 'course-b',
+        id: 12,
         title: 'Курс Б',
         teacher: 'Преподаватель Б',
         completedLabs: 2,
@@ -32,13 +33,13 @@ export const semestersFixture: Semester[] = [
     ],
   },
   {
-    id: 'past',
+    id: 20,
     title: 'Весна 2026',
     isCurrent: false,
     averageGrade: 4,
     courses: [
       {
-        id: 'course-c',
+        id: 21,
         title: 'Курс В',
         teacher: 'Преподаватель В',
         completedLabs: 4,

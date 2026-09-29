@@ -1,14 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-export type IconName =
-  | 'home'
-  | 'book'
-  | 'flask'
-  | 'award'
-  | 'chevron-down'
-  | 'chevron-right'
-  | 'refresh';
+import type { IconName } from '@/types/IconName.ts';
 
 const props = withDefaults(
   defineProps<{

@@ -133,8 +133,11 @@ fluent/
 ├── e2e/                                    # Playwright end-to-end tests
 ├── public/                                 # Static assets served as-is (favicon)
 ├── src/
-│ ├── __tests__/                            # Unit tests (mirror src/: components/, views/, utils/)
-│ ├── api/                                  # API configuration, request types, data functions (stubs for now)
+│ ├── __tests__/                            # Unit tests (mirror src/: api/, components/, stores/, utils/, views/)
+│ ├── api/                                  # API configuration and request types
+│ │ ├── courses/                            # Course.dto.ts
+│ │ ├── semesters/                          # Semester.dto.ts, SemestersApi.ts (stub for now)
+│ │ └── users/                              # User.dto.ts, UsersApi.ts (stub for now)
 │ ├── assets/
 │ │ ├── fonts/                              # Web fonts (woff2)
 │ │ └── base.css                            # Global styles, design tokens, @font-face
@@ -144,8 +147,8 @@ fluent/
 │ ├── mocks/                                # Temporary mock data for API stubs
 │ ├── router/
 │ ├── stores/                               # Pinia stores (current user)
-│ ├── types/                                # Domain types
-│ ├── utils/                                # Shared utilities
+│ ├── types/                                # Shared UI types (UserRole, SemesterFilter, IconName, NavItem, ...)
+│ ├── utils/                                # Shared utilities (ApiResolver, GradeFormatter, ProgressPercentage)
 │ ├── views/                                # Pages (lazy-loaded by the router)
 │ ├── App.vue
 │ └── main.ts

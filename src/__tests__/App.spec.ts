@@ -3,12 +3,14 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { createPinia } from 'pinia';
 import App from '../App.vue';
 import router from '@/router/index.ts';
-import { getSemestersStub } from '@/api/semesters.ts';
-import { getCurrentUserStub } from '@/api/user.ts';
+import { getSemestersStub } from '@/api/semesters/SemestersApi.ts';
+import { getCurrentUserStub } from '@/api/users/UsersApi.ts';
 import { semestersFixture, studentFixture } from './fixtures.ts';
 
-vi.mock('@/api/semesters.ts', () => ({ getSemestersStub: vi.fn() }));
-vi.mock('@/api/user.ts', () => ({ getCurrentUserStub: vi.fn() }));
+vi.mock('@/api/semesters/SemestersApi.ts', () => ({
+  getSemestersStub: vi.fn(),
+}));
+vi.mock('@/api/users/UsersApi.ts', () => ({ getCurrentUserStub: vi.fn() }));
 
 async function mountAt(path: string): Promise<ReturnType<typeof mount>> {
   await router.push(path);

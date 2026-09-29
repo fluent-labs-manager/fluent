@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { formatPercent, getPercent } from '@/utils/progress.ts';
+import { formatPercent, getPercent } from '@/utils/ProgressPercentage.ts';
 
 describe('getPercent', () => {
   it('округляет вверх до одного знака после запятой', () => {

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import type { Semester } from '@/types/course.ts';
-import { formatGrade } from '@/utils/format.ts';
-import { formatPercent, getPercent } from '@/utils/progress.ts';
+import type { Semester } from '@/api/semesters/Semester.dto.ts';
+import { formatGrade } from '@/utils/GradeFormatter.ts';
+import { formatPercent, getPercent } from '@/utils/ProgressPercentage.ts';
 
 const props = defineProps<{
   semester: Semester;

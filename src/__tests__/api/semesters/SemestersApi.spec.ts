@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getSemestersStub } from '@/api/semesters.ts';
+import { getSemestersStub } from '@/api/semesters/SemestersApi.ts';
 import { MOCK_DELAY_MS } from '@/mocks/mockMode.ts';
 import { ApiRequestError } from '@/utils/ApiResolver.ts';
 

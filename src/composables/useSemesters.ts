@@ -1,9 +1,9 @@
 import { ref } from 'vue';
 import type { Ref } from 'vue';
 
-import { getSemestersStub } from '@/api/semesters.ts';
-import type { Semester } from '@/types/course.ts';
-import { getApiErrorMessage } from '@/utils/apiError.ts';
+import { getSemestersStub } from '@/api/semesters/SemestersApi.ts';
+import type { Semester } from '@/api/semesters/Semester.dto.ts';
+import { ApiRequestError } from '@/utils/ApiResolver.ts';
 
 interface UseSemestersResult {
   semesters: Ref<Semester[]>;
@@ -23,7 +23,11 @@ export function useSemesters(): UseSemestersResult {
     try {
       semesters.value = await getSemestersStub();
     } catch (loadError: unknown) {
-      error.value = getApiErrorMessage(loadError);
+      // TODO: обработать 401 — отправить пользователя на вход через ITMO ID.
+      error.value =
+        loadError instanceof ApiRequestError
+          ? loadError.message
+          : 'Не удалось загрузить дисциплины';
     } finally {
       isLoading.value = false;
     }
