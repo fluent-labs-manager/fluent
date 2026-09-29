@@ -2,9 +2,9 @@ name: "Fluent CI"
 
 on:
   pull_request:
-    types: [ opened, synchronize, reopened ]
+    types: [opened, synchronize, reopened]
   push:
-    branches: [ main ]
+    branches: [main]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -47,13 +47,18 @@ jobs:
       - name: Prepare action environment
         uses: ./.github/actions/setup-node
 
+      - name: Install Doppler CLI
+        uses: dopplerhq/cli-action@v3
+
       - name: Unit tests
-        run: npm run test:unit:ci
+        run: doppler run --project fluent-frontend --config ci -- npm run test:unit:ci
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
 
   create-build:
     timeout-minutes: 5
     runs-on: ubuntu-latest
-    needs: [ code-linting, code-unit-testing ]
+    needs: [code-linting, code-unit-testing]
     if: github.event_name == 'pull_request'
 
     steps:
@@ -68,7 +73,7 @@ jobs:
   create-release-build:
     timeout-minutes: 10
     runs-on: ubuntu-latest
-    needs: [ code-linting, code-unit-testing ]
+    needs: [code-linting, code-unit-testing]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
@@ -79,9 +84,7 @@ jobs:
         env:
           VITE_API_URL: ${{ vars.VITE_API_URL }}
           VITE_API_SOCKET_URL: ${{ vars.VITE_API_SOCKET_URL }}
-          VITE_TEST_API_URL: ${{ vars.VITE_TEST_API_URL }}
-          VITE_TEST_API_KEY: ${{ secrets.VITE_TEST_API_KEY }}
-          SENTRY_DSN_URL: ${{ vars.SENTRY_DSN_URL }}
+          VITE_SENTRY_DSN_URL: ${{ vars.VITE_SENTRY_DSN_URL }}
 
       - name: Create build with Sentry release
         run: npm run build
@@ -99,7 +102,7 @@ jobs:
     environment: production
     timeout-minutes: 10
     runs-on: ubuntu-latest
-    needs: [ create-release-build ]
+    needs: [create-release-build]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
@@ -142,11 +145,11 @@ jobs:
           token: ${{ secrets.BOT_TOKEN }}
           message: |
             New commits in ${{ github.repository }}
-            
+
             ${{ github.actor }} has pushed ${{ steps.prepare.outputs.count }} commit(-s) to ${{ github.ref_name }}
-            
+
             ${{ steps.prepare.outputs.commit_list }}
-            
+
             🔗 ${{ github.server_url }}/${{ github.repository }}/commits/${{ github.ref_name }}
-            
+
             #commit
