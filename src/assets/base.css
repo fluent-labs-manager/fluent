@@ -1,0 +1,79 @@
+@font-face {
+  font-weight: 400;
+  font-family: 'SF Pro Display';
+  font-style: normal;
+  font-display: swap;
+  src: url('./fonts/SFProDisplay-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-weight: 500;
+  font-family: 'SF Pro Display';
+  font-style: normal;
+  font-display: swap;
+  src: url('./fonts/SFProDisplay-Medium.woff2') format('woff2');
+}
+
+@font-face {
+  font-weight: 700;
+  font-family: 'SF Pro Display';
+  font-style: normal;
+  font-display: swap;
+  src: url('./fonts/SFProDisplay-Bold.woff2') format('woff2');
+}
+
+:root {
+  --color-bg: #ecede8;
+  --color-surface: #fffffc;
+  --color-sidebar: #f6f7f3;
+  --color-muted-surface: #eff0ec;
+  --color-accent-surface: #e6e9e1;
+  --color-summary: #e8ebe5;
+  --color-border: #d9dbd3;
+  --color-text: #1c1c1a;
+  --color-text-secondary: #5b6158;
+  --color-accent: #5d6b4f;
+  --color-success: #5f8a5f;
+
+  /* тени: карточки и «приподнятые» элементы (выбранная вкладка) */
+  --shadow-card: 0 2px 6px rgb(28 28 26 / 6%);
+  --shadow-raised: 0 1px 3px rgb(28 28 26 / 12%);
+
+  /* шкала размеров шрифта — в компонентах используем только её */
+  --font-size-xs: 12px;
+  --font-size-sm: 13px;
+  --font-size-md: 14px;
+  --font-size-lg: 15px;
+  --font-size-xl: 17px;
+  --font-size-2xl: 18px;
+  --font-size-3xl: 20px;
+  --font-size-4xl: 30px;
+  --font-size-5xl: 40px;
+  --page-offset-top: 24px;
+  --page-title-line-height: 44px;
+
+  /* отступ под заголовком/логотипом и высота первой строки под ним —
+     общие для меню и страницы, чтобы вкладки стояли на уровне «Главная» */
+  --page-header-gap: 40px;
+  --nav-item-height: 48px;
+  --font-main: 'SF Pro Display', -apple-system, 'Segoe UI', roboto, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-main);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font: inherit;
+}

@@ -127,18 +127,24 @@ Project documentation is available in [`docs/readme.md`](docs/readme.md).
 ```markdown
 fluent/
 ├── docs/
-│ └── readme.md                             # Documentation index
+│ ├── readme.md                             # Documentation index
+│ └── styles.md                             # Design tokens and fonts
 ├── e2e/                                    # Playwright end-to-end tests
-├── public/                                 # Static assets
+├── public/                                 # Static assets served as-is (favicon)
 ├── src/
-│ ├── __tests__/                            # Unit tests
+│ ├── __tests__/                            # Unit tests (mirror src/: components/, views/, utils/)
 │ ├── api/                                  # API configuration and request types
 │ ├── assets/
-│ ├── components/
+│ │ ├── fonts/                              # Web fonts (woff2)
+│ │ └── base.css                            # Global styles, design tokens, @font-face
+│ ├── components/                           # Reusable UI components
+│ ├── layouts/                              # Page layouts (sidebar + content)
+│ ├── mocks/                                # Temporary mock data (to be replaced by API)
 │ ├── router/
 │ ├── stores/                               # Pinia stores
+│ ├── types/                                # Domain types
 │ ├── utils/                                # Shared utilities
-│ ├── views/
+│ ├── views/                                # Pages (lazy-loaded by the router)
 │ ├── App.vue
 │ └── main.ts
 ├── eslint.config.ts
