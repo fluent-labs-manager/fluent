@@ -1,15 +1,21 @@
-import { describe, it, expect } from 'vitest';
-
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
+import { createPinia } from 'pinia';
 import App from '../App.vue';
 import router from '@/router/index.ts';
+import { getSemestersStub } from '@/api/semesters.ts';
+import { getCurrentUserStub } from '@/api/user.ts';
+import { semestersFixture, studentFixture } from './fixtures.ts';
+
+vi.mock('@/api/semesters.ts', () => ({ getSemestersStub: vi.fn() }));
+vi.mock('@/api/user.ts', () => ({ getCurrentUserStub: vi.fn() }));
 
 async function mountAt(path: string): Promise<ReturnType<typeof mount>> {
   await router.push(path);
   await router.isReady();
   const wrapper = mount(App, {
     global: {
-      plugins: [router],
+      plugins: [router, createPinia()],
     },
   });
   await flushPromises();
@@ -17,10 +23,22 @@ async function mountAt(path: string): Promise<ReturnType<typeof mount>> {
 }
 
 describe('App', () => {
+  beforeEach(() => {
+    vi.mocked(getSemestersStub).mockResolvedValue(
+      structuredClone(semestersFixture),
+    );
+    vi.mocked(getCurrentUserStub).mockResolvedValue(
+      structuredClone(studentFixture),
+    );
+  });
+
   it('на корневом адресе отображает главную страницу с боковым меню', async () => {
     const wrapper = await mountAt('/');
     expect(wrapper.find('.app-sidebar').exists()).toBe(true);
     expect(wrapper.find('h1').text()).toBe('Главная');
+    expect(wrapper.find('.app-sidebar__user-name').text()).toBe(
+      studentFixture.name,
+    );
   });
 
   it('по адресу /courses отображает страницу дисциплин', async () => {

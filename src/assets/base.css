@@ -34,6 +34,7 @@
   --color-text-secondary: #5b6158;
   --color-accent: #5d6b4f;
   --color-success: #5f8a5f;
+  --color-error: #a14a3b;
 
   /* тени: карточки и «приподнятые» элементы (выбранная вкладка) */
   --shadow-card: 0 2px 6px rgb(28 28 26 / 6%);

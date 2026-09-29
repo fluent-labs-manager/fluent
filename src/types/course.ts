@@ -11,14 +11,12 @@ export interface Course {
   teacher: string;
   completedLabs: number;
   totalLabs: number;
-  /** ISO-дата ближайшего дедлайна, null — если дедлайнов не осталось */
-  nearestDeadline: string | null;
-  /** Преподаватель закрыл ведомость — курс завершён */
-  isGradeSheetClosed: boolean;
 }
 export interface Semester {
   id: string;
   title: string;
+  /** Текущий семестр — показывается по умолчанию, по нему считается сводка */
+  isCurrent: boolean;
   averageGrade: number;
   courses: Course[];
 }

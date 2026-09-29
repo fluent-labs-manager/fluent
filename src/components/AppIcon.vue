@@ -2,7 +2,13 @@
 import { computed } from 'vue';
 
 export type IconName =
-  'home' | 'book' | 'flask' | 'award' | 'chevron-down' | 'chevron-right';
+  | 'home'
+  | 'book'
+  | 'flask'
+  | 'award'
+  | 'chevron-down'
+  | 'chevron-right'
+  | 'refresh';
 
 const props = withDefaults(
   defineProps<{
@@ -32,6 +38,7 @@ const paths: Record<IconName, string[]> = {
   ],
   'chevron-down': ['m6 9 6 6 6-6'],
   'chevron-right': ['m9 6 6 6-6 6'],
+  refresh: ['M21 12a9 9 0 1 1-2.64-6.36', 'M21 3v6h-6'],
 };
 
 const iconPaths = computed<string[]>(() => paths[props.name]);

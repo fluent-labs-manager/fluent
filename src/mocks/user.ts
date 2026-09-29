@@ -1,5 +1,6 @@
 import type { User } from '@/types/course.ts';
-// TODO: заменить на данные из хранилища
+
+// данные для заглушки из src/api/user.ts
 export const currentUser: User = {
   id: 'u-1',
   name: 'Горелова Ульяна',

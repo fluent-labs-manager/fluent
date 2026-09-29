@@ -1,61 +1,153 @@
-import { describe, it, expect } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
+import { createPinia } from 'pinia';
 import YourCoursesPage from '@/views/YourCoursesPage.vue';
+import { getSemestersStub } from '@/api/semesters.ts';
+import { getCurrentUserStub } from '@/api/user.ts';
+import { ApiRequestError } from '@/utils/ApiResolver.ts';
+import { semestersFixture, studentFixture } from '../fixtures.ts';
+
+vi.mock('@/api/semesters.ts', () => ({ getSemestersStub: vi.fn() }));
+vi.mock('@/api/user.ts', () => ({ getCurrentUserStub: vi.fn() }));
+
+const mockedGetSemesters = vi.mocked(getSemestersStub);
+const mockedGetCurrentUser = vi.mocked(getCurrentUserStub);
+
+async function mountPage(): Promise<ReturnType<typeof mount>> {
+  const wrapper = mount(YourCoursesPage, {
+    global: {
+      plugins: [createPinia()],
+    },
+  });
+  await flushPromises();
+
+  return wrapper;
+}
 
 describe('YourCoursesPage', () => {
-  it('отображает заголовок страницы', () => {
-    const wrapper = mount(YourCoursesPage);
-    expect(wrapper.find('h1').text()).toBe('Дисциплины');
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mockedGetSemesters.mockResolvedValue(structuredClone(semestersFixture));
+    mockedGetCurrentUser.mockResolvedValue(structuredClone(studentFixture));
   });
 
-  it('отображает карточку на каждый курс с его прогрессом', () => {
-    const wrapper = mount(YourCoursesPage);
-    expect(wrapper.findAll('.course-card')).toHaveLength(3);
-    expect(wrapper.text()).toContain('Разработка веб-приложений');
-    expect(wrapper.text()).toContain('Михайлюк Степан');
-    expect(wrapper.text()).toContain('4 из 6 (66,7%)');
+  // загрузка, ошибка, пустой список
+  describe('состояния загрузки', () => {
+    it('пока данные загружаются, показывает сообщение о загрузке', async () => {
+      mockedGetSemesters.mockReturnValue(new Promise(() => undefined));
+      const wrapper = await mountPage();
+
+      expect(wrapper.find('[role="status"]').text()).toBe(
+        'Загрузка дисциплин…',
+      );
+      expect(wrapper.find('.course-card').exists()).toBe(false);
+      expect(wrapper.find('.courses-page__filters').exists()).toBe(false);
+    });
+
+    it('при ошибке показывает её текст и кнопку «Повторить»', async () => {
+      mockedGetSemesters.mockRejectedValue(
+        new ApiRequestError(503, 'Сервис временно недоступен'),
+      );
+      const wrapper = await mountPage();
+
+      expect(wrapper.find('[role="alert"]').text()).toContain(
+        'Сервис временно недоступен',
+      );
+      expect(
+        wrapper.find('.courses-page__retry').attributes('aria-label'),
+      ).toBe('Повторить');
+      expect(wrapper.find('.course-card').exists()).toBe(false);
+    });
+
+    it('после «Повторить» загружает данные заново', async () => {
+      mockedGetSemesters.mockRejectedValueOnce(
+        new ApiRequestError(503, 'Сервис временно недоступен'),
+      );
+      const wrapper = await mountPage();
+
+      await wrapper.find('.courses-page__retry').trigger('click');
+      await flushPromises();
+
+      expect(wrapper.find('[role="alert"]').exists()).toBe(false);
+      expect(wrapper.findAll('.course-card')).toHaveLength(2);
+    });
+
+    it('показывает ошибку, если не удалось загрузить пользователя', async () => {
+      mockedGetCurrentUser.mockRejectedValue(
+        new ApiRequestError(500, 'Ошибка сервера'),
+      );
+      const wrapper = await mountPage();
+
+      expect(wrapper.find('[role="alert"]').text()).toContain('Ошибка сервера');
+    });
+
+    it('при пустом списке показывает «Дисциплин пока нет» без сводки', async () => {
+      mockedGetSemesters.mockResolvedValue([]);
+      const wrapper = await mountPage();
+
+      expect(wrapper.find('.courses-page__empty').text()).toBe(
+        'Дисциплин пока нет.',
+      );
+      expect(wrapper.find('.semester-progress').exists()).toBe(false);
+    });
   });
 
-  it('показывает ближайший дедлайн или его отсутствие', () => {
-    const wrapper = mount(YourCoursesPage);
-    const deadlines = wrapper
-      .findAll('.course-card__deadline-value')
-      .map((deadline) => deadline.text());
-    expect(deadlines).toEqual(['22 октября', '20 октября', 'Нет']);
-  });
+  // загруженные данные
+  describe('загруженные данные', () => {
+    it('отображает заголовок страницы', async () => {
+      const wrapper = await mountPage();
+      expect(wrapper.find('h1').text()).toBe('Дисциплины');
+    });
 
-  it('показывает прогресс семестра перед карточками курсов', () => {
-    const wrapper = mount(YourCoursesPage);
-    const html = wrapper.html();
-    expect(html.indexOf('semester-progress')).toBeLessThan(
-      html.indexOf('course-card'),
-    );
-  });
+    it('показывает карточки курсов текущего семестра', async () => {
+      const wrapper = await mountPage();
+      const titles = wrapper
+        .findAll('.course-card__title')
+        .map((title) => title.text());
+      expect(titles).toEqual(['Курс А', 'Курс Б']);
+    });
 
-  it('показывает сводку по семестру со средним баллом через запятую', () => {
-    const wrapper = mount(YourCoursesPage);
-    const summary = wrapper.find('.semester-progress').text();
-    expect(summary).toContain('11 из 19 лабораторных выполнены');
-    expect(summary).toContain('средний балл 4,82');
-    expect(summary).toContain('57,9%');
-  });
+    it('подписывает кнопку текущего семестра его названием', async () => {
+      const wrapper = await mountPage();
+      expect(wrapper.findAll('.courses-page__filter')[0]?.text()).toBe(
+        'Осень 2026',
+      );
+    });
 
-  it('отмечает выбранный семестр через aria-pressed', async () => {
-    const wrapper = mount(YourCoursesPage);
-    const buttons = wrapper.findAll('.courses-page__filter');
-    expect(buttons[0]?.attributes('aria-pressed')).toBe('true');
-    expect(buttons[1]?.attributes('aria-pressed')).toBe('false');
+    it('показывает прогресс семестра перед карточками курсов', async () => {
+      const wrapper = await mountPage();
+      const html = wrapper.html();
+      expect(html.indexOf('semester-progress')).toBeLessThan(
+        html.indexOf('course-card'),
+      );
+    });
 
-    await buttons[1]?.trigger('click');
-    expect(buttons[0]?.attributes('aria-pressed')).toBe('false');
-    expect(buttons[1]?.attributes('aria-pressed')).toBe('true');
-  });
+    it('показывает сводку по текущему семестру', async () => {
+      const wrapper = await mountPage();
+      const summary = wrapper.find('.semester-progress').text();
+      expect(summary).toContain('3 из 5 лабораторных выполнены');
+      expect(summary).toContain('средний балл 4,50');
+      expect(summary).toContain('60%');
+    });
 
-  it('во вкладке «Все семестры» показывает курсы всех семестров без сводки', async () => {
-    const wrapper = mount(YourCoursesPage);
-    await wrapper.findAll('.courses-page__filter')[1]?.trigger('click');
-    expect(wrapper.findAll('.course-card')).toHaveLength(5);
-    expect(wrapper.find('.semester-progress').exists()).toBe(false);
+    it('отмечает выбранный семестр через aria-pressed', async () => {
+      const wrapper = await mountPage();
+      const buttons = wrapper.findAll('.courses-page__filter');
+      expect(buttons[0]?.attributes('aria-pressed')).toBe('true');
+      expect(buttons[1]?.attributes('aria-pressed')).toBe('false');
+
+      await buttons[1]?.trigger('click');
+      expect(buttons[0]?.attributes('aria-pressed')).toBe('false');
+      expect(buttons[1]?.attributes('aria-pressed')).toBe('true');
+    });
+
+    it('во вкладке «Все семестры» показывает курсы всех семестров без сводки', async () => {
+      const wrapper = await mountPage();
+      await wrapper.findAll('.courses-page__filter')[1]?.trigger('click');
+
+      expect(wrapper.findAll('.course-card')).toHaveLength(3);
+      expect(wrapper.find('.semester-progress').exists()).toBe(false);
+    });
   });
 });

@@ -2,12 +2,18 @@
 import { RouterView } from 'vue-router';
 
 import AppSidebar from '@/components/AppSidebar.vue';
-import { currentUser } from '@/mocks/user.ts';
+import { useUserStore } from '@/stores/user.ts';
+
+const userStore = useUserStore();
+
+// Запускаем в setup, а не в onMounted: дочерняя страница монтируется раньше
+// раскладки и должна сразу видеть, что пользователь загружается.
+void userStore.loadUser();
 </script>
 
 <template>
   <div class="main-layout">
-    <AppSidebar :user="currentUser" />
+    <AppSidebar :user="userStore.user" />
 
     <div class="main-layout__content">
       <RouterView />

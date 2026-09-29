@@ -5,7 +5,8 @@ import AppIcon, { type IconName } from '@/components/AppIcon.vue';
 import type { User } from '@/types/course.ts';
 
 defineProps<{
-  user: User;
+  // null, пока пользователь загружается или если загрузка не удалась
+  user: User | null;
 }>();
 
 interface NavItem {
@@ -53,6 +54,7 @@ const navItems: NavItem[] = [
     </nav>
 
     <button
+      v-if="user"
       class="app-sidebar__user"
       type="button"
     >

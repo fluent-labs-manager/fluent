@@ -128,20 +128,22 @@ Project documentation is available in [`docs/readme.md`](docs/readme.md).
 fluent/
 ├── docs/
 │ ├── readme.md                             # Documentation index
+│ ├── data.md                               # Data layer, API stubs, mock modes
 │ └── styles.md                             # Design tokens and fonts
 ├── e2e/                                    # Playwright end-to-end tests
 ├── public/                                 # Static assets served as-is (favicon)
 ├── src/
 │ ├── __tests__/                            # Unit tests (mirror src/: components/, views/, utils/)
-│ ├── api/                                  # API configuration and request types
+│ ├── api/                                  # API configuration, request types, data functions (stubs for now)
 │ ├── assets/
 │ │ ├── fonts/                              # Web fonts (woff2)
 │ │ └── base.css                            # Global styles, design tokens, @font-face
 │ ├── components/                           # Reusable UI components
+│ ├── composables/                          # Data loading for pages (useSemesters)
 │ ├── layouts/                              # Page layouts (sidebar + content)
-│ ├── mocks/                                # Temporary mock data (to be replaced by API)
+│ ├── mocks/                                # Temporary mock data for API stubs
 │ ├── router/
-│ ├── stores/                               # Pinia stores
+│ ├── stores/                               # Pinia stores (current user)
 │ ├── types/                                # Domain types
 │ ├── utils/                                # Shared utilities
 │ ├── views/                                # Pages (lazy-loaded by the router)
