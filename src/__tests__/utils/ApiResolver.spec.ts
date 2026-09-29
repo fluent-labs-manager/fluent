@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import axios from 'axios';
 import ApiResolver, { ApiRequestError } from '@/utils/ApiResolver.ts';
-import testApiConf from '@/api/test.api.conf.ts';
+import apiConf from '@/api/api.conf.ts';
 
 vi.mock('axios');
 
@@ -11,7 +11,7 @@ describe('ApiResolverUtil', () => {
   let resolver: ApiResolver;
 
   beforeEach(() => {
-    resolver = new ApiResolver('users', testApiConf.apiUrl);
+    resolver = new ApiResolver('users', apiConf.apiUrl);
     vi.clearAllMocks();
   });
 
@@ -37,7 +37,7 @@ describe('ApiResolverUtil', () => {
       expect(result).toEqual(responseData);
       expect(mockedAxios).toHaveBeenCalledWith(
         expect.objectContaining({
-          url: `${testApiConf.apiUrl}/users/profile`,
+          url: `${apiConf.apiUrl}/users/profile`,
           method: 'GET',
           responseType: 'json',
           headers: {},
