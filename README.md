@@ -4,6 +4,11 @@ Frontend application built with **Vue 3**, **TypeScript**, and **Vite**.
 
 ---
 
+> **Application Configurations:** the procedure for working with Doppler configs, local
+> development and GitHub Environments are described in [Doppler instructions](docs/doppler.md).
+
+---
+
 ## Requirements
 
 | Tool    | Version                   |
