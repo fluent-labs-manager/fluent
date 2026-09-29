@@ -18,6 +18,16 @@ function getErrorMessage(data: unknown, fallback: string): string {
   return messageAfterColon ?? data.message;
 }
 
+export class ApiRequestError extends Error {
+  readonly status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = 'ApiRequestError';
+    this.status = status;
+  }
+}
+
 class ApiResolverUtil {
   private readonly apiUrl: string;
   private readonly endpoint: string;
@@ -63,16 +73,13 @@ class ApiResolverUtil {
             ? errorData.status
             : 500);
 
-        return {
+        throw new ApiRequestError(
           status,
-          message: getErrorMessage(errorData, error.message),
-        } as S;
+          getErrorMessage(errorData, error.message),
+        );
       }
 
-      return {
-        status: 500,
-        message: 'Неизвестная ошибка',
-      } as S;
+      throw new ApiRequestError(500, 'Неизвестная ошибка');
     }
   }
 
