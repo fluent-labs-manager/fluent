@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import axios from 'axios';
-import ApiResolver from '@/utils/ApiResolver.ts';
+import ApiResolver, { ApiRequestError } from '@/utils/ApiResolver.ts';
 import testApiConf from '@/api/test.api.conf.ts';
 
 vi.mock('axios');
@@ -104,55 +104,41 @@ describe('ApiResolverUtil', () => {
       );
     });
 
-    it('возвращает status и сообщение Axios-ошибки', async () => {
+    it('выбрасывает status и сообщение Axios-ошибки', async () => {
       mockedAxios.isAxiosError.mockReturnValue(true);
       mockedAxios.mockRejectedValueOnce({
         message: 'Request failed',
         response: { status: 404, data: { message: 'ERROR: Not found' } },
       });
 
-      const result = await resolver.request<{
-        status: number;
-        message: string;
-      }>({
-        url: 'missing',
-        method: 'GET',
-      });
+      const request = resolver.request({ url: 'missing', method: 'GET' });
 
-      expect(result).toEqual({ status: 404, message: 'Not found' });
+      await expect(request).rejects.toBeInstanceOf(ApiRequestError);
+      await expect(request).rejects.toMatchObject({
+        status: 404,
+        message: 'Not found',
+      });
     });
 
-    it('берёт status из тела Axios-ошибки и fallback message', async () => {
+    it('выбрасывает status из тела Axios-ошибки и fallback message', async () => {
       mockedAxios.isAxiosError.mockReturnValue(true);
       mockedAxios.mockRejectedValueOnce({
         message: 'Network Error',
         response: { data: { status: 418, message: 123 } },
       });
 
-      const result = await resolver.request<{
-        status: number;
-        message: string;
-      }>({
-        url: 'teapot',
-        method: 'GET',
-      });
-
-      expect(result).toEqual({ status: 418, message: 'Network Error' });
+      await expect(
+        resolver.request({ url: 'teapot', method: 'GET' }),
+      ).rejects.toMatchObject({ status: 418, message: 'Network Error' });
     });
 
-    it('возвращает неизвестную ошибку, если ошибка не от Axios', async () => {
+    it('выбрасывает неизвестную ошибку, если ошибка не от Axios', async () => {
       mockedAxios.isAxiosError.mockReturnValue(false);
       mockedAxios.mockRejectedValueOnce(new Error('Unexpected failure'));
 
-      const result = await resolver.request<{
-        status: number;
-        message: string;
-      }>({
-        url: 'profile',
-        method: 'GET',
-      });
-
-      expect(result).toEqual({ status: 500, message: 'Неизвестная ошибка' });
+      await expect(
+        resolver.request({ url: 'profile', method: 'GET' }),
+      ).rejects.toMatchObject({ status: 500, message: 'Неизвестная ошибка' });
     });
   });
 
