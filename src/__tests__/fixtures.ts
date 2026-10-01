@@ -1,4 +1,5 @@
 import type { Semester } from '@/api/semesters/Semester.dto.ts';
+import type { CourseLabs } from '@/api/labs/CourseLabs.dto.ts';
 import type { User } from '@/api/users/User.dto.ts';
 
 // тестовые данные. не зависят от src/mocks/
@@ -48,3 +49,49 @@ export const semestersFixture: Semester[] = [
     ],
   },
 ];
+
+export const courseLabsFixture: CourseLabs = {
+  course: {
+    id: 11,
+    title: 'Курс А',
+    teacher: 'Преподаватель А',
+    completedLabs: 1,
+    totalLabs: 3,
+  },
+  activeLab: {
+    id: 2,
+    number: 2,
+    title: 'Работа Б полностью',
+    deadline: '2026-10-15T23:59:00+03:00',
+    variant: 42,
+  },
+  labs: [
+    {
+      id: 1,
+      number: 1,
+      title: 'Работа А',
+      status: 'submitted',
+      deadline: '2026-10-05T23:59:00+03:00',
+      grade: 4.2,
+      submittedAt: '2026-10-12T18:30:00+03:00',
+    },
+    {
+      id: 2,
+      number: 2,
+      title: 'Работа Б',
+      status: 'not-submitted',
+      deadline: '2026-10-15T23:59:00+03:00',
+      grade: null,
+      submittedAt: null,
+    },
+    {
+      id: 3,
+      number: 3,
+      title: 'Работа В',
+      status: 'locked',
+      deadline: '2026-10-29T23:59:00+03:00',
+      grade: null,
+      submittedAt: null,
+    },
+  ],
+};
