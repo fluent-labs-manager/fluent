@@ -6,7 +6,7 @@ import type { Lab } from '@/api/labs/Lab.dto.ts';
 import type { DeadlineState } from '@/types/DeadlineState.ts';
 import { formatDayMonth } from '@/utils/DateFormatter.ts';
 import { getDeadlineState } from '@/utils/DeadlineState.ts';
-import { formatLabGrade } from '@/utils/GradeFormatter.ts';
+import { formatGrade } from '@/utils/GradeFormatter.ts';
 
 const props = defineProps<{
   lab: Lab;
@@ -25,7 +25,7 @@ const details = computed<string>(() => {
   const { lab } = props;
 
   if (lab.status === 'submitted') {
-    return `Оценка ${formatLabGrade(lab.grade)} · сдано ${formatDayMonth(lab.submittedAt)}`;
+    return `Оценка ${formatGrade(lab.grade, 1)} · сдано ${formatDayMonth(lab.submittedAt)}`;
   }
 
   if (lab.status === 'pending-review') {
