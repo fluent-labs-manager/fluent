@@ -22,6 +22,15 @@ const completedLabs = computed<number>(
   () => labs.value.filter((lab) => lab.status === 'submitted').length,
 );
 
+// номер ближайшей работы списка с меньшим номером: номера могут идти с пропусками
+function getPreviousLabNumber(lab: Lab): number | null {
+  const previousNumbers = labs.value
+    .map((item) => item.number)
+    .filter((number) => number < lab.number);
+
+  return previousNumbers.length > 0 ? Math.max(...previousNumbers) : null;
+}
+
 function retry(): void {
   void reload();
 }
@@ -146,7 +155,10 @@ function openTask(): void {
               v-for="lab in labs"
               :key="lab.id"
             >
-              <LabListItem :lab="lab" />
+              <LabListItem
+                :lab="lab"
+                :previous-lab-number="getPreviousLabNumber(lab)"
+              />
             </li>
           </ul>
         </section>

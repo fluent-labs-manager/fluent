@@ -4,6 +4,8 @@ import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils';
 import CourseLabsViewingPage from '@/views/CourseLabsViewingPage.vue';
 import { getCourseLabsStub } from '@/api/labs/LabsApi.ts';
 import type { CourseLabs } from '@/api/labs/CourseLabs.dto.ts';
+import type { Lab } from '@/api/labs/Lab.dto.ts';
+import type { LabStatus } from '@/types/LabStatus.ts';
 import { ApiRequestError } from '@/utils/ApiResolver.ts';
 import { courseLabsFixture } from '../fixtures.ts';
 
@@ -27,6 +29,18 @@ function createPendingRequest(): PendingRequest {
   });
 
   return { promise, resolve, reject };
+}
+
+function createLab(number: number, status: LabStatus): Lab {
+  return {
+    id: number,
+    number,
+    title: `Работа ${String(number)}`,
+    status,
+    deadline: '2026-10-15T23:59:00+03:00',
+    grade: null,
+    submittedAt: null,
+  };
 }
 
 function createCourseLabs(id: number, title: string): CourseLabs {
@@ -172,6 +186,36 @@ describe('CourseLabsViewingPage', () => {
       expect(
         items.map((item) => item.find('.lab-status-badge').text()),
       ).toEqual(['Сдано', 'Не сдано', 'Заблокировано']);
+    });
+
+    it('для недоступной работы называет ближайшую предыдущую из списка', async () => {
+      // работы №3 нет, список не отсортирован
+      mockedGetCourseLabs.mockResolvedValue({
+        ...structuredClone(courseLabsFixture),
+        labs: [
+          createLab(4, 'locked'),
+          createLab(1, 'submitted'),
+          createLab(2, 'not-submitted'),
+        ],
+      });
+      const wrapper = await mountPage();
+
+      expect(
+        wrapper.find('.lab-list-item .lab-list-item__details').text(),
+      ).toBe('Откроется после лабораторной №2');
+    });
+
+    it('для самой ранней недоступной работы пишет «Пока недоступна»', async () => {
+      // работы №1 нет, недоступная работа — самая ранняя в списке
+      mockedGetCourseLabs.mockResolvedValue({
+        ...structuredClone(courseLabsFixture),
+        labs: [createLab(2, 'locked'), createLab(3, 'not-submitted')],
+      });
+      const wrapper = await mountPage();
+
+      expect(
+        wrapper.find('.lab-list-item .lab-list-item__details').text(),
+      ).toBe('Пока недоступна');
     });
 
     it('без активной работы показывает «Активных работ нет»', async () => {

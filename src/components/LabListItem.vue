@@ -8,10 +8,12 @@ import { formatLabGrade } from '@/utils/GradeFormatter.ts';
 
 const props = defineProps<{
   lab: Lab;
+  // null, если в списке нет работы с меньшим номером
+  previousLabNumber: number | null;
 }>();
 
 const details = computed<string>(() => {
-  const { status, grade, submittedAt, deadline, number } = props.lab;
+  const { status, grade, submittedAt, deadline } = props.lab;
 
   if (status === 'submitted') {
     const parts: string[] = [];
@@ -25,8 +27,8 @@ const details = computed<string>(() => {
   }
 
   if (status === 'locked') {
-    return number > 1
-      ? `Откроется после лабораторной №${String(number - 1)}`
+    return props.previousLabNumber !== null
+      ? `Откроется после лабораторной №${String(props.previousLabNumber)}`
       : 'Пока недоступна';
   }
 
