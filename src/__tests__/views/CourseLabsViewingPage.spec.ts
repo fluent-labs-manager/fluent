@@ -7,6 +7,7 @@ import type { CourseLabs } from '@/api/labs/CourseLabs.dto.ts';
 import type { Lab } from '@/api/labs/Lab.dto.ts';
 import type { LabStatus } from '@/types/LabStatus.ts';
 import { ApiRequestError } from '@/utils/ApiResolver.ts';
+import { toIsoDateTime } from '@/utils/IsoDateTime.ts';
 import { courseLabsFixture } from '../fixtures.ts';
 
 vi.mock('@/api/labs/LabsApi.ts', () => ({ getCourseLabsStub: vi.fn() }));
@@ -37,7 +38,7 @@ function createLab(number: number, status: LabStatus): Lab {
     number,
     title: `Работа ${String(number)}`,
     status,
-    deadline: '2026-10-15T23:59:00+03:00',
+    deadline: toIsoDateTime('2026-10-15T23:59:00+03:00'),
     grade: null,
     submittedAt: null,
   };

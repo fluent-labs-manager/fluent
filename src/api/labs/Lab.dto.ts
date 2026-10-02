@@ -1,3 +1,4 @@
+import type { IsoDateTime } from '@/types/IsoDateTime.ts';
 import type { LabStatus } from '@/types/LabStatus.ts';
 
 export interface Lab {
@@ -5,8 +6,7 @@ export interface Lab {
   number: number;
   title: string;
   status: LabStatus;
-  // даты в формате ISO 8601
-  deadline: string;
+  deadline: IsoDateTime;
   grade: number | null;
-  submittedAt: string | null;
+  submittedAt: IsoDateTime | null;
 }

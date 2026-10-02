@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { getDeadlineState } from '@/utils/DeadlineState.ts';
+import { toIsoDateTime } from '@/utils/IsoDateTime.ts';
 
-const deadline = '2026-10-15T23:59:00+03:00';
+const deadline = toIsoDateTime('2026-10-15T23:59:00+03:00');
 
 describe('getDeadlineState', () => {
   it('за три и более суток до срока возвращает normal', () => {
@@ -35,14 +36,18 @@ describe('getDeadlineState', () => {
     // 20:59 по UTC — это 23:59 по Москве
     expect(
       getDeadlineState(
-        '2026-10-15T20:59:00Z',
+        toIsoDateTime('2026-10-15T20:59:00Z'),
         new Date('2026-10-15T23:59:01+03:00'),
       ),
     ).toBe('overdue');
   });
 
   it('по умолчанию сравнивает с текущим временем', () => {
-    expect(getDeadlineState('2000-01-01T00:00:00Z')).toBe('overdue');
-    expect(getDeadlineState('2999-01-01T00:00:00Z')).toBe('normal');
+    expect(getDeadlineState(toIsoDateTime('2000-01-01T00:00:00Z'))).toBe(
+      'overdue',
+    );
+    expect(getDeadlineState(toIsoDateTime('2999-01-01T00:00:00Z'))).toBe(
+      'normal',
+    );
   });
 });

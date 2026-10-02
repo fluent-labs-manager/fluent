@@ -1,3 +1,5 @@
+import type { IsoDateTime } from '@/types/IsoDateTime.ts';
+
 // сроки задаются по времени университета, а не по часовому поясу браузера
 const TIME_ZONE = 'Europe/Moscow';
 
@@ -14,12 +16,12 @@ const timeFormatter = new Intl.DateTimeFormat('ru-RU', {
 });
 
 // «15 октября»
-export function formatDayMonth(isoDate: string): string {
+export function formatDayMonth(isoDate: IsoDateTime): string {
   return dayMonthFormatter.format(new Date(isoDate));
 }
 
 // «15 октября, 23:59»
-export function formatDateTime(isoDate: string): string {
+export function formatDateTime(isoDate: IsoDateTime): string {
   const date = new Date(isoDate);
   return `${dayMonthFormatter.format(date)}, ${timeFormatter.format(date)}`;
 }
