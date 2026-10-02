@@ -3,12 +3,38 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils';
 import CourseLabsViewingPage from '@/views/CourseLabsViewingPage.vue';
 import { getCourseLabsStub } from '@/api/labs/LabsApi.ts';
+import type { CourseLabs } from '@/api/labs/CourseLabs.dto.ts';
 import { ApiRequestError } from '@/utils/ApiResolver.ts';
 import { courseLabsFixture } from '../fixtures.ts';
 
 vi.mock('@/api/labs/LabsApi.ts', () => ({ getCourseLabsStub: vi.fn() }));
 
 const mockedGetCourseLabs = vi.mocked(getCourseLabsStub);
+
+interface PendingRequest {
+  promise: Promise<CourseLabs>;
+  resolve: (data: CourseLabs) => void;
+  reject: (error: unknown) => void;
+}
+
+// запрос, который завершается вручную: так задаётся порядок ответов
+function createPendingRequest(): PendingRequest {
+  let resolve: PendingRequest['resolve'] = () => undefined;
+  let reject: PendingRequest['reject'] = () => undefined;
+  const promise = new Promise<CourseLabs>((onResolve, onReject) => {
+    resolve = onResolve;
+    reject = onReject;
+  });
+
+  return { promise, resolve, reject };
+}
+
+function createCourseLabs(id: number, title: string): CourseLabs {
+  const data = structuredClone(courseLabsFixture);
+  data.course = { ...data.course, id, title };
+
+  return data;
+}
 
 async function mountPage(courseId = 11): Promise<ReturnType<typeof mount>> {
   const wrapper = mount(CourseLabsViewingPage, {
@@ -190,6 +216,73 @@ describe('CourseLabsViewingPage', () => {
 
       expect(mockedGetCourseLabs).toHaveBeenCalledTimes(1);
       expect(wrapper.html()).toBe(html);
+    });
+  });
+
+  // ответ на запрос прежней дисциплины не должен перезаписать новую
+  describe('смена дисциплины', () => {
+    let oldRequest: PendingRequest;
+    let newRequest: PendingRequest;
+
+    async function switchCourse(): Promise<ReturnType<typeof mount>> {
+      oldRequest = createPendingRequest();
+      newRequest = createPendingRequest();
+      mockedGetCourseLabs
+        .mockReturnValueOnce(oldRequest.promise)
+        .mockReturnValueOnce(newRequest.promise);
+
+      const wrapper = await mountPage(11);
+      await wrapper.setProps({ courseId: 12 });
+
+      return wrapper;
+    }
+
+    it('запрашивает лабораторные новой дисциплины', async () => {
+      await switchCourse();
+
+      expect(mockedGetCourseLabs).toHaveBeenNthCalledWith(1, 11);
+      expect(mockedGetCourseLabs).toHaveBeenNthCalledWith(2, 12);
+    });
+
+    it('показывает новую дисциплину, даже если ответ для прежней пришёл позже', async () => {
+      const wrapper = await switchCourse();
+
+      newRequest.resolve(createCourseLabs(12, 'Курс Б'));
+      await flushPromises();
+      oldRequest.resolve(createCourseLabs(11, 'Курс А'));
+      await flushPromises();
+
+      expect(wrapper.find('h1').text()).toBe('Курс Б');
+      expect(wrapper.find('[role="status"]').exists()).toBe(false);
+    });
+
+    it('не завершает загрузку ответом для прежней дисциплины', async () => {
+      const wrapper = await switchCourse();
+
+      oldRequest.resolve(createCourseLabs(11, 'Курс А'));
+      await flushPromises();
+
+      expect(wrapper.find('[role="status"]').text()).toBe(
+        'Загрузка лабораторных работ…',
+      );
+      expect(wrapper.find('h1').exists()).toBe(false);
+
+      newRequest.resolve(createCourseLabs(12, 'Курс Б'));
+      await flushPromises();
+
+      expect(wrapper.find('h1').text()).toBe('Курс Б');
+    });
+
+    it('не показывает ошибку запроса для прежней дисциплины', async () => {
+      const wrapper = await switchCourse();
+
+      newRequest.resolve(createCourseLabs(12, 'Курс Б'));
+      await flushPromises();
+      oldRequest.reject(new ApiRequestError(503, 'Сервис временно недоступен'));
+      await flushPromises();
+
+      expect(wrapper.find('[role="alert"]').exists()).toBe(false);
+      expect(wrapper.find('h1').text()).toBe('Курс Б');
     });
   });
 });

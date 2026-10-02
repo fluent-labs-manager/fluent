@@ -19,20 +19,33 @@ export function useCourseLabs(
   const isLoading = ref<boolean>(true);
   const error = ref<string | null>(null);
 
+  // номер последнего запроса: ответ на устаревший запрос не перезапишет данные
+  let lastRequestId = 0;
+
   async function reload(): Promise<void> {
+    lastRequestId += 1;
+    const requestId = lastRequestId;
     isLoading.value = true;
     error.value = null;
+
+    let data: CourseLabs | null = null;
+    let message: string | null = null;
     try {
-      courseLabs.value = await getCourseLabsStub(toValue(courseId));
+      data = await getCourseLabsStub(toValue(courseId));
     } catch (loadError: unknown) {
       // TODO: обработать 401 — отправить пользователя на вход через ITMO ID.
-      error.value =
+      message =
         loadError instanceof ApiRequestError
           ? loadError.message
           : 'Не удалось загрузить лабораторные работы';
-    } finally {
-      isLoading.value = false;
     }
+
+    if (requestId !== lastRequestId) {
+      return;
+    }
+    courseLabs.value = data;
+    error.value = message;
+    isLoading.value = false;
   }
 
   // страница не пересоздаётся при переходе между дисциплинами, поэтому
