@@ -222,12 +222,13 @@ function openTask(): void {
 .course-labs-page__progress {
   flex-shrink: 0;
   margin-left: auto;
-  padding: 4px 10px;
-  border-radius: 999px;
+  padding: 0.25em 0.75em;
+  border-radius: 1em;
   background-color: var(--color-success-surface);
   color: var(--color-success);
   font-size: var(--font-size-xs);
   font-weight: 700;
+  line-height: 1.2;
   text-transform: uppercase;
   white-space: nowrap;
 }
