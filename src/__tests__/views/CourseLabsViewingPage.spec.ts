@@ -185,7 +185,7 @@ describe('CourseLabsViewingPage', () => {
       ]);
       expect(
         items.map((item) => item.find('.lab-status-badge').text()),
-      ).toEqual(['Сдано', 'Не сдано', 'Заблокировано']);
+      ).toEqual(['Сдано', 'Не сдано', 'Недоступно']);
     });
 
     it('для недоступной работы называет ближайшую предыдущую из списка', async () => {

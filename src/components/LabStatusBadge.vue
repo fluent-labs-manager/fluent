@@ -10,7 +10,7 @@ const props = defineProps<{
 const labels: Record<LabStatus, string> = {
   submitted: 'Сдано',
   'not-submitted': 'Не сдано',
-  locked: 'Заблокировано',
+  locked: 'Недоступно',
 };
 
 const label = computed<string>(() => labels[props.status]);
