@@ -40,6 +40,8 @@
   /* бейджи статусов: фон и текст */
   --color-success-surface: #dfe8da;
   --color-success-text: #476b47;
+  --color-review-surface: #f5e9cf;
+  --color-review: #805a1a;
   --color-error-surface: #f2dcd6;
   --color-locked-surface: #e2e2ec;
   --color-locked: #4f5570;

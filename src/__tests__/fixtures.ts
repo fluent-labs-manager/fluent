@@ -82,8 +82,6 @@ export const courseLabsFixture: CourseLabs = {
       title: 'Работа Б',
       status: 'not-submitted',
       deadline: toIsoDateTime('2026-10-15T23:59:00+03:00'),
-      grade: null,
-      submittedAt: null,
     },
     {
       id: 3,
@@ -91,8 +89,6 @@ export const courseLabsFixture: CourseLabs = {
       title: 'Работа В',
       status: 'locked',
       deadline: toIsoDateTime('2026-10-29T23:59:00+03:00'),
-      grade: null,
-      submittedAt: null,
     },
   ],
 };

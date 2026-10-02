@@ -22,28 +22,25 @@ const deadlineState = computed<DeadlineState | null>(() =>
 );
 
 const details = computed<string>(() => {
-  const { status, grade, submittedAt, deadline } = props.lab;
+  const { lab } = props;
 
-  if (status === 'submitted') {
-    const parts: string[] = [];
-    if (grade !== null) {
-      parts.push(`Оценка ${formatLabGrade(grade)}`);
-    }
-    if (submittedAt !== null) {
-      parts.push(`сдано ${formatDayMonth(submittedAt)}`);
-    }
-    return parts.length > 0 ? parts.join(' · ') : 'Сдано';
+  if (lab.status === 'submitted') {
+    return `Оценка ${formatLabGrade(lab.grade)} · сдано ${formatDayMonth(lab.submittedAt)}`;
   }
 
-  if (status === 'locked') {
+  if (lab.status === 'pending-review') {
+    return `Сдано ${formatDayMonth(lab.submittedAt)} · ждёт оценки`;
+  }
+
+  if (lab.status === 'locked') {
     return props.previousLabNumber !== null
       ? `Откроется после лабораторной №${String(props.previousLabNumber)}`
       : 'Пока недоступна';
   }
 
   return deadlineState.value === 'overdue'
-    ? `Срок истёк ${formatDayMonth(deadline)}`
-    : `Дедлайн ${formatDayMonth(deadline)}`;
+    ? `Срок истёк ${formatDayMonth(lab.deadline)}`
+    : `Дедлайн ${formatDayMonth(lab.deadline)}`;
 });
 </script>
 

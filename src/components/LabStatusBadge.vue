@@ -9,6 +9,7 @@ const props = defineProps<{
 
 const labels: Record<LabStatus, string> = {
   submitted: 'Сдано',
+  'pending-review': 'На проверке',
   'not-submitted': 'Не сдано',
   locked: 'Недоступно',
 };
@@ -40,6 +41,11 @@ const label = computed<string>(() => labels[props.status]);
 .lab-status-badge--submitted {
   background-color: var(--color-success-surface);
   color: var(--color-success-text);
+}
+
+.lab-status-badge--pending-review {
+  background-color: var(--color-review-surface);
+  color: var(--color-review);
 }
 
 .lab-status-badge--not-submitted {

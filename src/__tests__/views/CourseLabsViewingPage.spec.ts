@@ -5,7 +5,6 @@ import CourseLabsViewingPage from '@/views/CourseLabsViewingPage.vue';
 import { getCourseLabsStub } from '@/api/labs/LabsApi.ts';
 import type { CourseLabs } from '@/api/labs/CourseLabs.dto.ts';
 import type { Lab } from '@/api/labs/Lab.dto.ts';
-import type { LabStatus } from '@/types/LabStatus.ts';
 import { ApiRequestError } from '@/utils/ApiResolver.ts';
 import { toIsoDateTime } from '@/utils/IsoDateTime.ts';
 import { courseLabsFixture } from '../fixtures.ts';
@@ -32,15 +31,14 @@ function createPendingRequest(): PendingRequest {
   return { promise, resolve, reject };
 }
 
-function createLab(number: number, status: LabStatus): Lab {
+// работа без оценки и даты сдачи: для проверки подписей по номерам
+function createLab(number: number, status: 'not-submitted' | 'locked'): Lab {
   return {
     id: number,
     number,
     title: `Работа ${String(number)}`,
     status,
     deadline: toIsoDateTime('2026-10-15T23:59:00+03:00'),
-    grade: null,
-    submittedAt: null,
   };
 }
 
@@ -207,7 +205,7 @@ describe('CourseLabsViewingPage', () => {
         ...structuredClone(courseLabsFixture),
         labs: [
           createLab(4, 'locked'),
-          createLab(1, 'submitted'),
+          createLab(1, 'not-submitted'),
           createLab(2, 'not-submitted'),
         ],
       });
@@ -229,6 +227,32 @@ describe('CourseLabsViewingPage', () => {
       expect(
         wrapper.find('.lab-list-item .lab-list-item__details').text(),
       ).toBe('Пока недоступна');
+    });
+
+    it('работу на проверке показывает отдельно и не считает выполненной', async () => {
+      const data = structuredClone(courseLabsFixture);
+      data.labs = data.labs.map((lab) =>
+        lab.status === 'not-submitted'
+          ? {
+              ...lab,
+              status: 'pending-review',
+              submittedAt: toIsoDateTime('2026-10-14T18:30:00+03:00'),
+            }
+          : lab,
+      );
+      mockedGetCourseLabs.mockResolvedValue(data);
+      const wrapper = await mountPage();
+      const items = wrapper.findAll('.lab-list-item');
+
+      expect(
+        items.map((item) => item.find('.lab-status-badge').text()),
+      ).toEqual(['Сдано', 'На проверке', 'Недоступно']);
+      expect(items[1]?.find('.lab-list-item__details').text()).toBe(
+        'Сдано 14 октября · ждёт оценки',
+      );
+      expect(wrapper.find('.course-labs-page__progress').text()).toBe(
+        '1 из 3 выполнено',
+      );
     });
 
     it('без активной работы показывает «Активных работ нет»', async () => {
