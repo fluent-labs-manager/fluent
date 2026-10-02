@@ -72,8 +72,8 @@ describe('CourseLabsViewingPage', () => {
       );
       const wrapper = await mountPage();
 
-      expect(wrapper.find('[role="alert"]').text()).toContain(
-        'Сервис временно недоступен',
+      expect(wrapper.find('[role="alert"] span').text()).toBe(
+        'Не удалось загрузить лабораторные работы: Сервис временно недоступен',
       );
       expect(
         wrapper.find('.course-labs-page__retry').attributes('aria-label'),
@@ -94,12 +94,12 @@ describe('CourseLabsViewingPage', () => {
       expect(wrapper.findAll('.lab-list-item')).toHaveLength(3);
     });
 
-    it('для ошибки не из ApiResolver показывает общее сообщение', async () => {
+    it('для ошибки не из ApiResolver показывает общее сообщение без повтора', async () => {
       mockedGetCourseLabs.mockRejectedValue(new Error('boom'));
       const wrapper = await mountPage();
 
-      expect(wrapper.find('[role="alert"]').text()).toContain(
-        'Не удалось загрузить лабораторные работы',
+      expect(wrapper.find('[role="alert"] span').text()).toBe(
+        'Не удалось загрузить лабораторные работы: Неизвестная ошибка',
       );
     });
 
