@@ -29,6 +29,7 @@
 | `--color-success`         | Положительный статус (процент выполнения)      |
 | `--color-error`           | Ошибки, срок сдачи, бейдж «Не сдано»           |
 | `--color-success-surface` | Фон бейджей «Сдано» и «1 из 3 выполнено»       |
+| `--color-success-text`    | Текст на фоне `--color-success-surface`        |
 | `--color-error-surface`   | Фон бейджа «Не сдано»                          |
 | `--color-locked-surface`  | Фон бейджа «Недоступно»                        |
 | `--color-locked`          | Текст бейджа «Недоступно»                      |

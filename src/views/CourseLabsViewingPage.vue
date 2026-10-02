@@ -225,7 +225,7 @@ function openTask(): void {
   padding: 0.25em 0.75em;
   border-radius: 1em;
   background-color: var(--color-success-surface);
-  color: var(--color-success);
+  color: var(--color-success-text);
   font-size: var(--font-size-xs);
   font-weight: 700;
   line-height: 1.2;

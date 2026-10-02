@@ -39,7 +39,7 @@ const label = computed<string>(() => labels[props.status]);
 
 .lab-status-badge--submitted {
   background-color: var(--color-success-surface);
-  color: var(--color-accent);
+  color: var(--color-success-text);
 }
 
 .lab-status-badge--not-submitted {
