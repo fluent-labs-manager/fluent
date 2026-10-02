@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils';
 import CourseLabsViewingPage from '@/views/CourseLabsViewingPage.vue';
@@ -62,10 +62,22 @@ async function mountPage(courseId = 11): Promise<ReturnType<typeof mount>> {
   return wrapper;
 }
 
+// подменяем только дату: таймеры нужны flushPromises
+function setNow(date: string): void {
+  vi.setSystemTime(new Date(date));
+}
+
 describe('CourseLabsViewingPage', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mockedGetCourseLabs.mockResolvedValue(structuredClone(courseLabsFixture));
+    vi.useFakeTimers({ toFake: ['Date'] });
+    // срок активной работы в фикстуре — 15 октября, 23:59
+    setNow('2026-10-02T12:00:00+03:00');
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   // загрузка, ошибка, пустой список
@@ -260,6 +272,68 @@ describe('CourseLabsViewingPage', () => {
 
       expect(mockedGetCourseLabs).toHaveBeenCalledTimes(1);
       expect(wrapper.html()).toBe(html);
+    });
+  });
+
+  describe('срок сдачи', () => {
+    it('за три и более суток до срока показывает его обычным цветом', async () => {
+      const wrapper = await mountPage();
+      const deadline = wrapper.find('.active-lab-card__deadline');
+
+      expect(deadline.text()).toBe('До 15 октября, 23:59');
+      expect(deadline.classes()).not.toContain(
+        'active-lab-card__deadline--urgent',
+      );
+    });
+
+    it('меньше чем за трое суток до срока выделяет его', async () => {
+      setNow('2026-10-14T10:00:00+03:00');
+      const wrapper = await mountPage();
+      const deadline = wrapper.find('.active-lab-card__deadline');
+
+      expect(deadline.text()).toBe('До 15 октября, 23:59');
+      expect(deadline.classes()).toContain('active-lab-card__deadline--urgent');
+    });
+
+    it('после срока пишет «Срок истёк» и выделяет его', async () => {
+      setNow('2026-10-16T09:00:00+03:00');
+      const wrapper = await mountPage();
+      const deadline = wrapper.find('.active-lab-card__deadline');
+
+      expect(deadline.text()).toBe('Срок истёк 15 октября, 23:59');
+      expect(deadline.classes()).toContain('active-lab-card__deadline--urgent');
+    });
+
+    it('в списке выделяет срок несданной работы, только когда он близко', async () => {
+      const urgentDetails = (wrapper: ReturnType<typeof mount>): string[] =>
+        wrapper
+          .findAll('.lab-list-item__details--urgent')
+          .map((details) => details.text());
+
+      const farWrapper = await mountPage();
+      expect(urgentDetails(farWrapper)).toEqual([]);
+
+      setNow('2026-10-14T10:00:00+03:00');
+      const soonWrapper = await mountPage();
+      expect(urgentDetails(soonWrapper)).toEqual(['Дедлайн 15 октября']);
+    });
+
+    it('в списке у несданной работы после срока пишет «Срок истёк»', async () => {
+      setNow('2026-10-16T09:00:00+03:00');
+      const wrapper = await mountPage();
+
+      expect(
+        wrapper
+          .findAll('.lab-list-item__details')
+          .map((details) => details.text()),
+      ).toEqual([
+        'Оценка 4,2 · сдано 12 октября',
+        'Срок истёк 15 октября',
+        'Откроется после лабораторной №2',
+      ]);
+      expect(
+        wrapper.findAll('.lab-list-item__details--urgent').map((d) => d.text()),
+      ).toEqual(['Срок истёк 15 октября']);
     });
   });
 

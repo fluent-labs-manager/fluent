@@ -2,7 +2,9 @@
 import { computed } from 'vue';
 
 import type { ActiveLab } from '@/api/labs/ActiveLab.dto.ts';
+import type { DeadlineState } from '@/types/DeadlineState.ts';
 import { formatDateTime } from '@/utils/DateFormatter.ts';
+import { getDeadlineState } from '@/utils/DeadlineState.ts';
 
 const props = defineProps<{
   lab: ActiveLab;
@@ -13,9 +15,16 @@ const emit = defineEmits<{
   openTask: [];
 }>();
 
-const deadline = computed<string>(
-  () => `До ${formatDateTime(props.lab.deadline)}`,
+const deadlineState = computed<DeadlineState>(() =>
+  getDeadlineState(props.lab.deadline),
 );
+
+const deadline = computed<string>(() => {
+  const date = formatDateTime(props.lab.deadline);
+  return deadlineState.value === 'overdue'
+    ? `Срок истёк ${date}`
+    : `До ${date}`;
+});
 </script>
 
 <template>
@@ -24,7 +33,14 @@ const deadline = computed<string>(
       <span class="active-lab-card__number">
         Лабораторная работа {{ lab.number }}
       </span>
-      <span class="active-lab-card__deadline">{{ deadline }}</span>
+      <span
+        class="active-lab-card__deadline"
+        :class="{
+          'active-lab-card__deadline--urgent': deadlineState !== 'normal',
+        }"
+      >
+        {{ deadline }}
+      </span>
     </div>
 
     <h3 class="active-lab-card__title">{{ lab.title }}</h3>
@@ -81,9 +97,13 @@ const deadline = computed<string>(
 }
 
 .active-lab-card__deadline {
-  color: var(--color-error);
+  color: var(--color-deadline);
   font-size: var(--font-size-xs);
   font-weight: 700;
+}
+
+.active-lab-card__deadline--urgent {
+  color: var(--color-error);
 }
 
 .active-lab-card__title {

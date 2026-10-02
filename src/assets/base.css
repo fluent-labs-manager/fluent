@@ -35,6 +35,7 @@
   --color-accent: #5d6b4f;
   --color-success: #5f8a5f;
   --color-error: #a14a3b;
+  --color-deadline: #5b6158;
 
   /* бейджи статусов: фон и текст */
   --color-success-surface: #dfe8da;

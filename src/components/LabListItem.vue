@@ -3,7 +3,9 @@ import { computed } from 'vue';
 
 import LabStatusBadge from '@/components/LabStatusBadge.vue';
 import type { Lab } from '@/api/labs/Lab.dto.ts';
+import type { DeadlineState } from '@/types/DeadlineState.ts';
 import { formatDayMonth } from '@/utils/DateFormatter.ts';
+import { getDeadlineState } from '@/utils/DeadlineState.ts';
 import { formatLabGrade } from '@/utils/GradeFormatter.ts';
 
 const props = defineProps<{
@@ -11,6 +13,13 @@ const props = defineProps<{
   // null, если в списке нет работы с меньшим номером
   previousLabNumber: number | null;
 }>();
+
+// срок важен только для несданной работы
+const deadlineState = computed<DeadlineState | null>(() =>
+  props.lab.status === 'not-submitted'
+    ? getDeadlineState(props.lab.deadline)
+    : null,
+);
 
 const details = computed<string>(() => {
   const { status, grade, submittedAt, deadline } = props.lab;
@@ -32,7 +41,9 @@ const details = computed<string>(() => {
       : 'Пока недоступна';
   }
 
-  return `Дедлайн ${formatDayMonth(deadline)}`;
+  return deadlineState.value === 'overdue'
+    ? `Срок истёк ${formatDayMonth(deadline)}`
+    : `Дедлайн ${formatDayMonth(deadline)}`;
 });
 </script>
 
@@ -45,7 +56,15 @@ const details = computed<string>(() => {
       >
         Лаб №{{ lab.number }}: {{ lab.title }}
       </h3>
-      <p class="lab-list-item__details">{{ details }}</p>
+      <p
+        class="lab-list-item__details"
+        :class="{
+          'lab-list-item__details--urgent':
+            deadlineState !== null && deadlineState !== 'normal',
+        }"
+      >
+        {{ details }}
+      </p>
     </div>
 
     <LabStatusBadge :status="lab.status" />
@@ -85,5 +104,9 @@ const details = computed<string>(() => {
   margin: 0;
   color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
+}
+
+.lab-list-item__details--urgent {
+  color: var(--color-error);
 }
 </style>
