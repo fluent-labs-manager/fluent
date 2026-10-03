@@ -58,6 +58,10 @@
   --page-header-gap: 40px;
   --nav-item-height: 48px;
   --font-main: 'SF Pro Display', -apple-system, 'Segoe UI', roboto, sans-serif;
+
+  --radius-sm: 8px;   /* для инпутов */
+  --radius-md: 12px;  /* для кнопок */
+  --radius-lg: 16px;  /* для карточек */
 }
 
 *,
