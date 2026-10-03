@@ -3,8 +3,8 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
-const goToNext = () => {
-  router.push({ name: 'registration-details' });
+const goToNext = (): void => {
+  void router.push({ name: 'registration-details' });
 };
 </script>
 
@@ -21,7 +21,10 @@ const goToNext = () => {
         <h3>Я преподаватель</h3>
       </div>
 
-      <button @click="goToNext" class="submit-btn">
+      <button
+        class="submit-btn"
+        @click="goToNext"
+      >
         Продолжить настройку
       </button>
     </div>
@@ -29,8 +32,32 @@ const goToNext = () => {
 </template>
 
 <style scoped>
-.registration-page { min-height: 100vh; display: flex; justify-content: center; align-items: center; background: var(--color-bg); }
-.auth-card { width: 465px; background: var(--color-surface); padding: 36px; border-radius: 16px; }
-.role-option { border: 1px solid var(--color-border); padding: 16px; margin: 12px 0; border-radius: 8px; }
-.submit-btn { width: 100%; padding: 14px; background: var(--color-accent); color: white; border: none; border-radius: 8px; cursor: pointer; }
+.registration-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--color-bg);
+}
+.auth-card {
+  width: 465px;
+  background: var(--color-surface);
+  padding: 36px;
+  border-radius: 16px;
+}
+.role-option {
+  border: 1px solid var(--color-border);
+  padding: 16px;
+  margin: 12px 0;
+  border-radius: 8px;
+}
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
 </style>
