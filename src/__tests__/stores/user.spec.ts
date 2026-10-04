@@ -43,7 +43,7 @@ describe('useUserStore', () => {
 
     await store.loadUser();
 
-    expect(store.error).toBe('Не удалось загрузить пользователя');
+    expect(store.error).toBe('Неизвестная ошибка');
   });
 
   it('сохраняет текст ошибки и разрешает повторную загрузку', async () => {
