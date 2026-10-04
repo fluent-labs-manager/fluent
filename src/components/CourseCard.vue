@@ -63,11 +63,11 @@ const percent = computed<string>(() =>
 .course-card {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 1rem;
   height: 100%;
-  padding: 22px 20px 20px;
+  padding: 1.375rem 1.25rem 1.25rem;
   border: 1px solid var(--color-border);
-  border-radius: 16px;
+  border-radius: 1rem;
   background-color: var(--color-surface);
   box-shadow: var(--shadow-card);
 }
@@ -75,14 +75,14 @@ const percent = computed<string>(() =>
 .course-card__header {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 1rem;
 }
 
 .course-card__heading {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 /* название всегда в одну строку, длинное обрезается многоточием */
@@ -110,7 +110,7 @@ const percent = computed<string>(() =>
 .course-card__progress {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0.625rem;
   margin-top: auto;
 }
 
@@ -118,7 +118,7 @@ const percent = computed<string>(() =>
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .course-card__label {

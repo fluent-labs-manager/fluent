@@ -45,10 +45,10 @@ const averageGrade = computed<string>(() =>
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
-  padding: 24px 22px;
+  gap: 1rem;
+  padding: 1.5rem 1.375rem;
   border: 1px solid var(--color-border);
-  border-radius: 16px;
+  border-radius: 1rem;
   background-color: var(--color-summary);
   box-shadow: var(--shadow-card);
 }
@@ -56,7 +56,7 @@ const averageGrade = computed<string>(() =>
 .semester-progress__info {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.375rem;
 }
 
 .semester-progress__title {

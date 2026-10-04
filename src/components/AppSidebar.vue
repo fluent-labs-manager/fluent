@@ -73,16 +73,16 @@ const navItems: NavItem[] = [
   display: flex;
   flex-direction: column;
   gap: var(--page-header-gap);
-  width: 296px;
+  width: 18.5rem;
   height: 100vh;
-  padding: var(--page-offset-top) 24px 28px;
+  padding: var(--page-offset-top) 1.5rem 1.75rem;
   border-right: 1px solid var(--color-border);
   background-color: var(--color-sidebar);
 }
 
 /* высота строки совпадает с заголовком страницы, чтобы логотип стоял с ним на одном уровне */
 .app-sidebar__logo {
-  padding-left: 4px;
+  padding-left: 0.25rem;
   font-size: var(--font-size-4xl);
   font-weight: 700;
   line-height: var(--page-title-line-height);
@@ -92,16 +92,16 @@ const navItems: NavItem[] = [
 .app-sidebar__nav {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .app-sidebar__link {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 0.8em;
   height: var(--nav-item-height);
-  padding: 0 16px;
-  border-radius: 12px;
+  padding: 0 1em;
+  border-radius: 0.7em;
   color: var(--color-text-secondary);
   font-size: var(--font-size-xl);
   text-decoration: none;
@@ -125,11 +125,11 @@ const navItems: NavItem[] = [
 .app-sidebar__user {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
   margin-top: auto;
-  padding: 12px 16px 12px 12px;
+  padding: 0.75rem 1rem 0.75rem 0.75rem;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 0.75rem;
   background-color: var(--color-surface);
   color: var(--color-text);
   text-align: left;
@@ -137,8 +137,8 @@ const navItems: NavItem[] = [
 }
 
 .app-sidebar__avatar {
-  width: 40px;
-  height: 40px;
+  width: 2.5rem;
+  height: 2.5rem;
   border: 1px solid var(--color-border);
   border-radius: 50%;
   background-color: var(--color-accent-surface);
@@ -148,7 +148,7 @@ const navItems: NavItem[] = [
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 2px;
+  gap: 0.125rem;
 }
 
 .app-sidebar__user-name {
