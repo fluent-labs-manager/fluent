@@ -255,18 +255,18 @@ function retry(): void {
 }
 
 .courses-page__link {
-  border-radius: 16px;
+  border-radius: 1rem;
   color: inherit;
   text-decoration: none;
   transition: transform 0.2s ease;
 }
 
 .courses-page__link:hover {
-  transform: translateY(-2px);
+  transform: translateY(-0.125rem);
 }
 
 .courses-page__link:focus-visible {
   outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
+  outline-offset: 0.125rem;
 }
 </style>

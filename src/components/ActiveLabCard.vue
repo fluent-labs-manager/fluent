@@ -83,16 +83,16 @@ const deadline = computed<string>(() => {
 .active-lab-card {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 20px;
+  gap: 1rem;
+  padding: 1.25rem;
   border: 1px solid var(--color-border);
-  border-radius: 16px;
+  border-radius: 1rem;
   background-color: var(--color-summary);
   box-shadow: var(--shadow-card);
 }
 
 .active-lab-card--compact {
-  padding: 16px;
+  padding: 1rem;
 }
 
 .active-lab-card__meta {
@@ -100,7 +100,7 @@ const deadline = computed<string>(() => {
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: baseline;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .active-lab-card__number {
@@ -138,10 +138,10 @@ const deadline = computed<string>(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
-  padding: 14px 18px;
+  gap: 1rem;
+  padding: 0.875rem 1.125rem;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 0.75rem;
   background-color: var(--color-surface);
 }
 
@@ -160,15 +160,15 @@ const deadline = computed<string>(() => {
 .active-lab-card__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .active-lab-card__button {
-  min-width: 180px;
-  height: 44px;
-  padding: 0 24px;
+  min-width: 11.25rem;
+  height: 2.75rem;
+  padding: 0 1.7em;
   border: 1px solid var(--color-accent);
-  border-radius: 10px;
+  border-radius: 0.7em;
   font-size: var(--font-size-md);
   font-weight: 700;
   cursor: pointer;
@@ -179,9 +179,9 @@ const deadline = computed<string>(() => {
 }
 
 .active-lab-card--compact .active-lab-card__button {
-  flex: 1 1 120px;
+  flex: 1 1 7.5rem;
   min-width: 0;
-  padding: 0 12px;
+  padding: 0 0.85em;
 }
 
 .active-lab-card__button--primary {

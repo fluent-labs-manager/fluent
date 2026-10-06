@@ -203,18 +203,18 @@ function openTask(): void {
 .course-labs-page {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: var(--page-offset-top) 40px 40px;
+  gap: 1.5rem;
+  padding: var(--page-offset-top) 2.5rem 2.5rem;
 }
 
 .course-labs-page__header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  min-height: 64px;
-  padding: 10px 16px;
+  gap: 1rem;
+  min-height: 4rem;
+  padding: 0.625rem 1rem;
   border: 1px solid var(--color-border);
-  border-radius: 16px;
+  border-radius: 1rem;
   background-color: var(--color-surface);
   box-shadow: var(--shadow-card);
 }
@@ -224,8 +224,8 @@ function openTask(): void {
   flex-shrink: 0;
   justify-content: center;
   align-items: center;
-  width: 32px;
-  height: 32px;
+  width: 2rem;
+  height: 2rem;
   border: 1px solid var(--color-border);
   border-radius: 50%;
   background-color: var(--color-accent-surface);
@@ -268,7 +268,7 @@ function openTask(): void {
 .course-labs-page__status {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 1rem;
   margin: 0;
   color: var(--color-text-secondary);
   font-size: var(--font-size-md);
@@ -283,8 +283,8 @@ function openTask(): void {
   flex-shrink: 0;
   justify-content: center;
   align-items: center;
-  width: 32px;
-  height: 32px;
+  width: 2rem;
+  height: 2rem;
   padding: 0;
   border: 1px solid var(--color-border);
   border-radius: 50%;
@@ -304,7 +304,7 @@ function openTask(): void {
 .course-labs-page__content {
   display: grid;
   align-items: start;
-  gap: 24px;
+  gap: 1.5rem;
   grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
 }
 
@@ -316,7 +316,7 @@ function openTask(): void {
 .course-labs-page__section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .course-labs-page__section-title {
@@ -329,7 +329,7 @@ function openTask(): void {
 .course-labs-page__active-labs {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 1rem;
 }
 
 /* не больше двух столбцов; в узкой колонке карточки встают в один */
@@ -337,14 +337,14 @@ function openTask(): void {
   display: grid;
   grid-template-columns: repeat(
     auto-fit,
-    minmax(max(260px, calc(50% - 8px)), 1fr)
+    minmax(max(16.25rem, calc(50% - 0.5rem)), 1fr)
   );
 }
 
 .course-labs-page__list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0.625rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -352,9 +352,9 @@ function openTask(): void {
 
 .course-labs-page__empty {
   margin: 0;
-  padding: 24px 22px;
+  padding: 1.5rem 1.375rem;
   border: 1px dashed var(--color-border);
-  border-radius: 16px;
+  border-radius: 1rem;
   color: var(--color-text-secondary);
   font-size: var(--font-size-md);
 }

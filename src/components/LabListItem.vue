@@ -76,10 +76,10 @@ const details = computed<string>(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 0.75rem;
   background-color: var(--color-surface);
   box-shadow: var(--shadow-card);
 }
@@ -87,7 +87,7 @@ const details = computed<string>(() => {
 .lab-list-item__info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0.25rem;
   min-width: 0;
 }
 
