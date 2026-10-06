@@ -36,6 +36,19 @@
   --color-success: #5f8a5f;
   --color-error: #a14a3b;
 
+  /* RegistrationRolePage */
+  --color-sidebar-bg: #46563D;
+  --color-sidebar-text: #FFFFFF;
+  --color-page-bg-soft: #EBEFE8;
+  --color-role-border: #C8CDC3;
+  --color-role-border-hover: #A8B0A3;
+  --color-role-selected-bg: #E8EFE8;
+  --color-role-selected-border: #5E6E52;
+  --color-role-check-bg: #5E6E52;
+  --color-btn-primary: #5E6E52;
+  --color-btn-primary-hover: #4E5C44;
+  --color-close-border: #C8CDC3;
+
   /* тени: карточки и «приподнятые» элементы (выбранная вкладка) */
   --shadow-card: 0 2px 6px rgb(28 28 26 / 6%);
   --shadow-raised: 0 1px 3px rgb(28 28 26 / 12%);

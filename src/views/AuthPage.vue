@@ -1,28 +1,50 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { EMAIL_REGEX, PASSWORD_REGEX } from '@/constants/regex';
 
 const router = useRouter();
 const email = ref('');
 const password = ref('');
+const emailError = ref('');
+const passwordError = ref('');
 
 const handleLogin = (): void => {
-  // валидация почты
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  emailError.value = '';
+  passwordError.value = '';
 
-  if (!emailRegex.test(email.value)) {
-    alert('введите корректный email (например, name@university.ru)');
+  if (!email.value) {
+    emailError.value = 'Введите email';
+  } else if (!EMAIL_REGEX.test(email.value)) {
+    emailError.value = 'Введите корректный email (например, name@university.ru)';
+  }
+
+  if (!password.value) {
+    passwordError.value = 'Введите пароль';
+  } else {
+    const errors: string[] = [];
+    if (password.value.length < 8) {
+      errors.push('минимум 8 символов');
+    }
+    if (!/[A-Z]/.test(password.value)) {
+      errors.push('хотя бы одна заглавная буква');
+    }
+    if (!/\d/.test(password.value)) {
+      errors.push('хотя бы одна цифра');
+    }
+
+    if (errors.length > 0) {
+      passwordError.value = 'Пароль должен содержать: ' + errors.join(', ');
+    } else if (!PASSWORD_REGEX.test(password.value)) {
+
+      passwordError.value = 'Пароль должен содержать буквы и цифры';
+    }
+  }
+
+  if (emailError.value || passwordError.value) {
     return;
   }
 
-  // валидация пароля (минимум 8 символов, 1 буква + 1 цифра)
-  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-  if (!passwordRegex.test(password.value)) {
-    alert('пароль должен содержать от 8 символов, включая буквы и цифры');
-    return;
-  }
-
-  // переход на главную
   void router.push({ name: 'home' });
 };
 </script>
@@ -64,9 +86,9 @@ const handleLogin = (): void => {
               v-model="email"
               type="text"
               placeholder="corporate@university.ru"
-              required
             />
           </div>
+          <p v-if="emailError" class="field-error">{{ emailError }}</p>
         </div>
 
         <div class="input-group">
@@ -94,9 +116,10 @@ const handleLogin = (): void => {
               v-model="password"
               type="password"
               placeholder="••••••••••••"
-              required
             />
           </div>
+
+          <p v-if="passwordError" class="field-error">{{ passwordError }}</p>
           <div class="forgot-password">
             <router-link to="/forgot-password">Забыли пароль?</router-link>
           </div>
@@ -202,6 +225,14 @@ input {
 }
 input:focus {
   border-color: var(--color-accent);
+}
+
+
+.field-error {
+  color: var(--color-error);
+  font-size: var(--font-size-xs);
+  margin-top: 4px;
+  margin-bottom: 0;
 }
 
 .forgot-password {
