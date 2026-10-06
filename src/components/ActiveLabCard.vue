@@ -6,11 +6,16 @@ import type { DeadlineState } from '@/types/DeadlineState.ts';
 import { formatDateTime } from '@/utils/DateFormatter.ts';
 import { getDeadlineState } from '@/utils/DeadlineState.ts';
 
-const props = defineProps<{
-  lab: NotSubmittedLab;
-  // текущее время: от него зависит, близок ли срок
-  now: Date;
-}>();
+const props = withDefaults(
+  defineProps<{
+    lab: NotSubmittedLab;
+    // текущее время: от него зависит, близок ли срок
+    now: Date;
+    // уменьшенная карточка для сетки из нескольких активных работ
+    compact?: boolean;
+  }>(),
+  { compact: false },
+);
 
 const emit = defineEmits<{
   openVariant: [];
@@ -30,7 +35,10 @@ const deadline = computed<string>(() => {
 </script>
 
 <template>
-  <article class="active-lab-card">
+  <article
+    class="active-lab-card"
+    :class="{ 'active-lab-card--compact': compact }"
+  >
     <div class="active-lab-card__meta">
       <span class="active-lab-card__number">
         Лабораторная работа {{ lab.number }}
@@ -83,6 +91,10 @@ const deadline = computed<string>(() => {
   box-shadow: var(--shadow-card);
 }
 
+.active-lab-card--compact {
+  padding: 16px;
+}
+
 .active-lab-card__meta {
   display: flex;
   flex-wrap: wrap;
@@ -113,6 +125,13 @@ const deadline = computed<string>(() => {
   font-size: var(--font-size-3xl);
   font-weight: 700;
   line-height: 1.2;
+}
+
+/* название занимает свободное место, поэтому вариант и кнопки соседних
+   карточек стоят на одной линии */
+.active-lab-card--compact .active-lab-card__title {
+  flex-grow: 1;
+  font-size: var(--font-size-2xl);
 }
 
 .active-lab-card__variant {
@@ -157,6 +176,12 @@ const deadline = computed<string>(() => {
     background-color 0.2s ease,
     border-color 0.2s ease,
     color 0.2s ease;
+}
+
+.active-lab-card--compact .active-lab-card__button {
+  flex: 1 1 120px;
+  min-width: 0;
+  padding: 0 12px;
 }
 
 .active-lab-card__button--primary {

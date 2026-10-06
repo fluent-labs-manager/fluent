@@ -313,6 +313,92 @@ describe('CourseLabsViewingPage', () => {
     });
   });
 
+  // одна или две работы идут столбиком, три и больше — сеткой в два столбца
+  describe('раскладка активных работ', () => {
+    async function mountWithActiveLabs(
+      count: number,
+    ): Promise<ReturnType<typeof mount>> {
+      mockedGetCourseLabs.mockResolvedValue({
+        ...structuredClone(courseLabsFixture),
+        labs: [
+          createLab(10, LabStatus.Locked),
+          ...Array.from({ length: count }, (_, index) =>
+            createLab(index + 1, LabStatus.NotSubmitted),
+          ),
+        ],
+      });
+
+      return mountPage();
+    }
+
+    function isGrid(wrapper: ReturnType<typeof mount>): boolean {
+      return wrapper
+        .find('.course-labs-page__active-labs')
+        .classes()
+        .includes('course-labs-page__active-labs--grid');
+    }
+
+    function isWide(wrapper: ReturnType<typeof mount>): boolean {
+      return wrapper
+        .find('.course-labs-page__content')
+        .classes()
+        .includes('course-labs-page__content--wide');
+    }
+
+    it('одну работу показывает одной карточкой под заголовком «Активная работа»', async () => {
+      const wrapper = await mountWithActiveLabs(1);
+
+      expect(wrapper.find('#active-lab-heading').text()).toBe(
+        'Активная работа',
+      );
+      expect(wrapper.findAll('.active-lab-card')).toHaveLength(1);
+      expect(wrapper.find('.active-lab-card--compact').exists()).toBe(false);
+      expect(isGrid(wrapper)).toBe(false);
+      expect(isWide(wrapper)).toBe(false);
+    });
+
+    it('две работы показывает столбиком под заголовком «Активные работы»', async () => {
+      const wrapper = await mountWithActiveLabs(2);
+
+      expect(wrapper.find('#active-lab-heading').text()).toBe(
+        'Активные работы',
+      );
+      expect(wrapper.findAll('.active-lab-card')).toHaveLength(2);
+      expect(wrapper.find('.active-lab-card--compact').exists()).toBe(false);
+      expect(isGrid(wrapper)).toBe(false);
+      expect(isWide(wrapper)).toBe(false);
+    });
+
+    it.each([3, 4, 5])(
+      '%i работы показывает сеткой из компактных карточек',
+      async (count) => {
+        const wrapper = await mountWithActiveLabs(count);
+
+        expect(wrapper.find('#active-lab-heading').text()).toBe(
+          'Активные работы',
+        );
+        expect(wrapper.findAll('.active-lab-card')).toHaveLength(count);
+        expect(wrapper.findAll('.active-lab-card--compact')).toHaveLength(
+          count,
+        );
+        expect(isGrid(wrapper)).toBe(true);
+        expect(isWide(wrapper)).toBe(true);
+      },
+    );
+
+    it('без активных работ оставляет заголовок «Активные работы»', async () => {
+      const wrapper = await mountWithActiveLabs(0);
+
+      expect(wrapper.find('#active-lab-heading').text()).toBe(
+        'Активные работы',
+      );
+      expect(wrapper.find('.course-labs-page__empty').text()).toBe(
+        'Активных работ нет.',
+      );
+      expect(isWide(wrapper)).toBe(false);
+    });
+  });
+
   describe('активная работа', () => {
     it('сразу показывает выданный вариант', async () => {
       const wrapper = await mountPage();

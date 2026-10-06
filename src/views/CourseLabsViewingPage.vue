@@ -30,6 +30,13 @@ const activeLabs = computed<NotSubmittedLab[]>(() =>
     .sort((first, second) => first.number - second.number),
 );
 
+// по макету: одна или две работы идут столбиком, три и больше — сеткой
+const isActiveLabsGrid = computed<boolean>(() => activeLabs.value.length >= 3);
+
+const activeLabsTitle = computed<string>(() =>
+  activeLabs.value.length === 1 ? 'Активная работа' : 'Активные работы',
+);
+
 const completedLabs = computed<number>(
   () => labs.value.filter((lab) => lab.status === LabStatus.Submitted).length,
 );
@@ -127,6 +134,7 @@ function openTask(): void {
       <div
         v-else
         class="course-labs-page__content"
+        :class="{ 'course-labs-page__content--wide': isActiveLabsGrid }"
       >
         <section
           class="course-labs-page__section"
@@ -136,7 +144,7 @@ function openTask(): void {
             id="active-lab-heading"
             class="course-labs-page__section-title"
           >
-            Активная работа
+            {{ activeLabsTitle }}
           </h2>
           <p
             v-if="activeLabs.length === 0"
@@ -147,12 +155,16 @@ function openTask(): void {
           <div
             v-else
             class="course-labs-page__active-labs"
+            :class="{
+              'course-labs-page__active-labs--grid': isActiveLabsGrid,
+            }"
           >
             <ActiveLabCard
               v-for="lab in activeLabs"
               :key="lab.id"
               :lab="lab"
               :now="now"
+              :compact="isActiveLabsGrid"
               @open-variant="openVariant"
               @open-task="openTask"
             />
@@ -296,6 +308,11 @@ function openTask(): void {
   grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
 }
 
+/* сетке активных работ нужна колонка пошире */
+.course-labs-page__content--wide {
+  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr);
+}
+
 .course-labs-page__section {
   display: flex;
   flex-direction: column;
@@ -313,6 +330,15 @@ function openTask(): void {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+/* не больше двух столбцов; в узкой колонке карточки встают в один */
+.course-labs-page__active-labs--grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(max(260px, calc(50% - 8px)), 1fr)
+  );
 }
 
 .course-labs-page__list {
