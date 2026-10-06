@@ -143,8 +143,8 @@ function retry(): void {
 .courses-page {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: var(--page-offset-top) 40px 40px;
+  gap: 1.5rem;
+  padding: var(--page-offset-top) 2.5rem 2.5rem;
 }
 
 .courses-page__header {
@@ -163,18 +163,18 @@ function retry(): void {
 .courses-page__filters {
   display: flex;
   align-self: flex-start;
-  gap: 4px;
+  gap: 0.25rem;
   height: var(--nav-item-height);
-  padding: 4px;
+  padding: 0.25rem;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 0.75rem;
   background-color: var(--color-accent-surface);
 }
 
 .courses-page__filter {
-  padding: 0 16px;
+  padding: 0 1.15em;
   border: none;
-  border-radius: 8px;
+  border-radius: 0.57em;
   background-color: transparent;
   color: var(--color-text-secondary);
   font-size: var(--font-size-md);
@@ -199,7 +199,7 @@ function retry(): void {
 .courses-page__status {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 1rem;
   min-height: var(--nav-item-height);
   margin: 0;
   color: var(--color-text-secondary);
@@ -214,8 +214,8 @@ function retry(): void {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 32px;
-  height: 32px;
+  width: 2rem;
+  height: 2rem;
   padding: 0;
   border: 1px solid var(--color-border);
   border-radius: 50%;
@@ -234,17 +234,17 @@ function retry(): void {
 
 .courses-page__empty {
   margin: 0;
-  padding: 24px 22px;
+  padding: 1.5rem 1.375rem;
   border: 1px dashed var(--color-border);
-  border-radius: 16px;
+  border-radius: 1rem;
   color: var(--color-text-secondary);
   font-size: var(--font-size-md);
 }
 
 .courses-page__list {
   display: grid;
-  gap: 20px;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(18.75rem, 1fr));
   grid-auto-rows: 1fr;
 }
 </style>

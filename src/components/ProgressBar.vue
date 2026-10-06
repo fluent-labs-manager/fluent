@@ -29,15 +29,15 @@ const percent = computed<number>(() => getPercent(props.value, props.max));
 <style scoped>
 .progress-bar {
   width: 100%;
-  height: 8px;
-  border-radius: 4px;
+  height: 0.5rem;
+  border-radius: 0.25rem;
   background-color: var(--color-muted-surface);
   overflow: hidden;
 }
 
 .progress-bar__fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: 0.25rem;
   background-color: var(--color-accent);
   transition: width 0.3s ease;
 }

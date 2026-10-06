@@ -11,8 +11,8 @@
 .home-page {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: var(--page-offset-top) 40px 40px;
+  gap: 1rem;
+  padding: var(--page-offset-top) 2.5rem 2.5rem;
 }
 
 .home-page__title {
