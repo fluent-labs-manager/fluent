@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { nextTick } from 'vue';
 import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils';
 import CourseLabsViewingPage from '@/views/CourseLabsViewingPage.vue';
 import { getCourseLabsStub } from '@/api/labs/LabsApi.ts';
@@ -61,17 +62,25 @@ async function mountPage(courseId = 11): Promise<ReturnType<typeof mount>> {
   return wrapper;
 }
 
-// подменяем только дату: таймеры нужны flushPromises
 function setNow(date: string): void {
   vi.setSystemTime(new Date(date));
+}
+
+// переводит часы и ждёт очередного обновления времени на открытой странице
+async function moveTimeTo(date: string): Promise<void> {
+  setNow(date);
+  vi.advanceTimersByTime(60 * 1000);
+  await nextTick();
 }
 
 describe('CourseLabsViewingPage', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mockedGetCourseLabs.mockResolvedValue(structuredClone(courseLabsFixture));
-    vi.useFakeTimers({ toFake: ['Date'] });
-    // срок активной работы в фикстуре — 15 октября, 23:59
+    // подменяем дату и интервал обновления времени; остальные таймеры нужны
+    // flushPromises
+    vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
+    // срок активной работы в фикстуре - 15 октября, 23:59
     setNow('2026-10-02T12:00:00+03:00');
   });
 
@@ -359,6 +368,36 @@ describe('CourseLabsViewingPage', () => {
       expect(
         wrapper.findAll('.lab-list-item__details--urgent').map((d) => d.text()),
       ).toEqual(['Срок истёк 15 октября']);
+    });
+
+    it('обновляет срок на открытой странице без перезагрузки', async () => {
+      setNow('2026-10-12T12:00:00+03:00');
+      const wrapper = await mountPage();
+      const cardDeadline = wrapper.find('.active-lab-card__deadline');
+      const urgentInList = (): string[] =>
+        wrapper
+          .findAll('.lab-list-item__details--urgent')
+          .map((details) => details.text());
+
+      expect(cardDeadline.classes()).not.toContain(
+        'active-lab-card__deadline--urgent',
+      );
+      expect(urgentInList()).toEqual([]);
+
+      await moveTimeTo('2026-10-13T12:00:00+03:00');
+
+      expect(cardDeadline.text()).toBe('До 15 октября, 23:59');
+      expect(cardDeadline.classes()).toContain(
+        'active-lab-card__deadline--urgent',
+      );
+      expect(urgentInList()).toEqual(['Дедлайн 15 октября']);
+
+      await moveTimeTo('2026-10-16T00:00:00+03:00');
+
+      expect(cardDeadline.text()).toBe('Срок истёк 15 октября, 23:59');
+      expect(urgentInList()).toEqual(['Срок истёк 15 октября']);
+      // страница та же: данные не запрашивались заново
+      expect(mockedGetCourseLabs).toHaveBeenCalledTimes(1);
     });
   });
 

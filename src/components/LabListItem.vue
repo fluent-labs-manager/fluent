@@ -12,12 +12,14 @@ const props = defineProps<{
   lab: Lab;
   // null, если в списке нет работы с меньшим номером
   previousLabNumber: number | null;
+  // текущее время: от него зависит, близок ли срок
+  now: Date;
 }>();
 
 // срок важен только для несданной работы
 const deadlineState = computed<DeadlineState | null>(() =>
   props.lab.status === 'not-submitted'
-    ? getDeadlineState(props.lab.deadline)
+    ? getDeadlineState(props.lab.deadline, props.now)
     : null,
 );
 

@@ -8,6 +8,8 @@ import { getDeadlineState } from '@/utils/DeadlineState.ts';
 
 const props = defineProps<{
   lab: ActiveLab;
+  // текущее время: от него зависит, близок ли срок
+  now: Date;
 }>();
 
 const emit = defineEmits<{
@@ -16,7 +18,7 @@ const emit = defineEmits<{
 }>();
 
 const deadlineState = computed<DeadlineState>(() =>
-  getDeadlineState(props.lab.deadline),
+  getDeadlineState(props.lab.deadline, props.now),
 );
 
 const deadline = computed<string>(() => {

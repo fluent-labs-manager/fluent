@@ -6,6 +6,7 @@ import ActiveLabCard from '@/components/ActiveLabCard.vue';
 import AppIcon from '@/components/AppIcon.vue';
 import LabListItem from '@/components/LabListItem.vue';
 import { useCourseLabs } from '@/composables/useCourseLabs.ts';
+import { useNow } from '@/composables/useNow.ts';
 import type { Lab } from '@/api/labs/Lab.dto.ts';
 
 const props = defineProps<{
@@ -15,6 +16,9 @@ const props = defineProps<{
 const { courseLabs, isLoading, error, reload } = useCourseLabs(
   () => props.courseId,
 );
+
+// срок сдачи сравнивается с этим временем, поэтому меняется без перезагрузки
+const now = useNow();
 
 const labs = computed<Lab[]>(() => courseLabs.value?.labs ?? []);
 
@@ -129,6 +133,7 @@ function openTask(): void {
           <ActiveLabCard
             v-if="courseLabs.activeLab !== null"
             :lab="courseLabs.activeLab"
+            :now="now"
             @open-variant="openVariant"
             @open-task="openTask"
           />
@@ -158,6 +163,7 @@ function openTask(): void {
               <LabListItem
                 :lab="lab"
                 :previous-lab-number="getPreviousLabNumber(lab)"
+                :now="now"
               />
             </li>
           </ul>
