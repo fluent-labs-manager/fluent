@@ -60,13 +60,6 @@ export const courseLabsFixture: CourseLabs = {
     completedLabs: 1,
     totalLabs: 3,
   },
-  activeLab: {
-    id: 2,
-    number: 2,
-    title: 'Работа Б полностью',
-    deadline: toIsoDateTime('2026-10-15T23:59:00+03:00'),
-    variant: 42,
-  },
   labs: [
     {
       id: 1,
@@ -83,6 +76,7 @@ export const courseLabsFixture: CourseLabs = {
       title: 'Работа Б',
       status: LabStatus.NotSubmitted,
       deadline: toIsoDateTime('2026-10-15T23:59:00+03:00'),
+      variant: 42,
     },
     {
       id: 3,

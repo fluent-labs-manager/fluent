@@ -20,9 +20,16 @@ interface PendingReviewLab extends LabBase {
   submittedAt: IsoDateTime;
 }
 
-interface UnsubmittedLab extends LabBase {
-  status: typeof LabStatus.NotSubmitted | typeof LabStatus.Locked;
+// работа, которую можно выполнять сейчас: такие показывает блок активных работ
+export interface NotSubmittedLab extends LabBase {
+  status: typeof LabStatus.NotSubmitted;
+  // на MVP вариант выдан у каждой доступной работы
+  variant: number;
 }
 
-// оценка и дата сдачи есть только у тех статусов, где они имеют смысл
-export type Lab = GradedLab | PendingReviewLab | UnsubmittedLab;
+interface LockedLab extends LabBase {
+  status: typeof LabStatus.Locked;
+}
+
+// оценка, дата сдачи и вариант есть только у тех статусов, где они имеют смысл
+export type Lab = GradedLab | PendingReviewLab | NotSubmittedLab | LockedLab;

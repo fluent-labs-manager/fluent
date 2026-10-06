@@ -7,7 +7,7 @@ import AppIcon from '@/components/AppIcon.vue';
 import LabListItem from '@/components/LabListItem.vue';
 import { useCourseLabs } from '@/composables/useCourseLabs.ts';
 import { useNow } from '@/composables/useNow.ts';
-import type { Lab } from '@/api/labs/Lab.dto.ts';
+import type { Lab, NotSubmittedLab } from '@/api/labs/Lab.dto.ts';
 import { LabStatus } from '@/types/LabStatus.ts';
 
 const props = defineProps<{
@@ -22,6 +22,13 @@ const { courseLabs, isLoading, error, reload } = useCourseLabs(
 const now = useNow();
 
 const labs = computed<Lab[]>(() => courseLabs.value?.labs ?? []);
+
+// активные работы — всё, что можно выполнять сейчас, по порядку номеров
+const activeLabs = computed<NotSubmittedLab[]>(() =>
+  labs.value
+    .filter((lab) => lab.status === LabStatus.NotSubmitted)
+    .sort((first, second) => first.number - second.number),
+);
 
 const completedLabs = computed<number>(
   () => labs.value.filter((lab) => lab.status === LabStatus.Submitted).length,
@@ -131,19 +138,25 @@ function openTask(): void {
           >
             Активная работа
           </h2>
-          <ActiveLabCard
-            v-if="courseLabs.activeLab !== null"
-            :lab="courseLabs.activeLab"
-            :now="now"
-            @open-variant="openVariant"
-            @open-task="openTask"
-          />
           <p
-            v-else
+            v-if="activeLabs.length === 0"
             class="course-labs-page__empty"
           >
             Активных работ нет.
           </p>
+          <div
+            v-else
+            class="course-labs-page__active-labs"
+          >
+            <ActiveLabCard
+              v-for="lab in activeLabs"
+              :key="lab.id"
+              :lab="lab"
+              :now="now"
+              @open-variant="openVariant"
+              @open-task="openTask"
+            />
+          </div>
         </section>
 
         <section
@@ -294,6 +307,12 @@ function openTask(): void {
   font-size: var(--font-size-xs);
   font-weight: 700;
   text-transform: uppercase;
+}
+
+.course-labs-page__active-labs {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .course-labs-page__list {

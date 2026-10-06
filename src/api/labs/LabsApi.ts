@@ -25,11 +25,7 @@ export async function getCourseLabsStub(courseId: number): Promise<CourseLabs> {
     throw new ApiRequestError(404, 'Дисциплина не найдена');
   }
 
-  const labs = mode === 'empty' ? undefined : courseLabs[courseId];
+  const labs = mode === 'empty' ? [] : (courseLabs[courseId] ?? []);
 
-  return structuredClone({
-    course,
-    activeLab: labs?.activeLab ?? null,
-    labs: labs?.labs ?? [],
-  });
+  return structuredClone({ course, labs });
 }

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import type { ActiveLab } from '@/api/labs/ActiveLab.dto.ts';
+import type { NotSubmittedLab } from '@/api/labs/Lab.dto.ts';
 import type { DeadlineState } from '@/types/DeadlineState.ts';
 import { formatDateTime } from '@/utils/DateFormatter.ts';
 import { getDeadlineState } from '@/utils/DeadlineState.ts';
 
 const props = defineProps<{
-  lab: ActiveLab;
+  lab: NotSubmittedLab;
   // текущее время: от него зависит, близок ли срок
   now: Date;
 }>();

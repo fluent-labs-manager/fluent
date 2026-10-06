@@ -33,18 +33,21 @@ function createPendingRequest(): PendingRequest {
   return { promise, resolve, reject };
 }
 
-// работа без оценки и даты сдачи: для проверки подписей по номерам
+// работа без оценки и даты сдачи. У несданной вариант — её номер, умноженный на 10
 function createLab(
   number: number,
   status: typeof LabStatus.NotSubmitted | typeof LabStatus.Locked,
 ): Lab {
-  return {
+  const base = {
     id: number,
     number,
     title: `Работа ${String(number)}`,
-    status,
     deadline: toIsoDateTime('2026-10-15T23:59:00+03:00'),
   };
+
+  return status === LabStatus.NotSubmitted
+    ? { ...base, status, variant: number * 10 }
+    : { ...base, status };
 }
 
 function createCourseLabs(id: number, title: string): CourseLabs {
@@ -144,7 +147,6 @@ describe('CourseLabsViewingPage', () => {
     it('без лабораторных показывает «Лабораторных работ пока нет»', async () => {
       mockedGetCourseLabs.mockResolvedValue({
         ...structuredClone(courseLabsFixture),
-        activeLab: null,
         labs: [],
       });
       const wrapper = await mountPage();
@@ -183,9 +185,7 @@ describe('CourseLabsViewingPage', () => {
       const wrapper = await mountPage();
       const card = wrapper.find('.active-lab-card');
 
-      expect(card.find('.active-lab-card__title').text()).toBe(
-        'Работа Б полностью',
-      );
+      expect(card.find('.active-lab-card__title').text()).toBe('Работа Б');
       expect(card.find('.active-lab-card__deadline').text()).toBe(
         'До 15 октября, 23:59',
       );
@@ -271,17 +271,45 @@ describe('CourseLabsViewingPage', () => {
       );
     });
 
-    it('без активной работы показывает «Активных работ нет»', async () => {
-      mockedGetCourseLabs.mockResolvedValue({
-        ...structuredClone(courseLabsFixture),
-        activeLab: null,
-      });
+    it('без несданных работ показывает «Активных работ нет»', async () => {
+      const data = structuredClone(courseLabsFixture);
+      data.labs = data.labs.filter(
+        (lab) => lab.status !== LabStatus.NotSubmitted,
+      );
+      mockedGetCourseLabs.mockResolvedValue(data);
       const wrapper = await mountPage();
 
       expect(wrapper.find('.course-labs-page__empty').text()).toBe(
         'Активных работ нет.',
       );
-      expect(wrapper.findAll('.lab-list-item')).toHaveLength(3);
+      expect(wrapper.find('.active-lab-card').exists()).toBe(false);
+      expect(wrapper.findAll('.lab-list-item')).toHaveLength(2);
+    });
+
+    it('показывает карточку для каждой несданной работы по порядку номеров', async () => {
+      mockedGetCourseLabs.mockResolvedValue({
+        ...structuredClone(courseLabsFixture),
+        labs: [
+          createLab(3, LabStatus.NotSubmitted),
+          createLab(4, LabStatus.Locked),
+          createLab(1, LabStatus.NotSubmitted),
+        ],
+      });
+      const wrapper = await mountPage();
+      const cards = wrapper.findAll('.active-lab-card');
+
+      expect(
+        cards.map((card) => card.find('.active-lab-card__title').text()),
+      ).toEqual(['Работа 1', 'Работа 3']);
+      expect(
+        cards.map((card) =>
+          card.find('.active-lab-card__variant-value').text(),
+        ),
+      ).toEqual(['10', '30']);
+      // список работ остаётся в порядке, в котором пришёл
+      expect(
+        wrapper.findAll('.lab-list-item h3').map((title) => title.text()),
+      ).toEqual(['Лаб №3: Работа 3', 'Лаб №4: Работа 4', 'Лаб №1: Работа 1']);
     });
   });
 

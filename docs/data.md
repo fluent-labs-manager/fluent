@@ -8,7 +8,7 @@
 src/mocks/*.ts            моковые данные
         ↓
 src/api/<раздел>/*Api.ts  функции получения данных (сейчас заглушки *Stub)
-src/api/<раздел>/*.dto.ts типы данных: User, Course, Semester, Lab, ActiveLab, CourseLabs
+src/api/<раздел>/*.dto.ts типы данных: User, Course, Semester, Lab, CourseLabs
         ↓
 src/stores/user.ts        текущий пользователь (Pinia) — нужен меню и страницам
 src/composables/*.ts      данные страницы: useSemesters() → semesters, isLoading, error, reload
@@ -30,7 +30,7 @@ src/components/*.vue      компоненты получают данные т�
 |------------------|---------------|-------------------------------|
 | `submitted`      | «Сдано»       | `grade`, `submittedAt`        |
 | `pending-review` | «На проверке» | `submittedAt`, оценки ещё нет |
-| `not-submitted`  | «Не сдано»    | —                             |
+| `not-submitted`  | «Не сдано»    | `variant`                     |
 | `locked`         | «Недоступно»  | —                             |
 
 Выполненной считается только работа со статусом `submitted`: работа на проверке в прогресс «1 из 3 выполнено» не входит.
