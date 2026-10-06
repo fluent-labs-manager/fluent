@@ -54,8 +54,8 @@ describe('YourCoursesPage', () => {
       );
       const wrapper = await mountPage();
 
-      expect(wrapper.find('[role="alert"]').text()).toContain(
-        'Сервис временно недоступен',
+      expect(wrapper.find('[role="alert"]').text()).toBe(
+        'Не удалось загрузить дисциплины: Сервис временно недоступен',
       );
       expect(
         wrapper.find('.courses-page__retry').attributes('aria-label'),
@@ -76,12 +76,13 @@ describe('YourCoursesPage', () => {
       expect(wrapper.findAll('.course-card')).toHaveLength(2);
     });
 
-    it('для ошибки не из ApiResolver показывает общее сообщение', async () => {
+    // «Не удалось загрузить дисциплины: Не удалось загрузить дисциплины» проходил.
+    it('для ошибки не из ApiResolver показывает подпись и «Неизвестная ошибка» без повтора', async () => {
       mockedGetSemesters.mockRejectedValue(new Error('boom'));
       const wrapper = await mountPage();
 
-      expect(wrapper.find('[role="alert"]').text()).toContain(
-        'Не удалось загрузить дисциплины',
+      expect(wrapper.find('[role="alert"]').text()).toBe(
+        'Не удалось загрузить дисциплины: Неизвестная ошибка',
       );
     });
 
@@ -91,7 +92,18 @@ describe('YourCoursesPage', () => {
       );
       const wrapper = await mountPage();
 
-      expect(wrapper.find('[role="alert"]').text()).toContain('Ошибка сервера');
+      expect(wrapper.find('[role="alert"]').text()).toBe(
+        'Не удалось загрузить дисциплины: Ошибка сервера',
+      );
+    });
+
+    it('для ошибки пользователя не из ApiResolver показывает «Неизвестная ошибка» без повтора', async () => {
+      mockedGetCurrentUser.mockRejectedValue(new Error('boom'));
+      const wrapper = await mountPage();
+
+      expect(wrapper.find('[role="alert"]').text()).toBe(
+        'Не удалось загрузить дисциплины: Неизвестная ошибка',
+      );
     });
 
     it('при пустом списке показывает «Дисциплин пока нет» без сводки', async () => {

@@ -27,7 +27,7 @@ export function useSemesters(): UseSemestersResult {
       error.value =
         loadError instanceof ApiRequestError
           ? loadError.message
-          : 'Не удалось загрузить дисциплины';
+          : 'Неизвестная ошибка';
     } finally {
       isLoading.value = false;
     }

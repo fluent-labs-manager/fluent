@@ -27,7 +27,7 @@ export const useUserStore = defineStore('user', () => {
       error.value =
         loadError instanceof ApiRequestError
           ? loadError.message
-          : 'Не удалось загрузить пользователя';
+          : 'Неизвестная ошибка';
     } finally {
       isLoading.value = false;
     }
