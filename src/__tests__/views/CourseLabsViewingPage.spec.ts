@@ -6,6 +6,7 @@ import CourseLabsViewingPage from '@/views/CourseLabsViewingPage.vue';
 import { getCourseLabsStub } from '@/api/labs/LabsApi.ts';
 import type { CourseLabs } from '@/api/labs/CourseLabs.dto.ts';
 import type { Lab } from '@/api/labs/Lab.dto.ts';
+import { LabStatus } from '@/types/LabStatus.ts';
 import { ApiRequestError } from '@/utils/ApiResolver.ts';
 import { toIsoDateTime } from '@/utils/IsoDateTime.ts';
 import { courseLabsFixture } from '../fixtures.ts';
@@ -33,7 +34,10 @@ function createPendingRequest(): PendingRequest {
 }
 
 // работа без оценки и даты сдачи: для проверки подписей по номерам
-function createLab(number: number, status: 'not-submitted' | 'locked'): Lab {
+function createLab(
+  number: number,
+  status: typeof LabStatus.NotSubmitted | typeof LabStatus.Locked,
+): Lab {
   return {
     id: number,
     number,
@@ -213,9 +217,9 @@ describe('CourseLabsViewingPage', () => {
       mockedGetCourseLabs.mockResolvedValue({
         ...structuredClone(courseLabsFixture),
         labs: [
-          createLab(4, 'locked'),
-          createLab(1, 'not-submitted'),
-          createLab(2, 'not-submitted'),
+          createLab(4, LabStatus.Locked),
+          createLab(1, LabStatus.NotSubmitted),
+          createLab(2, LabStatus.NotSubmitted),
         ],
       });
       const wrapper = await mountPage();
@@ -229,7 +233,10 @@ describe('CourseLabsViewingPage', () => {
       // работы №1 нет, недоступная работа — самая ранняя в списке
       mockedGetCourseLabs.mockResolvedValue({
         ...structuredClone(courseLabsFixture),
-        labs: [createLab(2, 'locked'), createLab(3, 'not-submitted')],
+        labs: [
+          createLab(2, LabStatus.Locked),
+          createLab(3, LabStatus.NotSubmitted),
+        ],
       });
       const wrapper = await mountPage();
 
@@ -241,10 +248,10 @@ describe('CourseLabsViewingPage', () => {
     it('работу на проверке показывает отдельно и не считает выполненной', async () => {
       const data = structuredClone(courseLabsFixture);
       data.labs = data.labs.map((lab) =>
-        lab.status === 'not-submitted'
+        lab.status === LabStatus.NotSubmitted
           ? {
               ...lab,
-              status: 'pending-review',
+              status: LabStatus.PendingReview,
               submittedAt: toIsoDateTime('2026-10-14T18:30:00+03:00'),
             }
           : lab,

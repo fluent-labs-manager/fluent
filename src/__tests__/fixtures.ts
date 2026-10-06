@@ -1,6 +1,7 @@
 import type { Semester } from '@/api/semesters/Semester.dto.ts';
 import type { CourseLabs } from '@/api/labs/CourseLabs.dto.ts';
 import type { User } from '@/api/users/User.dto.ts';
+import { LabStatus } from '@/types/LabStatus.ts';
 import { toIsoDateTime } from '@/utils/IsoDateTime.ts';
 
 // тестовые данные. не зависят от src/mocks/
@@ -71,7 +72,7 @@ export const courseLabsFixture: CourseLabs = {
       id: 1,
       number: 1,
       title: 'Работа А',
-      status: 'submitted',
+      status: LabStatus.Submitted,
       deadline: toIsoDateTime('2026-10-05T23:59:00+03:00'),
       grade: 4.2,
       submittedAt: toIsoDateTime('2026-10-12T18:30:00+03:00'),
@@ -80,14 +81,14 @@ export const courseLabsFixture: CourseLabs = {
       id: 2,
       number: 2,
       title: 'Работа Б',
-      status: 'not-submitted',
+      status: LabStatus.NotSubmitted,
       deadline: toIsoDateTime('2026-10-15T23:59:00+03:00'),
     },
     {
       id: 3,
       number: 3,
       title: 'Работа В',
-      status: 'locked',
+      status: LabStatus.Locked,
       deadline: toIsoDateTime('2026-10-29T23:59:00+03:00'),
     },
   ],

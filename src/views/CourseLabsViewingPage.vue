@@ -8,6 +8,7 @@ import LabListItem from '@/components/LabListItem.vue';
 import { useCourseLabs } from '@/composables/useCourseLabs.ts';
 import { useNow } from '@/composables/useNow.ts';
 import type { Lab } from '@/api/labs/Lab.dto.ts';
+import { LabStatus } from '@/types/LabStatus.ts';
 
 const props = defineProps<{
   courseId: number;
@@ -23,7 +24,7 @@ const now = useNow();
 const labs = computed<Lab[]>(() => courseLabs.value?.labs ?? []);
 
 const completedLabs = computed<number>(
-  () => labs.value.filter((lab) => lab.status === 'submitted').length,
+  () => labs.value.filter((lab) => lab.status === LabStatus.Submitted).length,
 );
 
 // номер ближайшей работы списка с меньшим номером: номера могут идти с пропусками

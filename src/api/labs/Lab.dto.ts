@@ -1,4 +1,5 @@
 import type { IsoDateTime } from '@/types/IsoDateTime.ts';
+import type { LabStatus } from '@/types/LabStatus.ts';
 
 interface LabBase {
   id: number;
@@ -9,18 +10,18 @@ interface LabBase {
 
 // работа выполнена, только когда получена оценка
 interface GradedLab extends LabBase {
-  status: 'submitted';
+  status: typeof LabStatus.Submitted;
   grade: number;
   submittedAt: IsoDateTime;
 }
 
 interface PendingReviewLab extends LabBase {
-  status: 'pending-review';
+  status: typeof LabStatus.PendingReview;
   submittedAt: IsoDateTime;
 }
 
 interface UnsubmittedLab extends LabBase {
-  status: 'not-submitted' | 'locked';
+  status: typeof LabStatus.NotSubmitted | typeof LabStatus.Locked;
 }
 
 // оценка и дата сдачи есть только у тех статусов, где они имеют смысл

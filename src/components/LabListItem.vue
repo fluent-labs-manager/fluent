@@ -4,6 +4,7 @@ import { computed } from 'vue';
 import LabStatusBadge from '@/components/LabStatusBadge.vue';
 import type { Lab } from '@/api/labs/Lab.dto.ts';
 import type { DeadlineState } from '@/types/DeadlineState.ts';
+import { LabStatus } from '@/types/LabStatus.ts';
 import { formatDayMonth } from '@/utils/DateFormatter.ts';
 import { getDeadlineState } from '@/utils/DeadlineState.ts';
 import { formatGrade } from '@/utils/GradeFormatter.ts';
@@ -18,7 +19,7 @@ const props = defineProps<{
 
 // срок важен только для несданной работы
 const deadlineState = computed<DeadlineState | null>(() =>
-  props.lab.status === 'not-submitted'
+  props.lab.status === LabStatus.NotSubmitted
     ? getDeadlineState(props.lab.deadline, props.now)
     : null,
 );
@@ -26,15 +27,15 @@ const deadlineState = computed<DeadlineState | null>(() =>
 const details = computed<string>(() => {
   const { lab } = props;
 
-  if (lab.status === 'submitted') {
+  if (lab.status === LabStatus.Submitted) {
     return `Оценка ${formatGrade(lab.grade, 1)} · сдано ${formatDayMonth(lab.submittedAt)}`;
   }
 
-  if (lab.status === 'pending-review') {
+  if (lab.status === LabStatus.PendingReview) {
     return `Сдано ${formatDayMonth(lab.submittedAt)} · ждёт оценки`;
   }
 
-  if (lab.status === 'locked') {
+  if (lab.status === LabStatus.Locked) {
     return props.previousLabNumber !== null
       ? `Откроется после лабораторной №${String(props.previousLabNumber)}`
       : 'Пока недоступна';
