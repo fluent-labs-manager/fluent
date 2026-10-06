@@ -16,7 +16,8 @@ const handleLogin = (): void => {
   if (!email.value) {
     emailError.value = 'Введите email';
   } else if (!EMAIL_REGEX.test(email.value)) {
-    emailError.value = 'Введите корректный email (например, name@university.ru)';
+    emailError.value =
+      'Введите корректный email (например, name@university.ru)';
   }
 
   if (!password.value) {
@@ -36,7 +37,6 @@ const handleLogin = (): void => {
     if (errors.length > 0) {
       passwordError.value = 'Пароль должен содержать: ' + errors.join(', ');
     } else if (!PASSWORD_REGEX.test(password.value)) {
-
       passwordError.value = 'Пароль должен содержать буквы и цифры';
     }
   }
@@ -88,7 +88,12 @@ const handleLogin = (): void => {
               placeholder="corporate@university.ru"
             />
           </div>
-          <p v-if="emailError" class="field-error">{{ emailError }}</p>
+          <p
+            v-if="emailError"
+            class="field-error"
+          >
+            {{ emailError }}
+          </p>
         </div>
 
         <div class="input-group">
@@ -119,7 +124,12 @@ const handleLogin = (): void => {
             />
           </div>
 
-          <p v-if="passwordError" class="field-error">{{ passwordError }}</p>
+          <p
+            v-if="passwordError"
+            class="field-error"
+          >
+            {{ passwordError }}
+          </p>
           <div class="forgot-password">
             <router-link to="/forgot-password">Забыли пароль?</router-link>
           </div>
@@ -150,56 +160,60 @@ const handleLogin = (): void => {
 
 <style scoped>
 .auth-page {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background-color: var(--color-bg);
+  min-height: 100vh;
   padding: 20px;
+  background-color: var(--color-bg);
 }
 
 .brand-header {
-  text-align: center;
   margin-bottom: 40px;
+  text-align: center;
 }
+
 .logo {
-  font-size: var(--font-size-5xl);
-  font-weight: 700;
   margin: 0;
   color: var(--color-text);
+  font-size: var(--font-size-5xl);
+  font-weight: 700;
 }
+
 .subtitle {
-  font-size: var(--font-size-xs);
-  letter-spacing: 0.1em;
-  color: var(--color-text-secondary);
   margin-top: 4px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
   font-weight: 500;
+  letter-spacing: 0.1em;
 }
 
 .auth-card {
   width: 100%;
   max-width: 465px;
-  background: var(--color-surface);
   padding: 36px;
-  box-shadow: var(--shadow-card);
   border-radius: 16px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
 }
 
 .form-title {
+  margin-bottom: 24px;
   font-size: var(--font-size-3xl);
   font-weight: 700;
-  margin-bottom: 24px;
 }
+
 .input-group {
   margin-bottom: 16px;
 }
+
 .input-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
   font-weight: 700;
-  color: var(--color-text-secondary);
-  margin-bottom: 8px;
-  display: block;
 }
 
 .input-wrapper {
@@ -207,6 +221,7 @@ const handleLogin = (): void => {
   display: flex;
   align-items: center;
 }
+
 .icon {
   position: absolute;
   left: 12px;
@@ -223,47 +238,49 @@ input {
   outline: none;
   font-size: var(--font-size-md);
 }
+
 input:focus {
   border-color: var(--color-accent);
 }
 
-
 .field-error {
-  color: var(--color-error);
-  font-size: var(--font-size-xs);
   margin-top: 4px;
   margin-bottom: 0;
+  color: var(--color-error);
+  font-size: var(--font-size-xs);
 }
 
 .forgot-password {
-  text-align: right;
   margin-top: 8px;
+  text-align: right;
 }
+
 .forgot-password a {
-  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
   text-decoration: none;
 }
 
 .submit-btn {
   width: 100%;
+  margin-top: 10px;
   padding: 14px;
-  background-color: var(--color-accent);
-  color: white;
   border: none;
   border-radius: 12px;
-  cursor: pointer;
-  margin-top: 10px;
+  background-color: var(--color-accent);
+  color: #fff;
   font-size: var(--font-size-md);
   font-weight: 500;
+  cursor: pointer;
 }
 
 .card-footer {
-  text-align: center;
-  font-size: var(--font-size-sm);
   margin-top: 20px;
   color: var(--color-text);
+  font-size: var(--font-size-sm);
+  text-align: center;
 }
+
 .card-footer a {
   color: var(--color-text-secondary);
   font-weight: 600;
@@ -273,11 +290,11 @@ input:focus {
 .page-footer {
   position: absolute;
   bottom: 24px;
-  width: 100%;
-  padding: 0 40px;
   display: flex;
   justify-content: space-between;
-  font-size: var(--font-size-xs);
+  width: 100%;
+  padding: 0 40px;
   color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
 }
 </style>

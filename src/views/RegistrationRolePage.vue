@@ -46,8 +46,16 @@ const goToNext = (): void => {
       <div class="content-inner">
         <header class="content-header">
           <span class="step-indicator">ШАГ 1 ИЗ 2</span>
-          <button class="close-btn" aria-label="Закрыть">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <button
+            class="close-btn"
+            aria-label="Закрыть"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>
           </button>
@@ -55,7 +63,8 @@ const goToNext = (): void => {
 
         <h2 class="title">Регистрация</h2>
         <p class="description">
-          Для персонализации личного кабинета выберите вашу основную роль в системе.
+          Для персонализации личного кабинета выберите вашу основную роль в
+          системе.
         </p>
 
         <div class="role-selection">
@@ -67,11 +76,18 @@ const goToNext = (): void => {
             <div class="role-option__content">
               <h3 class="role-option__title">Я студент</h3>
               <p class="role-option__desc">
-                Сдача лабораторных, расписание, варианты заданий и просмотр баллов.
+                Сдача лабораторных, расписание, варианты заданий и просмотр
+                баллов.
               </p>
             </div>
             <div class="role-option__check">
-              <svg v-if="selectedRole === 'student'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg
+                v-if="selectedRole === 'student'"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
                 <path d="M5 12l5 5L20 7" />
               </svg>
             </div>
@@ -85,11 +101,18 @@ const goToNext = (): void => {
             <div class="role-option__content">
               <h3 class="role-option__title">Я преподаватель</h3>
               <p class="role-option__desc">
-                Управление группами, генерация вариантов заданий, оценка и рецензирование работ.
+                Управление группами, генерация вариантов заданий, оценка и
+                рецензирование работ.
               </p>
             </div>
             <div class="role-option__check">
-              <svg v-if="selectedRole === 'teacher'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg
+                v-if="selectedRole === 'teacher'"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
                 <path d="M5 12l5 5L20 7" />
               </svg>
             </div>
@@ -97,7 +120,11 @@ const goToNext = (): void => {
         </div>
 
         <div class="field">
-          <label class="field-label" for="fullName">ФИО ПОЛНОСТЬЮ</label>
+          <label
+            class="field-label"
+            for="fullName"
+            >ФИО ПОЛНОСТЬЮ</label
+          >
           <input
             id="fullName"
             v-model="fullName"
@@ -106,10 +133,18 @@ const goToNext = (): void => {
             :class="{ 'field-input--error': fullNameError }"
             @input="fullNameError = ''"
           />
-          <p v-if="fullNameError" class="field-error">{{ fullNameError }}</p>
+          <p
+            v-if="fullNameError"
+            class="field-error"
+          >
+            {{ fullNameError }}
+          </p>
         </div>
 
-        <button class="submit-btn" @click="goToNext">
+        <button
+          class="submit-btn"
+          @click="goToNext"
+        >
           Продолжить настройку
         </button>
       </div>
@@ -119,41 +154,41 @@ const goToNext = (): void => {
 
 <style scoped>
 .registration-page {
-  min-height: 100vh;
   display: flex;
+  min-height: 100vh;
 }
 
 .sidebar {
   width: 380px;
-  flex-shrink: 0;
+  padding: 56px 48px;
   background-color: var(--color-sidebar-bg);
   color: var(--color-sidebar-text);
-  padding: 56px 48px;
+  flex-shrink: 0;
 }
 
 .sidebar-logo {
+  margin: 0;
   font-size: 32px;
   font-weight: 700;
   letter-spacing: 0.02em;
-  margin: 0;
 }
 
 .sidebar-subtitle {
+  margin-top: 12px;
+  margin-bottom: 40px;
+  color: rgb(255 255 255 / 85%);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.15em;
-  margin-top: 12px;
-  margin-bottom: 40px;
-  color: rgba(255, 255, 255, 0.85);
 }
 
 .steps {
-  list-style: none;
-  padding: 0;
-  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .step {
@@ -163,20 +198,20 @@ const goToNext = (): void => {
 }
 
 .step-number {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background-color: rgb(255 255 255 / 15%);
   font-size: 14px;
   font-weight: 600;
   flex-shrink: 0;
 }
 
 .step--active .step-number {
-  background-color: #ffffff;
+  background-color: #fff;
   color: var(--color-sidebar-bg);
 }
 
@@ -186,13 +221,13 @@ const goToNext = (): void => {
 }
 
 .step:not(.step--active) .step-label {
-  color: rgba(255, 255, 255, 0.65);
+  color: rgb(255 255 255 / 65%);
 }
 
 .content {
   flex: 1;
-  background-color: var(--color-page-bg-soft);
   padding: 56px 48px 56px 96px;
+  background-color: var(--color-page-bg-soft);
   overflow-y: auto;
 }
 
@@ -208,64 +243,66 @@ const goToNext = (): void => {
 }
 
 .step-indicator {
+  color: var(--color-text-secondary);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.08em;
-  color: var(--color-text-secondary);
 }
 
 .close-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 30px;
   height: 30px;
-  border-radius: 50%;
-  border: 1px solid var(--color-close-border);
-  background: transparent;
-  cursor: pointer;
-  color: var(--color-text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 0;
+  border: 1px solid var(--color-close-border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
   transition: background-color 0.15s ease;
 }
+
 .close-btn:hover {
-  background-color: rgba(0, 0, 0, 0.04);
+  background-color: rgb(0 0 0 / 4%);
 }
+
 .close-btn svg {
   width: 15px;
   height: 15px;
 }
 
 .title {
+  margin: 0 0 12px;
+  color: var(--color-text);
   font-size: 40px;
   font-weight: 700;
-  color: var(--color-text);
-  margin: 0 0 12px;
   line-height: 1.1;
 }
 
 .description {
-  font-size: 15px;
-  color: var(--color-text-secondary);
   margin: 0 0 40px;
+  color: var(--color-text-secondary);
+  font-size: 15px;
 }
 
 .role-selection {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 18px;
+  grid-template-columns: 1fr 1fr;
   margin-bottom: 32px;
 }
 
 .role-option {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-role-border);
-  border-radius: 16px;
-  padding: 20px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--color-role-border);
+  border-radius: 16px;
+  background-color: var(--color-surface);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -284,30 +321,30 @@ const goToNext = (): void => {
 }
 
 .role-option__title {
+  margin: 0 0 8px;
+  color: var(--color-text);
   font-size: 20px;
   font-weight: 700;
-  color: var(--color-text);
-  margin: 0 0 8px;
 }
 
 .role-option__desc {
+  margin: 0;
+  color: var(--color-text-secondary);
   font-size: 13px;
   line-height: 1.5;
-  color: var(--color-text-secondary);
-  margin: 0;
 }
 
 .role-option__check {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 28px;
   height: 28px;
-  border-radius: 50%;
   border: 1.5px solid var(--color-role-border);
+  border-radius: 50%;
   background-color: transparent;
+  color: #fff;
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #FFFFFF;
 }
 
 .role-option--selected .role-option__check {
@@ -321,17 +358,17 @@ const goToNext = (): void => {
 }
 
 .field {
-  margin-bottom: 24px;
   max-width: 620px;
+  margin-bottom: 24px;
 }
 
 .field-label {
   display: block;
+  margin-bottom: 8px;
+  color: var(--color-text-secondary);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
-  color: var(--color-text-secondary);
-  margin-bottom: 8px;
 }
 
 .field-input {
@@ -339,10 +376,10 @@ const goToNext = (): void => {
   padding: 15px 16px;
   border: 1px solid var(--color-role-border);
   border-radius: 12px;
-  background-color: var(--color-surface);
-  font-size: 14px;
-  color: var(--color-text);
   outline: none;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-size: 14px;
   transition: border-color 0.15s ease;
 }
 
@@ -355,21 +392,21 @@ const goToNext = (): void => {
 }
 
 .field-error {
-  color: var(--color-error);
-  font-size: var(--font-size-xs);
   margin-top: 4px;
   margin-bottom: 0;
+  color: var(--color-error);
+  font-size: var(--font-size-xs);
 }
 
 .submit-btn {
   padding: 16px 32px;
-  background-color: var(--color-btn-primary);
-  color: #FFFFFF;
   border: none;
   border-radius: 12px;
-  cursor: pointer;
+  background-color: var(--color-btn-primary);
+  color: #fff;
   font-size: 14px;
   font-weight: 600;
+  cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
