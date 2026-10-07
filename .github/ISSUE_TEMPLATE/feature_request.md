@@ -1,21 +1,26 @@
 ---
 name: Feature request
 about: Suggest an idea for this project
-title: 'Feature: '
+title: "Feature: "
 labels: feature
-assignees: ''
+assignees: ""
 type: Feature
-
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+# Description
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+Describe the user or product problem, the proposed change, and its expected outcome.
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+## Scope
 
-**Additional context**
-Add any other context or screenshots about the feature request here.
+- Relevant user flow:
+- Affected screens, components, or API:
+- Constraints or non-goals:
+
+## Additional context
+
+Add links to designs, screenshots, related issues, or alternative approaches.
+
+## Definition of Done
+
+- [ ] Put some criteria here
