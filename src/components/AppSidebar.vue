@@ -21,7 +21,10 @@ const navItems: NavItem[] = [
     <span class="app-sidebar__logo">Fluent</span>
 
     <nav class="app-sidebar__nav">
-      <template v-for="item in navItems" :key="item.label">
+      <template
+        v-for="item in navItems"
+        :key="item.label"
+      >
         <RouterLink
           v-if="item.to"
           :to="item.to"
@@ -31,20 +34,34 @@ const navItems: NavItem[] = [
           <AppIcon :name="item.icon" />
           {{ item.label }}
         </RouterLink>
-        <span v-else class="app-sidebar__link" aria-disabled="true">
+        <span
+          v-else
+          class="app-sidebar__link"
+          aria-disabled="true"
+        >
           <AppIcon :name="item.icon" />
           {{ item.label }}
         </span>
       </template>
     </nav>
 
-    <button v-if="user" class="app-sidebar__user" type="button">
-      <span class="app-sidebar__avatar" aria-hidden="true"></span>
+    <button
+      v-if="user"
+      class="app-sidebar__user"
+      type="button"
+    >
+      <span
+        class="app-sidebar__avatar"
+        aria-hidden="true"
+      ></span>
       <span class="app-sidebar__user-info">
         <span class="app-sidebar__user-name">{{ user.name }}</span>
         <span class="app-sidebar__user-group">{{ user.group }}</span>
       </span>
-      <AppIcon name="chevron-down" :size="18" />
+      <AppIcon
+        name="chevron-down"
+        :size="18"
+      />
     </button>
   </aside>
 </template>

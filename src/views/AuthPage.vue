@@ -62,7 +62,10 @@ const handleLogin = (): void => {
       <h2 class="form-title">Вход в аккаунт</h2>
 
       <!-- форма -->
-      <form class="login-form" @submit.prevent="handleLogin">
+      <form
+        class="login-form"
+        @submit.prevent="handleLogin"
+      >
         <div class="input-group">
           <label for="email">ЭЛЕКТРОННАЯ ПОЧТА</label>
           <div class="input-wrapper">
@@ -85,7 +88,10 @@ const handleLogin = (): void => {
               placeholder="corporate@university.ru"
             />
           </div>
-          <p v-if="emailError" class="field-error">
+          <p
+            v-if="emailError"
+            class="field-error"
+          >
             {{ emailError }}
           </p>
         </div>
@@ -100,7 +106,14 @@ const handleLogin = (): void => {
               stroke="currentColor"
               stroke-width="1.5"
             >
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <rect
+                x="3"
+                y="11"
+                width="18"
+                height="11"
+                rx="2"
+                ry="2"
+              />
               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
             <input
@@ -111,7 +124,10 @@ const handleLogin = (): void => {
             />
           </div>
 
-          <p v-if="passwordError" class="field-error">
+          <p
+            v-if="passwordError"
+            class="field-error"
+          >
             {{ passwordError }}
           </p>
           <div class="forgot-password">
@@ -119,7 +135,12 @@ const handleLogin = (): void => {
           </div>
         </div>
 
-        <button type="submit" class="submit-btn">Войти в личный кабинет</button>
+        <button
+          type="submit"
+          class="submit-btn"
+        >
+          Войти в личный кабинет
+        </button>
       </form>
 
       <!-- футер карточки -->

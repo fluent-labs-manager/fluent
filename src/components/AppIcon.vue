@@ -50,7 +50,11 @@ const iconPaths = computed<string[]>(() => paths[props.name]);
     stroke-linejoin="round"
     aria-hidden="true"
   >
-    <path v-for="d in iconPaths" :key="d" :d="d" />
+    <path
+      v-for="d in iconPaths"
+      :key="d"
+      :d="d"
+    />
   </svg>
 </template>
 
