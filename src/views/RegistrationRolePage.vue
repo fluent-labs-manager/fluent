@@ -46,10 +46,7 @@ const goToNext = (): void => {
       <div class="content-inner">
         <header class="content-header">
           <span class="step-indicator">ШАГ 1 ИЗ 2</span>
-          <button
-            class="close-btn"
-            aria-label="Закрыть"
-          >
+          <button class="close-btn" aria-label="Закрыть">
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -120,11 +117,7 @@ const goToNext = (): void => {
         </div>
 
         <div class="field">
-          <label
-            class="field-label"
-            for="fullName"
-            >ФИО ПОЛНОСТЬЮ</label
-          >
+          <label class="field-label" for="fullName">ФИО ПОЛНОСТЬЮ</label>
           <input
             id="fullName"
             v-model="fullName"
@@ -133,18 +126,12 @@ const goToNext = (): void => {
             :class="{ 'field-input--error': fullNameError }"
             @input="fullNameError = ''"
           />
-          <p
-            v-if="fullNameError"
-            class="field-error"
-          >
+          <p v-if="fullNameError" class="field-error">
             {{ fullNameError }}
           </p>
         </div>
 
-        <button
-          class="submit-btn"
-          @click="goToNext"
-        >
+        <button class="submit-btn" @click="goToNext">
           Продолжить настройку
         </button>
       </div>

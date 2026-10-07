@@ -27,17 +27,10 @@ const percent = computed<string>(() =>
   <article class="course-card">
     <header class="course-card__header">
       <div class="course-card__heading">
-        <h2
-          class="course-card__title"
-          :title="course.title"
-        >
+        <h2 class="course-card__title" :title="course.title">
           {{ course.title }}
         </h2>
-        <AppIcon
-          class="course-card__arrow"
-          name="chevron-right"
-          :size="22"
-        />
+        <AppIcon class="course-card__arrow" name="chevron-right" :size="22" />
       </div>
       <p class="course-card__teacher">{{ course.teacher }}</p>
     </header>
@@ -51,10 +44,7 @@ const percent = computed<string>(() =>
         </span>
       </div>
 
-      <ProgressBar
-        :value="course.completedLabs"
-        :max="course.totalLabs"
-      />
+      <ProgressBar :value="course.completedLabs" :max="course.totalLabs" />
     </div>
   </article>
 </template>

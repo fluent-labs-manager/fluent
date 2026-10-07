@@ -60,11 +60,7 @@ function retry(): void {
   <main class="courses-page">
     <header class="courses-page__header">
       <h1 class="courses-page__title">Дисциплины</h1>
-      <p
-        v-if="isLoading"
-        class="courses-page__status"
-        role="status"
-      >
+      <p v-if="isLoading" class="courses-page__status" role="status">
         Загрузка дисциплин…
       </p>
 
@@ -81,10 +77,7 @@ function retry(): void {
           title="Повторить"
           @click="retry"
         >
-          <AppIcon
-            name="refresh"
-            :size="16"
-          />
+          <AppIcon name="refresh" :size="16" />
         </button>
       </div>
       <div
@@ -117,17 +110,11 @@ function retry(): void {
         :semester="currentSemester"
       />
 
-      <p
-        v-if="courses.length === 0"
-        class="courses-page__empty"
-      >
+      <p v-if="courses.length === 0" class="courses-page__empty">
         Дисциплин пока нет.
       </p>
 
-      <section
-        v-else
-        class="courses-page__list"
-      >
+      <section v-else class="courses-page__list">
         <CourseCard
           v-for="course in courses"
           :key="course.id"

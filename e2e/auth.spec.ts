@@ -13,7 +13,9 @@ test('авторизация: успешный вход', async ({ page }): Prom
   await expect(page).toHaveURL('/');
 });
 
-test('авторизация: проверка ошибок валидации', async ({ page }): Promise<void> => {
+test('авторизация: проверка ошибок валидации', async ({
+  page,
+}): Promise<void> => {
   await page.goto('/auth');
 
   //вводим некорректный email
@@ -23,5 +25,7 @@ test('авторизация: проверка ошибок валидации',
 
   // нало чтоб появились сообщения об ошибках
   await expect(page.locator('.field-error')).toHaveCount(2);
-  await expect(page.locator('.field-error').first()).toContainText('Введите корректный email');
+  await expect(page.locator('.field-error').first()).toContainText(
+    'Введите корректный email',
+  );
 });

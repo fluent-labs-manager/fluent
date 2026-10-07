@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-test('регистрация: выбор роли и переход к деталям', async ({ page }): Promise<void> => {
+test('регистрация: выбор роли и переход к деталям', async ({
+  page,
+}): Promise<void> => {
   await page.goto('/register');
 
   //проверяем заголовок
@@ -8,7 +10,9 @@ test('регистрация: выбор роли и переход к дета�
 
   //выбираем преподаватель (он добавит класс role-option--selected)
   await page.locator('.role-option').nth(1).click();
-  await expect(page.locator('.role-option').nth(1)).toHaveClass(/role-option--selected/);
+  await expect(page.locator('.role-option').nth(1)).toHaveClass(
+    /role-option--selected/,
+  );
 
   //проверяем ФИО
   const fioInput = page.locator('#fullName');
