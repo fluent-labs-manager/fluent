@@ -68,7 +68,7 @@ jobs:
         uses: ./.github/actions/setup-node
 
       - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps
+        run: npx playwright install chromium
 
       - name: Build app for preview
         run: npm run build
