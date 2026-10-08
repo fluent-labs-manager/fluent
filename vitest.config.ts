@@ -12,7 +12,15 @@ export default mergeConfig(
         provider: 'v8',
         reporter: ['text', 'json-summary', 'html'],
         include: ['src/**/*.{ts,vue}'],
-        exclude: ['src/**/__tests__/**', 'src/**/*.d.ts'],
+        exclude: [
+          'src/**/__tests__/**',
+          'src/**/*.d.ts',
+          'src/**/*.dto.ts',
+          'src/api/interfaces/**',
+          'src/mocks/**',
+          'src/types/**',
+          'src/main.ts',
+        ],
         thresholds: {
           lines: coverageThreshold,
           functions: coverageThreshold,
