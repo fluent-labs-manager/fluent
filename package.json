@@ -11,6 +11,7 @@
     "test:unit:ci": "vitest run",
     "test:unit:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "lint": "npm-run-all lint:*",
