@@ -48,12 +48,21 @@ jobs:
       - name: Prepare action environment
         uses: ./.github/actions/setup-node
 
-      - name: Unit tests
-        run: npm run test:unit:ci
+      - name: Unit tests and coverage
+        run: npm run test:unit:coverage
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
           VITE_API_SOCKET_URL: ${{ secrets.VITE_API_SOCKET_URL }}
           VITE_SENTRY_DSN_URL: ${{ secrets.VITE_SENTRY_DSN_URL }}
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-coverage
+          path: coverage
+          if-no-files-found: warn
+          retention-days: 7
 
   create-build:
     environment: ci
