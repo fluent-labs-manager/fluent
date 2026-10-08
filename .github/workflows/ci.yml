@@ -92,7 +92,7 @@ jobs:
           VITE_SENTRY_DSN_URL: ''
 
       - name: E2E tests
-        run: npm run test:e2e -- --project=chromium
+        run: npm run test:e2e -- --project=chromium --max-failures=1
 
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
