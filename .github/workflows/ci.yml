@@ -41,6 +41,8 @@ jobs:
     environment: ci
     timeout-minutes: 5
     runs-on: ubuntu-latest
+    needs:
+      - code-linting
 
     steps:
       - uses: actions/checkout@v6
@@ -68,6 +70,8 @@ jobs:
     environment: ci
     timeout-minutes: 10
     runs-on: ubuntu-latest
+    needs:
+      - code-linting
 
     steps:
       - uses: actions/checkout@v6
@@ -75,20 +79,15 @@ jobs:
       - name: Prepare action environment
         uses: ./.github/actions/setup-node
 
-      # Только Chromium: сценарии проверяют логику приложения, а не отличия
-      # движков; три браузера утроили бы время прогона и установки.
-      # Firefox и WebKit можно гонять локально: npm run test:e2e
+      # Только Chromium: сценарии проверяют логику приложения, а не отличия движков
       - name: Install Playwright browser
-        run: npm run test:e2e:install -- --with-deps chromium
+        run: npm run test:e2e:install -- --with-deps --only-shell chromium
 
-      # В CI тесты идут против npm run preview (собранный dist), см. playwright.config.ts
       - name: Build app
         run: npm run build
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
           VITE_API_SOCKET_URL: ${{ secrets.VITE_API_SOCKET_URL }}
-          # Пустой DSN выключает Sentry: прогоны тестов не должны попадать
-          # в Sentry с environment 'production' (он зашит в src/main.ts)
           VITE_SENTRY_DSN_URL: ''
 
       - name: E2E tests
@@ -107,7 +106,10 @@ jobs:
     environment: ci
     timeout-minutes: 5
     runs-on: ubuntu-latest
-    needs: [code-linting, code-unit-testing]
+    needs:
+      - code-unit-testing
+      - code-e2e-testing
+
     if: github.event_name == 'pull_request'
 
     steps:
@@ -127,7 +129,10 @@ jobs:
     environment: production
     timeout-minutes: 10
     runs-on: ubuntu-latest
-    needs: [code-linting, code-unit-testing]
+    needs:
+      - code-unit-testing
+      - code-e2e-testing
+
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
