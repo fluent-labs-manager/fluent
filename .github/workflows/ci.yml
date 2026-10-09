@@ -200,7 +200,7 @@ jobs:
         env:
           BEFORE_SHA: ${{ github.event.before }}
           AFTER_SHA: ${{ github.sha }}
-        run: .github/scripts/prepare-commit.sh
+        run: .github/scripts/prepare-commits.sh
 
       - name: Send TG message
         uses: appleboy/telegram-action@214f06cfa3d3a588c1472116889437e7c6fd29b1
