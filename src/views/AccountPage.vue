@@ -341,20 +341,12 @@ function retry(): void {
         class="account-page__column"
         aria-labelledby="account-courses-heading"
       >
-        <div class="account-page__section-header">
-          <h2
-            id="account-courses-heading"
-            class="account-page__section-title"
-          >
-            Текущие дисциплины
-          </h2>
-          <RouterLink
-            class="account-page__all-link"
-            :to="{ name: 'courses' }"
-          >
-            Все дисциплины
-          </RouterLink>
-        </div>
+        <h2
+          id="account-courses-heading"
+          class="account-page__section-title"
+        >
+          Текущие дисциплины
+        </h2>
 
         <p
           v-if="currentCourses.length === 0"
@@ -415,14 +407,12 @@ function retry(): void {
         class="account-page__column"
         aria-labelledby="account-courses-heading"
       >
-        <div class="account-page__section-header">
-          <h2
-            id="account-courses-heading"
-            class="account-page__section-title"
-          >
-            Мои дисциплины
-          </h2>
-        </div>
+        <h2
+          id="account-courses-heading"
+          class="account-page__section-title"
+        >
+          Мои дисциплины
+        </h2>
 
         <p
           v-if="profile.courses.length === 0"
@@ -479,6 +469,9 @@ function retry(): void {
   flex-direction: column;
   gap: 1.5rem;
   padding: var(--page-offset-top) 2.5rem 2.5rem;
+
+  /* колонки перестраиваются по ширине страницы, а не окна: часть окна занимает меню */
+  container: account-page / inline-size;
 }
 
 .account-page__header {
@@ -552,29 +545,11 @@ function retry(): void {
   gap: 0.75rem;
 }
 
-.account-page__section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 1rem;
-}
-
 .account-page__section-title {
   margin: 0;
   font-size: var(--font-size-md);
   font-weight: 700;
   text-transform: uppercase;
-}
-
-.account-page__all-link {
-  color: var(--color-accent);
-  font-size: var(--font-size-md);
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.account-page__all-link:hover {
-  text-decoration: underline;
 }
 
 .account-page__card {
@@ -670,6 +645,9 @@ function retry(): void {
   margin: 0.125rem 0 0;
   font-size: var(--font-size-lg);
   font-weight: 500;
+
+  /* в почте нет пробелов — без этого длинный адрес вылезет из карточки */
+  overflow-wrap: anywhere;
 }
 
 .account-page__actions {
@@ -792,11 +770,16 @@ function retry(): void {
 .account-page__course-title {
   font-size: var(--font-size-2xl);
   font-weight: 700;
+
+  /* длинное слово переносим по слогам (страница lang="ru"), а не в любом месте */
+  hyphens: auto;
+  overflow-wrap: break-word;
 }
 
 .account-page__course-meta {
   color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
+  overflow-wrap: anywhere;
 }
 
 .account-page__course-figure {
@@ -828,5 +811,35 @@ function retry(): void {
   border-radius: 1rem;
   color: var(--color-text-secondary);
   font-size: var(--font-size-md);
+}
+
+/* двум колонкам тесно: личные данные и дисциплины идут друг под другом */
+@container account-page (width < 46rem) {
+  .account-page__content {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* совсем узко: сводка и кнопки в одну колонку, цифра дисциплины под названием */
+@container account-page (width < 28rem) {
+  .account-page__stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .account-page__actions {
+    flex-direction: column;
+  }
+
+  .account-page__course {
+    flex-wrap: wrap;
+  }
+
+  .account-page__course-figure {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.5rem;
+    width: 100%;
+    padding-left: 3.5rem;
+  }
 }
 </style>

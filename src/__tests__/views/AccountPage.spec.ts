@@ -59,8 +59,6 @@ async function mountPage(
   return wrapper;
 }
 
-// text() склеивает соседние элементы без пробела, поэтому части карточек
-// проверяем по отдельности
 function statsOf(wrapper: ReturnType<typeof mount>): string[][] {
   return wrapper
     .findAll('.account-page__stat')
@@ -137,12 +135,10 @@ describe('AccountPage', () => {
       ]);
     });
 
-    it('ведёт «Все дисциплины» на страницу дисциплин', async () => {
+    it('не показывает ссылку «Все дисциплины»', async () => {
       const wrapper = await mountPage();
 
-      expect(wrapper.find('.account-page__all-link').attributes('href')).toBe(
-        '/courses',
-      );
+      expect(wrapper.text()).not.toContain('Все дисциплины');
     });
 
     it('не показывает блоки преподавателя', async () => {
