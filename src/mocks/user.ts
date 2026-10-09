@@ -7,3 +7,11 @@ export const currentUser: User = {
   group: 'P3322',
   role: 'student',
 };
+
+// показывается по адресу с ?role=teacher (см. src/mocks/mockMode.ts)
+export const teacherUser: User = {
+  id: 2,
+  name: 'Михайлюк Степан',
+  group: null,
+  role: 'teacher',
+};
