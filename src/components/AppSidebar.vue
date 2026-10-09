@@ -1,19 +1,45 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+
 import AppIcon from '@/components/AppIcon.vue';
 import type { User } from '@/api/users/User.dto.ts';
 import type { NavItem } from '@/types/NavItem.ts';
 
-defineProps<{
+const props = defineProps<{
   //null, пока пользователь загружается
   user: User | null;
 }>();
 
-const navItems: NavItem[] = [
+const studentNavItems: NavItem[] = [
   { label: 'Главная', icon: 'home', to: { name: 'home' } },
   { label: 'Дисциплины', icon: 'book', to: { name: 'courses' } },
   { label: 'Лабораторные', icon: 'flask' },
   { label: 'События', icon: 'award' },
 ];
+
+// у преподавателя свои разделы и нет страницы «Дисциплины».
+// Страниц разделов ещё нет — пункты неактивны, как «Лабораторные» у студента
+const teacherNavItems: NavItem[] = [
+  { label: 'Главная', icon: 'layout-grid', to: { name: 'home' } },
+  { label: 'Варианты', icon: 'shuffle' },
+  { label: 'ИИ-предфильтр', icon: 'sparkles' },
+  { label: 'Очереди', icon: 'users' },
+  { label: 'Конструктор баллов', icon: 'sparkles' },
+  { label: 'Оценивание', icon: 'clipboard-check' },
+];
+
+// пока роль неизвестна, показываем только общий для обеих ролей пункт,
+// чтобы у преподавателя не мелькало меню студента
+const loadingNavItems: NavItem[] = [
+  { label: 'Главная', icon: 'home', to: { name: 'home' } },
+];
+
+const navItems = computed<NavItem[]>(() => {
+  if (props.user === null) {
+    return loadingNavItems;
+  }
+  return props.user.role === 'teacher' ? teacherNavItems : studentNavItems;
+});
 </script>
 
 <template>

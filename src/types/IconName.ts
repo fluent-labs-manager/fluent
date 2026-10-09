@@ -15,4 +15,9 @@ export type IconName =
   | 'building'
   | 'briefcase'
   | 'pencil'
-  | 'settings';
+  | 'settings'
+  | 'layout-grid'
+  | 'shuffle'
+  | 'sparkles'
+  | 'users'
+  | 'clipboard-check';
