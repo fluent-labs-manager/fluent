@@ -1,0 +1,832 @@
+<script setup lang="ts">
+import { computed } from 'vue';
+import { RouterLink, useRouter } from 'vue-router';
+
+import AppIcon from '@/components/AppIcon.vue';
+import { useAccountProfile } from '@/composables/useAccountProfile.ts';
+import { useSemesters } from '@/composables/useSemesters.ts';
+import { useUserStore } from '@/stores/user.ts';
+import type { Course } from '@/api/courses/Course.dto.ts';
+import type { IconName } from '@/types/IconName.ts';
+import type { UserRole } from '@/types/UserRole.ts';
+import { formatGrade } from '@/utils/GradeFormatter.ts';
+import { formatPercent, getPercent } from '@/utils/ProgressPercentage.ts';
+
+interface ProfileDetail {
+  icon: IconName;
+  label: string;
+  value: string;
+}
+
+interface ProfileStat {
+  label: string;
+  value: string;
+  hint: string;
+  accent: boolean;
+}
+
+const router = useRouter();
+const userStore = useUserStore();
+void userStore.loadUser();
+
+const role = computed<UserRole | null>(() => userStore.user?.role ?? null);
+
+const {
+  profile,
+  isLoading: isProfileLoading,
+  error: profileError,
+  reload: reloadProfile,
+} = useAccountProfile(() => role.value);
+
+// дисциплины и прогресс студента уже есть в семестрах — берём оттуда
+const {
+  semesters,
+  isLoading: areSemestersLoading,
+  error: semestersError,
+  reload: reloadSemesters,
+} = useSemesters();
+
+const isStudent = computed<boolean>(() => role.value === 'student');
+
+const isLoading = computed<boolean>(() => {
+  if (userStore.user === null) {
+    return userStore.error === null;
+  }
+  return (
+    isProfileLoading.value || (isStudent.value && areSemestersLoading.value)
+  );
+});
+
+const error = computed<string | null>(
+  () =>
+    userStore.error ??
+    profileError.value ??
+    (isStudent.value ? semestersError.value : null),
+);
+
+const initials = computed<string>(() =>
+  (userStore.user?.name ?? '')
+    .split(/\s+/)
+    .filter((part) => part.length > 0)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join(''),
+);
+
+const roleLabel = computed<string>(() => {
+  const user = userStore.user;
+  if (user === null) {
+    return '';
+  }
+  if (user.role === 'teacher') {
+    return 'Преподаватель';
+  }
+  return user.group === null ? 'Студент' : `Студент · ${user.group}`;
+});
+
+const details = computed<ProfileDetail[]>(() => {
+  const data = profile.value;
+  if (data === null) {
+    return [];
+  }
+
+  const email: ProfileDetail = {
+    icon: 'mail',
+    label: 'Корпоративная почта',
+    value: data.email,
+  };
+
+  if (data.role === 'teacher') {
+    return [
+      email,
+      { icon: 'building', label: 'Кафедра', value: data.department },
+      { icon: 'briefcase', label: 'Должность', value: data.position },
+    ];
+  }
+
+  return [
+    email,
+    { icon: 'graduation-cap', label: 'Направление', value: data.direction },
+    {
+      icon: 'calendar',
+      label: 'Курс и поток',
+      value: `${String(data.courseYear)} курс · ${data.stream}`,
+    },
+  ];
+});
+
+const currentSemester = computed(() =>
+  semesters.value.find((semester) => semester.isCurrent),
+);
+
+const currentCourses = computed<Course[]>(
+  () => currentSemester.value?.courses ?? [],
+);
+
+const stats = computed<ProfileStat[]>(() => {
+  const data = profile.value;
+  if (data === null) {
+    return [];
+  }
+
+  if (data.role === 'teacher') {
+    const pending = data.courses.reduce(
+      (sum, course) => sum + course.pendingReviews,
+      0,
+    );
+    const groups = new Set(data.courses.flatMap((course) => course.groups));
+    return [
+      {
+        label: 'Ждут проверки',
+        value: String(pending),
+        hint: 'работ без оценки',
+        accent: pending > 0,
+      },
+      {
+        label: 'Дисциплин',
+        value: String(data.courses.length),
+        hint: `групп: ${String(groups.size)}`,
+        accent: false,
+      },
+    ];
+  }
+
+  const done = currentCourses.value.reduce(
+    (sum, course) => sum + course.completedLabs,
+    0,
+  );
+  const total = currentCourses.value.reduce(
+    (sum, course) => sum + course.totalLabs,
+    0,
+  );
+  const result: ProfileStat[] = [
+    {
+      label: 'Сдано работ',
+      value: `${String(done)} из ${String(total)}`,
+      hint: `${formatPercent(getPercent(done, total))} общего плана`,
+      accent: true,
+    },
+  ];
+  if (currentSemester.value !== undefined) {
+    result.push({
+      label: 'Средний балл',
+      value: `${formatGrade(currentSemester.value.averageGrade)} / 5`,
+      hint: 'за текущий семестр',
+      accent: false,
+    });
+  }
+  return result;
+});
+
+// «Назад» ведёт на предыдущую страницу приложения; если кабинет открыли
+// по прямой ссылке, истории внутри приложения нет — тогда на главную
+function goBack(): void {
+  const state = window.history.state as { back?: unknown } | null;
+  if (typeof state?.back === 'string') {
+    router.back();
+  } else {
+    void router.push({ name: 'home' });
+  }
+}
+
+function retry(): void {
+  void userStore.loadUser();
+  void reloadProfile();
+  if (isStudent.value) {
+    void reloadSemesters();
+  }
+}
+</script>
+
+<template>
+  <main class="account-page">
+    <header class="account-page__header">
+      <button
+        class="account-page__back"
+        type="button"
+        @click="goBack"
+      >
+        <AppIcon
+          name="chevron-left"
+          :size="16"
+        />
+        Назад
+      </button>
+      <h1 class="account-page__title">Личный кабинет</h1>
+    </header>
+
+    <p
+      v-if="isLoading"
+      class="account-page__status"
+      role="status"
+    >
+      Загрузка профиля…
+    </p>
+
+    <div
+      v-else-if="error !== null"
+      class="account-page__status account-page__status--error"
+      role="alert"
+    >
+      <span>Не удалось загрузить профиль: {{ error }}</span>
+      <button
+        class="account-page__retry"
+        type="button"
+        aria-label="Повторить"
+        title="Повторить"
+        @click="retry"
+      >
+        <AppIcon
+          name="refresh"
+          :size="16"
+        />
+      </button>
+    </div>
+
+    <div
+      v-else-if="userStore.user !== null && profile !== null"
+      class="account-page__content"
+    >
+      <section
+        class="account-page__column"
+        aria-labelledby="account-personal-heading"
+      >
+        <h2
+          id="account-personal-heading"
+          class="account-page__section-title"
+        >
+          Личные данные
+        </h2>
+
+        <article class="account-page__card account-page__profile">
+          <div class="account-page__identity">
+            <span
+              class="account-page__avatar"
+              aria-hidden="true"
+              >{{ initials }}</span
+            >
+            <div class="account-page__identity-text">
+              <p class="account-page__name">{{ userStore.user.name }}</p>
+              <span class="account-page__role">{{ roleLabel }}</span>
+            </div>
+          </div>
+
+          <dl class="account-page__details">
+            <div
+              v-for="detail in details"
+              :key="detail.label"
+              class="account-page__detail"
+            >
+              <AppIcon
+                class="account-page__detail-icon"
+                :name="detail.icon"
+                :size="18"
+              />
+              <div>
+                <dt class="account-page__detail-label">{{ detail.label }}</dt>
+                <dd class="account-page__detail-value">{{ detail.value }}</dd>
+              </div>
+            </div>
+          </dl>
+
+          <!-- TODO: редактирование профиля и настройки — отдельные задачи -->
+          <div class="account-page__actions">
+            <button
+              class="account-page__action account-page__action--primary"
+              type="button"
+              disabled
+              title="Скоро будет доступно"
+            >
+              <AppIcon
+                name="pencil"
+                :size="16"
+              />
+              Редактировать
+            </button>
+            <button
+              class="account-page__action"
+              type="button"
+              disabled
+              title="Скоро будет доступно"
+            >
+              <AppIcon
+                name="settings"
+                :size="16"
+              />
+              Настройки
+            </button>
+          </div>
+        </article>
+
+        <div class="account-page__stats">
+          <div
+            v-for="stat in stats"
+            :key="stat.label"
+            class="account-page__card account-page__stat"
+          >
+            <p class="account-page__stat-label">{{ stat.label }}</p>
+            <p
+              class="account-page__stat-value"
+              :class="{ 'account-page__stat-value--accent': stat.accent }"
+            >
+              {{ stat.value }}
+            </p>
+            <p class="account-page__stat-hint">{{ stat.hint }}</p>
+          </div>
+        </div>
+      </section>
+
+      <section
+        v-if="profile.role === 'student'"
+        class="account-page__column"
+        aria-labelledby="account-courses-heading"
+      >
+        <div class="account-page__section-header">
+          <h2
+            id="account-courses-heading"
+            class="account-page__section-title"
+          >
+            Текущие дисциплины
+          </h2>
+          <RouterLink
+            class="account-page__all-link"
+            :to="{ name: 'courses' }"
+          >
+            Все дисциплины
+          </RouterLink>
+        </div>
+
+        <p
+          v-if="currentCourses.length === 0"
+          class="account-page__empty"
+        >
+          Дисциплин пока нет.
+        </p>
+        <ul
+          v-else
+          class="account-page__courses"
+        >
+          <li
+            v-for="course in currentCourses"
+            :key="course.id"
+          >
+            <RouterLink
+              class="account-page__card account-page__course account-page__course--link"
+              :to="{ name: 'course-labs', params: { courseId: course.id } }"
+              :aria-label="course.title"
+            >
+              <span
+                class="account-page__course-icon"
+                aria-hidden="true"
+              >
+                <AppIcon
+                  name="book"
+                  :size="18"
+                />
+              </span>
+              <span class="account-page__course-info">
+                <span class="account-page__course-title">{{
+                  course.title
+                }}</span>
+                <span class="account-page__course-meta">{{
+                  course.teacher
+                }}</span>
+              </span>
+              <span class="account-page__course-figure">
+                <span class="account-page__course-value"
+                  >{{ course.completedLabs }} / {{ course.totalLabs }}</span
+                >
+                <span class="account-page__course-meta"
+                  >лабораторных сдано</span
+                >
+              </span>
+              <AppIcon
+                class="account-page__course-arrow"
+                name="chevron-right"
+                :size="18"
+              />
+            </RouterLink>
+          </li>
+        </ul>
+      </section>
+
+      <section
+        v-else
+        class="account-page__column"
+        aria-labelledby="account-courses-heading"
+      >
+        <div class="account-page__section-header">
+          <h2
+            id="account-courses-heading"
+            class="account-page__section-title"
+          >
+            Мои дисциплины
+          </h2>
+        </div>
+
+        <p
+          v-if="profile.courses.length === 0"
+          class="account-page__empty"
+        >
+          Дисциплин пока нет.
+        </p>
+        <!-- TODO: строки станут ссылками, когда появится страница дисциплины для преподавателя -->
+        <ul
+          v-else
+          class="account-page__courses"
+        >
+          <li
+            v-for="course in profile.courses"
+            :key="course.id"
+            class="account-page__card account-page__course"
+          >
+            <span
+              class="account-page__course-icon"
+              aria-hidden="true"
+            >
+              <AppIcon
+                name="book"
+                :size="18"
+              />
+            </span>
+            <span class="account-page__course-info">
+              <span class="account-page__course-title">{{ course.title }}</span>
+              <span class="account-page__course-meta"
+                >Группы: {{ course.groups.join(', ') }}</span
+              >
+            </span>
+            <span class="account-page__course-figure">
+              <span
+                class="account-page__course-value"
+                :class="{
+                  'account-page__course-value--muted':
+                    course.pendingReviews === 0,
+                }"
+                >{{ course.pendingReviews }}</span
+              >
+              <span class="account-page__course-meta">ждут проверки</span>
+            </span>
+          </li>
+        </ul>
+      </section>
+    </div>
+  </main>
+</template>
+
+<style scoped>
+.account-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: var(--page-offset-top) 2.5rem 2.5rem;
+}
+
+.account-page__header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.account-page__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+  cursor: pointer;
+}
+
+.account-page__back:hover {
+  color: var(--color-text);
+}
+
+.account-page__title {
+  margin: 0;
+  font-size: var(--font-size-5xl);
+  font-weight: 700;
+  line-height: var(--page-title-line-height);
+}
+
+.account-page__status {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: var(--nav-item-height);
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+}
+
+.account-page__status--error {
+  color: var(--color-error);
+}
+
+.account-page__retry {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.account-page__content {
+  display: grid;
+  align-items: start;
+  gap: 1.5rem;
+  grid-template-columns: minmax(20rem, 22.5rem) minmax(0, 1fr);
+}
+
+.account-page__column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.account-page__section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.account-page__section-title {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.account-page__all-link {
+  color: var(--color-accent);
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.account-page__all-link:hover {
+  text-decoration: underline;
+}
+
+.account-page__card {
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.account-page__profile {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.account-page__identity {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.account-page__avatar {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  width: 4rem;
+  height: 4rem;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background-color: var(--color-accent-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+}
+
+.account-page__identity-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.375rem;
+}
+
+.account-page__name {
+  margin: 0;
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+}
+
+/* бейдж обрамляет одну строку текста — отступы в em */
+.account-page__role {
+  padding: 0.25em 0.75em;
+  border-radius: 1em;
+  background-color: var(--color-accent-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.account-page__details {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.account-page__detail {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+}
+
+.account-page__detail + .account-page__detail {
+  border-top: 1px solid var(--color-border);
+}
+
+.account-page__detail-icon {
+  color: var(--color-text-secondary);
+}
+
+.account-page__detail-label {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.account-page__detail-value {
+  margin: 0.125rem 0 0;
+  font-size: var(--font-size-lg);
+  font-weight: 500;
+}
+
+.account-page__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* кнопка обрамляет одну строку текста — отступы в em */
+.account-page__action {
+  display: inline-flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.75em 1em;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75em;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.account-page__action--primary {
+  border-color: var(--color-accent);
+  background-color: var(--color-accent);
+  color: var(--color-surface);
+}
+
+.account-page__action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.account-page__stats {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.account-page__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.125rem;
+}
+
+.account-page__stat-label {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.account-page__stat-value {
+  margin: 0;
+  font-size: var(--font-size-4xl);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.account-page__stat-value--accent {
+  color: var(--color-success);
+}
+
+.account-page__stat-hint {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.account-page__courses {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.account-page__course {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.account-page__course--link {
+  transition: border-color 0.2s ease;
+}
+
+.account-page__course--link:hover {
+  border-color: var(--color-accent);
+}
+
+.account-page__course-icon {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.625rem;
+  background-color: var(--color-muted-surface);
+  color: var(--color-text-secondary);
+}
+
+.account-page__course-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.account-page__course-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+}
+
+.account-page__course-meta {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.account-page__course-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  white-space: nowrap;
+}
+
+.account-page__course-value {
+  color: var(--color-accent);
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+}
+
+.account-page__course-value--muted {
+  color: var(--color-text-secondary);
+}
+
+.account-page__course-arrow {
+  color: var(--color-text-secondary);
+}
+
+.account-page__empty {
+  margin: 0;
+  padding: 1.5rem 1.375rem;
+  border: 1px dashed var(--color-border);
+  border-radius: 1rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+}
+</style>

@@ -7,4 +7,12 @@ export type IconName =
   | 'chevron-down'
   | 'chevron-right'
   | 'arrow-left'
-  | 'refresh';
+  | 'refresh'
+  | 'chevron-left'
+  | 'mail'
+  | 'graduation-cap'
+  | 'calendar'
+  | 'building'
+  | 'briefcase'
+  | 'pencil'
+  | 'settings';
