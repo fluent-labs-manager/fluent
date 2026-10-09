@@ -3,9 +3,18 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { createPinia } from 'pinia';
 import App from '../App.vue';
 import router from '@/router/index.ts';
+import { getAccountProfileStub } from '@/api/account/AccountApi.ts';
 import { getSemestersStub } from '@/api/semesters/SemestersApi.ts';
 import { getCurrentUserStub } from '@/api/users/UsersApi.ts';
-import { semestersFixture, studentFixture } from './fixtures.ts';
+import {
+  semestersFixture,
+  studentFixture,
+  studentProfileFixture,
+} from './fixtures.ts';
+
+vi.mock('@/api/account/AccountApi.ts', () => ({
+  getAccountProfileStub: vi.fn(),
+}));
 
 vi.mock('@/api/semesters/SemestersApi.ts', () => ({
   getSemestersStub: vi.fn(),
@@ -31,6 +40,9 @@ describe('App', () => {
     );
     vi.mocked(getCurrentUserStub).mockResolvedValue(
       structuredClone(studentFixture),
+    );
+    vi.mocked(getAccountProfileStub).mockResolvedValue(
+      structuredClone(studentProfileFixture),
     );
   });
 
@@ -62,5 +74,20 @@ describe('App', () => {
       .findAll('.app-sidebar__link')
       .find((link) => link.text() === 'Главная');
     expect(homeLink?.attributes('href')).toBe('/');
+  });
+
+  it('ведёт в личный кабинет с карточки пользователя в меню', async () => {
+    const wrapper = await mountAt('/courses');
+    expect(wrapper.find('.app-sidebar__user').attributes('href')).toBe(
+      '/account',
+    );
+  });
+
+  it('по адресу /account открывает личный кабинет и отмечает карточку пользователя', async () => {
+    const wrapper = await mountAt('/account');
+    expect(wrapper.find('h1').text()).toBe('Личный кабинет');
+    expect(wrapper.find('.app-sidebar__user').classes()).toContain(
+      'app-sidebar__user--active',
+    );
   });
 });
