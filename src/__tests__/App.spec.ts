@@ -10,6 +10,8 @@ import {
   semestersFixture,
   studentFixture,
   studentProfileFixture,
+  teacherFixture,
+  teacherProfileFixture,
 } from './fixtures.ts';
 
 vi.mock('@/api/account/AccountApi.ts', () => ({
@@ -89,5 +91,65 @@ describe('App', () => {
     expect(wrapper.find('.app-sidebar__user').classes()).toContain(
       'app-sidebar__user--active',
     );
+  });
+
+  // меню зависит от роли
+  describe('меню по роли', () => {
+    function menuOf(wrapper: ReturnType<typeof mount>): {
+      links: string[];
+      inactive: string[];
+    } {
+      const items = wrapper.findAll('.app-sidebar__link');
+      return {
+        links: items
+          .filter((item) => item.element.tagName === 'A')
+          .map((item) => item.text()),
+        inactive: items
+          .filter((item) => item.attributes('aria-disabled') === 'true')
+          .map((item) => item.text()),
+      };
+    }
+
+    it('студенту показывает его разделы со ссылкой на дисциплины', async () => {
+      const wrapper = await mountAt('/');
+
+      expect(menuOf(wrapper)).toEqual({
+        links: ['Главная', 'Дисциплины'],
+        inactive: ['Лабораторные', 'События'],
+      });
+    });
+
+    it('преподавателю показывает его разделы без страницы дисциплин', async () => {
+      vi.mocked(getCurrentUserStub).mockResolvedValue(
+        structuredClone(teacherFixture),
+      );
+      vi.mocked(getAccountProfileStub).mockResolvedValue(
+        structuredClone(teacherProfileFixture),
+      );
+      const wrapper = await mountAt('/');
+
+      expect(menuOf(wrapper)).toEqual({
+        links: ['Главная'],
+        inactive: [
+          'Варианты',
+          'ИИ-предфильтр',
+          'Очереди',
+          'Конструктор баллов',
+          'Оценивание',
+        ],
+      });
+      expect(wrapper.find('.app-sidebar__user-group').text()).toBe(
+        'Преподаватель',
+      );
+    });
+
+    it('пока роль неизвестна, показывает только «Главную»', async () => {
+      vi.mocked(getCurrentUserStub).mockReturnValue(
+        new Promise(() => undefined),
+      );
+      const wrapper = await mountAt('/');
+
+      expect(menuOf(wrapper)).toEqual({ links: ['Главная'], inactive: [] });
+    });
   });
 });
