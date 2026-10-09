@@ -45,10 +45,12 @@ const navItems: NavItem[] = [
       </template>
     </nav>
 
-    <button
+    <RouterLink
       v-if="user"
       class="app-sidebar__user"
-      type="button"
+      exact-active-class="app-sidebar__user--active"
+      :to="{ name: 'account' }"
+      title="Личный кабинет"
     >
       <span
         class="app-sidebar__avatar"
@@ -56,13 +58,15 @@ const navItems: NavItem[] = [
       ></span>
       <span class="app-sidebar__user-info">
         <span class="app-sidebar__user-name">{{ user.name }}</span>
-        <span class="app-sidebar__user-group">{{ user.group }}</span>
+        <span class="app-sidebar__user-group">{{
+          user.role === 'teacher' ? 'Преподаватель' : user.group
+        }}</span>
       </span>
       <AppIcon
         name="chevron-down"
         :size="18"
       />
-    </button>
+    </RouterLink>
   </aside>
 </template>
 
@@ -132,8 +136,13 @@ const navItems: NavItem[] = [
   border-radius: 0.75rem;
   background-color: var(--color-surface);
   color: var(--color-text);
-  text-align: left;
-  cursor: pointer;
+  text-decoration: none;
+  transition: border-color 0.2s ease;
+}
+
+.app-sidebar__user:hover,
+.app-sidebar__user--active {
+  border-color: var(--color-accent);
 }
 
 .app-sidebar__avatar {
