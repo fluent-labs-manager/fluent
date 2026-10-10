@@ -11,12 +11,6 @@ type: Feature
 
 Describe the user or product problem, the proposed change, and its expected outcome.
 
-## Scope
-
-- Relevant user flow:
-- Affected screens, components, or API:
-- Constraints or non-goals:
-
 ## Additional context
 
 Add links to designs, screenshots, related issues, or alternative approaches.
