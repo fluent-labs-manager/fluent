@@ -1,8 +1,16 @@
-const gradeFormatter = new Intl.NumberFormat('ru-RU', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
+const gradeFormatters = new Map<number, Intl.NumberFormat>();
 
-export function formatGrade(grade: number): string {
-  return gradeFormatter.format(grade);
+// precision — сколько знаков после запятой: formatGrade(5) → «5,00», formatGrade(5, 1) → «5,0»
+export function formatGrade(grade: number, precision = 2): string {
+  let formatter = gradeFormatters.get(precision);
+
+  if (formatter === undefined) {
+    formatter = new Intl.NumberFormat('ru-RU', {
+      minimumFractionDigits: precision,
+      maximumFractionDigits: precision,
+    });
+    gradeFormatters.set(precision, formatter);
+  }
+
+  return formatter.format(grade);
 }
