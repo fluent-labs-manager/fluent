@@ -167,4 +167,51 @@ describe('App', () => {
       expect(menuOf(wrapper)).toEqual({ links: ['Главная'], inactive: [] });
     });
   });
+
+  // дисциплины доступны только студенту
+  describe('доступ к дисциплинам', () => {
+    function useTeacher(): void {
+      vi.mocked(getCurrentUserStub).mockResolvedValue(
+        structuredClone(teacherFixture),
+      );
+      vi.mocked(getAccountProfileStub).mockResolvedValue(
+        structuredClone(teacherProfileFixture),
+      );
+    }
+
+    it('преподавателя по прямой ссылке на /courses уводит на главную', async () => {
+      useTeacher();
+      const wrapper = await mountAt('/courses');
+
+      expect(router.currentRoute.value.name).toBe('home');
+      expect(wrapper.find('h1').text()).toBe('Главная');
+    });
+
+    it('преподавателя по прямой ссылке на страницу дисциплины уводит на главную', async () => {
+      useTeacher();
+      await mountAt('/courses/11');
+
+      expect(router.currentRoute.value.name).toBe('home');
+    });
+
+    it('не пускает преподавателя к дисциплинам при переходе внутри приложения', async () => {
+      useTeacher();
+      await mountAt('/account');
+      vi.mocked(getSemestersStub).mockClear();
+
+      await router.push('/courses');
+      await flushPromises();
+
+      expect(router.currentRoute.value.name).toBe('home');
+      // проверка в роутере не даёт странице даже открыться и запросить данные
+      expect(getSemestersStub).not.toHaveBeenCalled();
+    });
+
+    it('студенту дисциплины доступны', async () => {
+      const wrapper = await mountAt('/courses');
+
+      expect(router.currentRoute.value.name).toBe('courses');
+      expect(wrapper.find('h1').text()).toBe('Дисциплины');
+    });
+  });
 });
