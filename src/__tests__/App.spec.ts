@@ -1,6 +1,6 @@
-import { beforeEach, describe, it, expect, vi } from 'vitest';
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
-import { createPinia } from 'pinia';
+import { createPinia, setActivePinia } from 'pinia';
 import App from '../App.vue';
 import router from '@/router/index.ts';
 import { getAccountProfileStub } from '@/api/account/AccountApi.ts';
@@ -23,14 +23,29 @@ vi.mock('@/api/semesters/SemestersApi.ts', () => ({
 }));
 vi.mock('@/api/users/UsersApi.ts', () => ({ getCurrentUserStub: vi.fn() }));
 
+// роутер общий для всех тестов, поэтому приложение из прошлого теста нужно
+// размонтировать: иначе его раскладка продолжит реагировать на переходы
+const mounted: ReturnType<typeof mount>[] = [];
+
+afterEach(() => {
+  mounted.splice(0).forEach((wrapper) => {
+    wrapper.unmount();
+  });
+});
+
 async function mountAt(path: string): Promise<ReturnType<typeof mount>> {
+  // как в main.ts: Pinia подключена до первой навигации — её использует
+  // проверка доступа в роутере
+  const pinia = createPinia();
+  setActivePinia(pinia);
   await router.push(path);
   await router.isReady();
   const wrapper = mount(App, {
     global: {
-      plugins: [router, createPinia()],
+      plugins: [router, pinia],
     },
   });
+  mounted.push(wrapper);
   await flushPromises();
   return wrapper;
 }
