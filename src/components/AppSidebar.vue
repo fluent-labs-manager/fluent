@@ -13,12 +13,11 @@ const props = defineProps<{
 const studentNavItems: NavItem[] = [
   { label: 'Главная', icon: 'home', to: { name: 'home' } },
   { label: 'Дисциплины', icon: 'book', to: { name: 'courses' } },
-  { label: 'Лабораторные', icon: 'flask' },
   { label: 'События', icon: 'award' },
 ];
 
 // у преподавателя свои разделы и нет страницы «Дисциплины».
-// Страниц разделов ещё нет — пункты неактивны, как «Лабораторные» у студента
+// Страниц разделов ещё нет — пункты неактивны, как «События» у студента
 const teacherNavItems: NavItem[] = [
   { label: 'Главная', icon: 'layout-grid', to: { name: 'home' } },
   { label: 'Варианты', icon: 'shuffle' },

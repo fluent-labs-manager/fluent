@@ -130,7 +130,7 @@ describe('App', () => {
 
       expect(menuOf(wrapper)).toEqual({
         links: ['Главная', 'Дисциплины'],
-        inactive: ['Лабораторные', 'События'],
+        inactive: ['События'],
       });
     });
 
