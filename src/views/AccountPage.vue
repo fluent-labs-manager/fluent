@@ -627,10 +627,6 @@ function retry(): void {
   padding: 0.75rem 0;
 }
 
-.account-page__detail + .account-page__detail {
-  border-top: 1px solid var(--color-border);
-}
-
 .account-page__detail-icon {
   flex-shrink: 0;
   color: var(--color-text-secondary);
