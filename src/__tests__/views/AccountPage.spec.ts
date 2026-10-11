@@ -104,13 +104,16 @@ describe('AccountPage', () => {
       );
     });
 
-    it('показывает почту, направление, курс и поток', async () => {
+    it('показывает почту, направление, курс и поток без подписей', async () => {
       const wrapper = await mountPage();
       const details = wrapper.find('.account-page__details').text();
 
       expect(details).toContain('student@test.ru');
       expect(details).toContain('Тестовое направление');
       expect(details).toContain('2 курс · 2025/26');
+      expect(details).not.toContain('Корпоративная почта');
+      expect(details).not.toContain('Направление');
+      expect(details).not.toContain('Курс и поток');
     });
 
     it('показывает дисциплины текущего семестра со ссылками на их работы', async () => {
@@ -181,13 +184,16 @@ describe('AccountPage', () => {
       expect(wrapper.find('.account-page__role').text()).toBe('Преподаватель');
     });
 
-    it('показывает почту, кафедру и должность', async () => {
+    it('показывает почту, кафедру и должность без подписей', async () => {
       const wrapper = await mountPage();
       const details = wrapper.find('.account-page__details').text();
 
       expect(details).toContain('teacher@test.ru');
       expect(details).toContain('Тестовая кафедра');
       expect(details).toContain('Доцент');
+      expect(details).not.toContain('Корпоративная почта');
+      expect(details).not.toContain('Кафедра');
+      expect(details).not.toContain('Должность');
     });
 
     it('показывает ведомые дисциплины с группами и работами на проверке', async () => {

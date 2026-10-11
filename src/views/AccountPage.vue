@@ -271,23 +271,22 @@ function retry(): void {
             </div>
           </div>
 
-          <dl class="account-page__details">
-            <div
+          <!-- подписей полей нет, по макету их заменяют иконки; label остаётся подсказкой -->
+          <ul class="account-page__details">
+            <li
               v-for="detail in details"
               :key="detail.label"
               class="account-page__detail"
+              :title="detail.label"
             >
               <AppIcon
                 class="account-page__detail-icon"
                 :name="detail.icon"
                 :size="18"
               />
-              <div>
-                <dt class="account-page__detail-label">{{ detail.label }}</dt>
-                <dd class="account-page__detail-value">{{ detail.value }}</dd>
-              </div>
-            </div>
-          </dl>
+              <span class="account-page__detail-value">{{ detail.value }}</span>
+            </li>
+          </ul>
 
           <!-- TODO: редактирование профиля и настройки — отдельные задачи -->
           <div class="account-page__actions">
@@ -617,6 +616,8 @@ function retry(): void {
   display: flex;
   flex-direction: column;
   margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .account-page__detail {
@@ -631,18 +632,12 @@ function retry(): void {
 }
 
 .account-page__detail-icon {
+  flex-shrink: 0;
   color: var(--color-text-secondary);
-}
-
-.account-page__detail-label {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  text-transform: uppercase;
 }
 
 .account-page__detail-value {
-  margin: 0.125rem 0 0;
+  min-width: 0;
   font-size: var(--font-size-lg);
   font-weight: 500;
 
