@@ -7,12 +7,14 @@ import type { Router } from 'vue-router';
 import AccountPage from '@/views/AccountPage.vue';
 import { getAccountProfileStub } from '@/api/account/AccountApi.ts';
 import { getSemestersStub } from '@/api/semesters/SemestersApi.ts';
+import { getTaughtCoursesStub } from '@/api/teaching/TeachingApi.ts';
 import { getCurrentUserStub } from '@/api/users/UsersApi.ts';
 import { ApiRequestError } from '@/utils/ApiResolver.ts';
 import {
   semestersFixture,
   studentFixture,
   studentProfileFixture,
+  taughtCoursesFixture,
   teacherFixture,
   teacherProfileFixture,
 } from '../fixtures.ts';
@@ -23,10 +25,14 @@ vi.mock('@/api/account/AccountApi.ts', () => ({
 vi.mock('@/api/semesters/SemestersApi.ts', () => ({
   getSemestersStub: vi.fn(),
 }));
+vi.mock('@/api/teaching/TeachingApi.ts', () => ({
+  getTaughtCoursesStub: vi.fn(),
+}));
 vi.mock('@/api/users/UsersApi.ts', () => ({ getCurrentUserStub: vi.fn() }));
 
 const mockedGetProfile = vi.mocked(getAccountProfileStub);
 const mockedGetSemesters = vi.mocked(getSemestersStub);
+const mockedGetTaughtCourses = vi.mocked(getTaughtCoursesStub);
 const mockedGetCurrentUser = vi.mocked(getCurrentUserStub);
 
 const Stub = { template: '<div />' };
@@ -85,6 +91,9 @@ describe('AccountPage', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mockedGetSemesters.mockResolvedValue(structuredClone(semestersFixture));
+    mockedGetTaughtCourses.mockResolvedValue(
+      structuredClone(taughtCoursesFixture),
+    );
   });
 
   // студент
@@ -248,11 +257,25 @@ describe('AccountPage', () => {
       expect(mockedGetSemesters).not.toHaveBeenCalled();
     });
 
+    it('показывает ошибку загрузки дисциплин и после «Повторить» грузит их заново', async () => {
+      mockedGetTaughtCourses.mockRejectedValueOnce(
+        new ApiRequestError(503, 'Сервис временно недоступен'),
+      );
+      const wrapper = await mountPage();
+
+      expect(wrapper.find('[role="alert"]').text()).toBe(
+        'Не удалось загрузить профиль: Сервис временно недоступен',
+      );
+
+      await wrapper.find('.account-page__retry').trigger('click');
+      await flushPromises();
+
+      expect(mockedGetTaughtCourses).toHaveBeenCalledTimes(2);
+      expect(wrapper.text()).toContain('Дисциплина Г');
+    });
+
     it('без дисциплин показывает «Дисциплин пока нет»', async () => {
-      mockedGetProfile.mockResolvedValue({
-        ...structuredClone(teacherProfileFixture),
-        courses: [],
-      });
+      mockedGetTaughtCourses.mockResolvedValue([]);
       const wrapper = await mountPage();
 
       expect(wrapper.find('.account-page__empty').text()).toBe(

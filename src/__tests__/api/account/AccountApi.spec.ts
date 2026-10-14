@@ -30,11 +30,8 @@ describe('getAccountProfileStub', () => {
     expect(await request('student')).toMatchObject({ role: 'student' });
   });
 
-  it('для преподавателя возвращает профиль с его дисциплинами', async () => {
-    const profile = (await request('teacher')) as { courses: unknown[] };
-
-    expect(profile).toMatchObject({ role: 'teacher' });
-    expect(profile.courses.length).toBeGreaterThan(0);
+  it('для преподавателя возвращает профиль преподавателя', async () => {
+    expect(await request('teacher')).toMatchObject({ role: 'teacher' });
   });
 
   it('с ?mock=error бросает ApiRequestError, как ApiResolver', async () => {

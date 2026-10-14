@@ -5,6 +5,7 @@ import { RouterLink, useRouter } from 'vue-router';
 import AppIcon from '@/components/AppIcon.vue';
 import { useAccountProfile } from '@/composables/useAccountProfile.ts';
 import { useSemesters } from '@/composables/useSemesters.ts';
+import { useTaughtCourses } from '@/composables/useTaughtCourses.ts';
 import { useUserStore } from '@/stores/user.ts';
 import type { Course } from '@/api/courses/Course.dto.ts';
 import type { IconName } from '@/types/IconName.ts';
@@ -48,20 +49,31 @@ const {
   reload: reloadSemesters,
 } = useSemesters(() => isStudent.value);
 
+const {
+  courses: taughtCourses,
+  isLoading: areTaughtCoursesLoading,
+  error: taughtCoursesError,
+  reload: reloadTaughtCourses,
+} = useTaughtCourses(() => role.value === 'teacher');
+
+// списки дисциплин зависят от роли: у студента — семестры, у преподавателя — ведомые
+const areCoursesLoading = computed<boolean>(() =>
+  isStudent.value ? areSemestersLoading.value : areTaughtCoursesLoading.value,
+);
+
+const coursesError = computed<string | null>(() =>
+  isStudent.value ? semestersError.value : taughtCoursesError.value,
+);
+
 const isLoading = computed<boolean>(() => {
   if (userStore.user === null) {
     return userStore.error === null;
   }
-  return (
-    isProfileLoading.value || (isStudent.value && areSemestersLoading.value)
-  );
+  return isProfileLoading.value || areCoursesLoading.value;
 });
 
 const error = computed<string | null>(
-  () =>
-    userStore.error ??
-    profileError.value ??
-    (isStudent.value ? semestersError.value : null),
+  () => userStore.error ?? profileError.value ?? coursesError.value,
 );
 
 const initials = computed<string>(() =>
@@ -130,11 +142,13 @@ const stats = computed<ProfileStat[]>(() => {
   }
 
   if (data.role === 'teacher') {
-    const pending = data.courses.reduce(
+    const pending = taughtCourses.value.reduce(
       (sum, course) => sum + course.pendingReviews,
       0,
     );
-    const groups = new Set(data.courses.flatMap((course) => course.groups));
+    const groups = new Set(
+      taughtCourses.value.flatMap((course) => course.groups),
+    );
     return [
       {
         label: 'Ждут проверки',
@@ -144,7 +158,7 @@ const stats = computed<ProfileStat[]>(() => {
       },
       {
         label: 'Дисциплин',
-        value: String(data.courses.length),
+        value: String(taughtCourses.value.length),
         hint: `групп: ${String(groups.size)}`,
         accent: false,
       },
@@ -194,6 +208,8 @@ function retry(): void {
   void reloadProfile();
   if (isStudent.value) {
     void reloadSemesters();
+  } else if (role.value === 'teacher') {
+    void reloadTaughtCourses();
   }
 }
 </script>
@@ -414,7 +430,7 @@ function retry(): void {
         </h2>
 
         <p
-          v-if="profile.courses.length === 0"
+          v-if="taughtCourses.length === 0"
           class="account-page__empty"
         >
           Дисциплин пока нет.
@@ -425,7 +441,7 @@ function retry(): void {
           class="account-page__courses"
         >
           <li
-            v-for="course in profile.courses"
+            v-for="course in taughtCourses"
             :key="course.id"
             class="account-page__card account-page__course"
           >

@@ -2,6 +2,7 @@ import type {
   StudentProfile,
   TeacherProfile,
 } from '@/api/account/AccountProfile.dto.ts';
+import type { TaughtCourse } from '@/api/teaching/TaughtCourse.dto.ts';
 import type { Semester } from '@/api/semesters/Semester.dto.ts';
 import type { CourseLabs } from '@/api/labs/CourseLabs.dto.ts';
 import type { User } from '@/api/users/User.dto.ts';
@@ -36,21 +37,22 @@ export const teacherProfileFixture: TeacherProfile = {
   email: 'teacher@test.ru',
   department: 'Тестовая кафедра',
   position: 'Доцент',
-  courses: [
-    {
-      id: 31,
-      title: 'Дисциплина Г',
-      groups: ['P1111', 'P1112'],
-      pendingReviews: 4,
-    },
-    {
-      id: 32,
-      title: 'Дисциплина Д',
-      groups: ['P1111'],
-      pendingReviews: 0,
-    },
-  ],
 };
+
+export const taughtCoursesFixture: TaughtCourse[] = [
+  {
+    id: 31,
+    title: 'Дисциплина Г',
+    groups: ['P1111', 'P1112'],
+    pendingReviews: 4,
+  },
+  {
+    id: 32,
+    title: 'Дисциплина Д',
+    groups: ['P1111'],
+    pendingReviews: 0,
+  },
+];
 
 export const semestersFixture: Semester[] = [
   {
