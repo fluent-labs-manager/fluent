@@ -147,6 +147,21 @@ describe('AccountPage', () => {
       ]);
     });
 
+    it('без оценок в семестре показывает прочерк вместо среднего балла', async () => {
+      mockedGetSemesters.mockResolvedValue(
+        structuredClone(semestersFixture).map((semester) =>
+          semester.isCurrent ? { ...semester, averageGrade: null } : semester,
+        ),
+      );
+      const wrapper = await mountPage();
+
+      expect(statsOf(wrapper)[1]).toEqual([
+        'Средний балл',
+        '—',
+        'оценок пока нет',
+      ]);
+    });
+
     it('не показывает ссылку «Все дисциплины»', async () => {
       const wrapper = await mountPage();
 
