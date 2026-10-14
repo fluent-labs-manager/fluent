@@ -51,19 +51,17 @@ const handleLogin = (): void => {
 
 <template>
   <div class="auth-page">
-    <!-- заголовок -->
     <div class="brand-header">
       <h1 class="logo">Fluent</h1>
       <p class="subtitle">УЧЕБНАЯ ПЛАТФОРМА</p>
     </div>
 
-    <!-- карточка -->
     <div class="auth-card">
       <h2 class="form-title">Вход в аккаунт</h2>
 
-      <!-- форма -->
       <form
         class="login-form"
+        novalidate
         @submit.prevent="handleLogin"
       >
         <div class="input-group">
@@ -143,14 +141,12 @@ const handleLogin = (): void => {
         </button>
       </form>
 
-      <!-- футер карточки -->
       <p class="card-footer">
         Ещё нет аккаунта?
         <router-link to="/register">Создать аккаунт</router-link>
       </p>
     </div>
 
-    <!-- футер страницы -->
     <footer class="page-footer">
       <span>© 2026 FLUENT</span>
       <router-link to="/privacy">Политика конфиденциальности</router-link>
@@ -165,12 +161,12 @@ const handleLogin = (): void => {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  padding: 20px;
+  padding: 1.25rem;
   background-color: var(--color-bg);
 }
 
 .brand-header {
-  margin-bottom: 40px;
+  margin-bottom: 2.5rem;
   text-align: center;
 }
 
@@ -182,7 +178,7 @@ const handleLogin = (): void => {
 }
 
 .subtitle {
-  margin-top: 4px;
+  margin-top: 0.25rem;
   color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
   font-weight: 500;
@@ -191,26 +187,26 @@ const handleLogin = (): void => {
 
 .auth-card {
   width: 100%;
-  max-width: 465px;
-  padding: 36px;
-  border-radius: 16px;
+  max-width: 29.0625rem;
+  padding: 2.25rem;
+  border-radius: 1rem;
   background: var(--color-surface);
   box-shadow: var(--shadow-card);
 }
 
 .form-title {
-  margin-bottom: 24px;
+  margin-bottom: 1.5rem;
   font-size: var(--font-size-3xl);
   font-weight: 700;
 }
 
 .input-group {
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
 }
 
 .input-group label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
   color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
   font-weight: 700;
@@ -224,17 +220,17 @@ const handleLogin = (): void => {
 
 .icon {
   position: absolute;
-  left: 12px;
-  width: 17px;
-  height: 17px;
+  left: 0.75rem;
+  width: 1.0625rem;
+  height: 1.0625rem;
   color: var(--color-text-secondary);
 }
 
 input {
   width: 100%;
-  padding: 12px 12px 12px 38px;
+  padding: 0.75rem 0.75rem 0.75rem 2.375rem;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 0.75rem;
   outline: none;
   font-size: var(--font-size-md);
 }
@@ -244,14 +240,14 @@ input:focus {
 }
 
 .field-error {
-  margin-top: 4px;
+  margin-top: 0.25rem;
   margin-bottom: 0;
   color: var(--color-error);
   font-size: var(--font-size-xs);
 }
 
 .forgot-password {
-  margin-top: 8px;
+  margin-top: 0.5rem;
   text-align: right;
 }
 
@@ -263,10 +259,10 @@ input:focus {
 
 .submit-btn {
   width: 100%;
-  margin-top: 10px;
-  padding: 14px;
+  margin-top: 0.625rem;
+  padding: 0.875rem;
   border: none;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   background-color: var(--color-accent);
   color: #fff;
   font-size: var(--font-size-md);
@@ -275,7 +271,7 @@ input:focus {
 }
 
 .card-footer {
-  margin-top: 20px;
+  margin-top: 1.25rem;
   color: var(--color-text);
   font-size: var(--font-size-sm);
   text-align: center;
@@ -289,11 +285,11 @@ input:focus {
 
 .page-footer {
   position: absolute;
-  bottom: 24px;
+  bottom: 1.5rem;
   display: flex;
   justify-content: space-between;
   width: 100%;
-  padding: 0 40px;
+  padding: 0 2.5rem;
   color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
 }

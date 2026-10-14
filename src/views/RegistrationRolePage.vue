@@ -18,7 +18,14 @@ const goToNext = (): void => {
     return;
   }
 
-  void router.push({ name: 'registration-details' });
+  void router.push({
+    name: 'registration-details',
+    query: { role: selectedRole.value },
+  });
+};
+
+const handleClose = (): void => {
+  void router.push({ name: 'auth' });
 };
 </script>
 
@@ -48,7 +55,9 @@ const goToNext = (): void => {
           <span class="step-indicator">ШАГ 1 ИЗ 2</span>
           <button
             class="close-btn"
+            type="button"
             aria-label="Закрыть"
+            @click="handleClose"
           >
             <svg
               viewBox="0 0 24 24"
@@ -143,6 +152,7 @@ const goToNext = (): void => {
 
         <button
           class="submit-btn"
+          type="button"
           @click="goToNext"
         >
           Продолжить настройку
@@ -159,25 +169,25 @@ const goToNext = (): void => {
 }
 
 .sidebar {
-  width: 380px;
-  padding: 56px 48px;
+  flex-shrink: 0;
+  width: 23.75rem;
+  padding: 3.5rem 3rem;
   background-color: var(--color-sidebar-bg);
   color: var(--color-sidebar-text);
-  flex-shrink: 0;
 }
 
 .sidebar-logo {
   margin: 0;
-  font-size: 32px;
+  font-size: var(--font-size-4xl);
   font-weight: 700;
   letter-spacing: 0.02em;
 }
 
 .sidebar-subtitle {
-  margin-top: 12px;
-  margin-bottom: 40px;
+  margin-top: 0.75rem;
+  margin-bottom: 2.5rem;
   color: rgb(255 255 255 / 85%);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.15em;
 }
@@ -185,7 +195,7 @@ const goToNext = (): void => {
 .steps {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 1.25rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -194,20 +204,20 @@ const goToNext = (): void => {
 .step {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 0.875rem;
 }
 
 .step-number {
   display: flex;
+  flex-shrink: 0;
   justify-content: center;
   align-items: center;
-  width: 34px;
-  height: 34px;
+  width: 2.125rem;
+  height: 2.125rem;
   border-radius: 50%;
   background-color: rgb(255 255 255 / 15%);
-  font-size: 14px;
+  font-size: var(--font-size-md);
   font-weight: 600;
-  flex-shrink: 0;
 }
 
 .step--active .step-number {
@@ -216,7 +226,7 @@ const goToNext = (): void => {
 }
 
 .step-label {
-  font-size: 14px;
+  font-size: var(--font-size-md);
   font-weight: 500;
 }
 
@@ -226,25 +236,25 @@ const goToNext = (): void => {
 
 .content {
   flex: 1;
-  padding: 56px 48px 56px 96px;
+  padding: 3.5rem 3rem 3.5rem 6rem;
   background-color: var(--color-page-bg-soft);
   overflow-y: auto;
 }
 
 .content-inner {
-  max-width: 868px;
+  max-width: 54.25rem;
 }
 
 .content-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 40px;
+  margin-bottom: 2.5rem;
 }
 
 .step-indicator {
   color: var(--color-text-secondary);
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   letter-spacing: 0.08em;
 }
@@ -253,8 +263,8 @@ const goToNext = (): void => {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 30px;
-  height: 30px;
+  width: 1.875rem;
+  height: 1.875rem;
   padding: 0;
   border: 1px solid var(--color-close-border);
   border-radius: 50%;
@@ -269,39 +279,39 @@ const goToNext = (): void => {
 }
 
 .close-btn svg {
-  width: 15px;
-  height: 15px;
+  width: 0.9375rem;
+  height: 0.9375rem;
 }
 
 .title {
-  margin: 0 0 12px;
+  margin: 0 0 0.75rem;
   color: var(--color-text);
-  font-size: 40px;
+  font-size: var(--font-size-5xl);
   font-weight: 700;
-  line-height: 1.1;
+  line-height: var(--page-title-line-height);
 }
 
 .description {
-  margin: 0 0 40px;
+  margin: 0 0 2.5rem;
   color: var(--color-text-secondary);
-  font-size: 15px;
+  font-size: var(--font-size-lg);
 }
 
 .role-selection {
   display: grid;
-  gap: 18px;
+  gap: 1.125rem;
   grid-template-columns: 1fr 1fr;
-  margin-bottom: 32px;
+  margin-bottom: 2rem;
 }
 
 .role-option {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 16px;
-  padding: 20px;
+  gap: 1rem;
+  padding: 1.25rem;
   border: 1px solid var(--color-role-border);
-  border-radius: 16px;
+  border-radius: 1rem;
   background-color: var(--color-surface);
   cursor: pointer;
   transition: all 0.15s ease;
@@ -321,30 +331,30 @@ const goToNext = (): void => {
 }
 
 .role-option__title {
-  margin: 0 0 8px;
+  margin: 0 0 0.5rem;
   color: var(--color-text);
-  font-size: 20px;
+  font-size: var(--font-size-3xl);
   font-weight: 700;
 }
 
 .role-option__desc {
   margin: 0;
   color: var(--color-text-secondary);
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   line-height: 1.5;
 }
 
 .role-option__check {
   display: flex;
+  flex-shrink: 0;
   justify-content: center;
   align-items: center;
-  width: 28px;
-  height: 28px;
+  width: 1.75rem;
+  height: 1.75rem;
   border: 1.5px solid var(--color-role-border);
   border-radius: 50%;
   background-color: transparent;
   color: #fff;
-  flex-shrink: 0;
 }
 
 .role-option--selected .role-option__check {
@@ -353,33 +363,33 @@ const goToNext = (): void => {
 }
 
 .role-option__check svg {
-  width: 16px;
-  height: 16px;
+  width: 1rem;
+  height: 1rem;
 }
 
 .field {
-  max-width: 620px;
-  margin-bottom: 24px;
+  max-width: 38.75rem;
+  margin-bottom: 1.5rem;
 }
 
 .field-label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
   color: var(--color-text-secondary);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.08em;
 }
 
 .field-input {
   width: 100%;
-  padding: 15px 16px;
+  padding: 0.9375rem 1rem;
   border: 1px solid var(--color-role-border);
-  border-radius: 12px;
+  border-radius: 0.75rem;
   outline: none;
   background-color: var(--color-surface);
   color: var(--color-text);
-  font-size: 14px;
+  font-size: var(--font-size-md);
   transition: border-color 0.15s ease;
 }
 
@@ -392,19 +402,19 @@ const goToNext = (): void => {
 }
 
 .field-error {
-  margin-top: 4px;
+  margin-top: 0.25rem;
   margin-bottom: 0;
   color: var(--color-error);
   font-size: var(--font-size-xs);
 }
 
 .submit-btn {
-  padding: 16px 32px;
+  padding: 1rem 2rem;
   border: none;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   background-color: var(--color-btn-primary);
   color: #fff;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.15s ease;
