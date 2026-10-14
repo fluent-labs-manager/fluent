@@ -9,6 +9,7 @@ import {
   Building2,
   ChevronLeft,
   ChevronRight,
+  GraduationCap,
   Mail,
   Pencil,
   RotateCw,
@@ -133,7 +134,7 @@ const details = computed<ProfileDetail[]>(() => {
 
   return [
     email,
-    { icon: 'graduation-cap', label: 'Направление', value: data.direction },
+    { icon: GraduationCap, label: 'Направление', value: data.direction },
     {
       icon: 'calendar',
       label: 'Курс и поток',
