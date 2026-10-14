@@ -1,10 +1,6 @@
 // Иконки, которые умеет рисовать AppIcon
 export type IconName =
-  | 'home'
   | 'book'
-  | 'flask'
-  | 'award'
-  | 'chevron-down'
   | 'chevron-right'
   | 'arrow-left'
   | 'refresh'
@@ -15,9 +11,4 @@ export type IconName =
   | 'building'
   | 'briefcase'
   | 'pencil'
-  | 'settings'
-  | 'layout-grid'
-  | 'shuffle'
-  | 'sparkles'
-  | 'users'
-  | 'clipboard-check';
+  | 'settings';
