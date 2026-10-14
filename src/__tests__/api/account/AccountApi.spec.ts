@@ -13,6 +13,7 @@ describe('getAccountProfileStub', () => {
   afterEach(() => {
     vi.useRealTimers();
     window.history.replaceState(null, '', '/');
+    sessionStorage.clear();
   });
 
   async function request(search = ''): Promise<unknown> {

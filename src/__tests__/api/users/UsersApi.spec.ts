@@ -11,6 +11,7 @@ describe('getCurrentUserStub', () => {
   afterEach(() => {
     vi.useRealTimers();
     window.history.replaceState(null, '', '/');
+    sessionStorage.clear();
   });
 
   async function requestWith(search: string): Promise<unknown> {
