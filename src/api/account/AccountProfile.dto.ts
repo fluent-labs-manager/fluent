@@ -4,7 +4,7 @@ export interface StudentProfile {
   // направление подготовки
   direction: string;
   courseYear: number;
-  // учебный поток, например «2024/25»
+  // учебный поток, например «2024/25»; формат согласовать
   stream: string;
 }
 
@@ -15,5 +15,6 @@ export interface TeacherProfile {
   position: string;
 }
 
-// данные личного кабинета, которых нет в User; набор полей зависит от роли
+// данные личного кабинета, которых нет в User; набор полей зависит от роли.
+// согласовать с бэком: отдельный запрос или поля в GET /me
 export type AccountProfile = StudentProfile | TeacherProfile;
