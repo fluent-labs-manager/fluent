@@ -4,6 +4,7 @@ import { computed } from 'vue';
 import {
   Award,
   BookOpen,
+  Calculator,
   ChevronDown,
   ClipboardCheck,
   House,
@@ -34,7 +35,7 @@ const teacherNavItems: NavItem[] = [
   { label: 'Варианты', icon: Shuffle },
   { label: 'ИИ-предфильтр', icon: Sparkles },
   { label: 'Очереди', icon: Users },
-  { label: 'Конструктор баллов', icon: Sparkles },
+  { label: 'Конструктор баллов', icon: Calculator },
   { label: 'Оценивание', icon: ClipboardCheck },
 ];
 
