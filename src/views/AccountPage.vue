@@ -270,7 +270,7 @@ function retry(): void {
       class="account-page__status account-page__status--error"
       role="alert"
     >
-      <span>Не удалось загрузить профиль: {{ error }}</span>
+      <span>Не удалось загрузить данные: {{ error }}</span>
       <button
         class="account-page__retry"
         type="button"

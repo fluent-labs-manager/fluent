@@ -278,7 +278,7 @@ describe('AccountPage', () => {
       const wrapper = await mountPage();
 
       expect(wrapper.find('[role="alert"]').text()).toBe(
-        'Не удалось загрузить профиль: Сервис временно недоступен',
+        'Не удалось загрузить данные: Сервис временно недоступен',
       );
 
       await wrapper.find('.account-page__retry').trigger('click');
@@ -317,7 +317,7 @@ describe('AccountPage', () => {
       const wrapper = await mountPage();
 
       expect(wrapper.find('[role="alert"]').text()).toBe(
-        'Не удалось загрузить профиль: Сервис временно недоступен',
+        'Не удалось загрузить данные: Сервис временно недоступен',
       );
     });
 
@@ -326,7 +326,7 @@ describe('AccountPage', () => {
       const wrapper = await mountPage();
 
       expect(wrapper.find('[role="alert"]').text()).toBe(
-        'Не удалось загрузить профиль: Неизвестная ошибка',
+        'Не удалось загрузить данные: Неизвестная ошибка',
       );
     });
 
@@ -337,7 +337,7 @@ describe('AccountPage', () => {
       const wrapper = await mountPage();
 
       expect(wrapper.find('[role="alert"]').text()).toBe(
-        'Не удалось загрузить профиль: Ошибка сервера',
+        'Не удалось загрузить данные: Ошибка сервера',
       );
     });
 
@@ -348,7 +348,7 @@ describe('AccountPage', () => {
       const wrapper = await mountPage();
 
       expect(wrapper.find('[role="alert"]').text()).toBe(
-        'Не удалось загрузить профиль: Сервис временно недоступен',
+        'Не удалось загрузить данные: Сервис временно недоступен',
       );
     });
 
@@ -359,7 +359,7 @@ describe('AccountPage', () => {
       const wrapper = await mountPage();
 
       expect(wrapper.find('[role="alert"]').text()).toBe(
-        'Не удалось загрузить профиль: Профиль не совпадает с ролью пользователя',
+        'Не удалось загрузить данные: Профиль не совпадает с ролью пользователя',
       );
       expect(wrapper.find('.account-page__profile').exists()).toBe(false);
     });
