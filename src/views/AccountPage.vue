@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Pencil,
   RotateCw,
+  Settings,
 } from '@lucide/vue';
 
 import AppIcon from '@/components/AppIcon.vue';
@@ -327,10 +328,7 @@ function retry(): void {
               disabled
               title="Скоро будет доступно"
             >
-              <AppIcon
-                name="settings"
-                :size="16"
-              />
+              <Settings :size="16" />
               Настройки
             </button>
           </div>
