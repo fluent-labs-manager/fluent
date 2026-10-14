@@ -23,10 +23,6 @@ const paths: Record<IconName, string[]> = {
     'M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z',
     'M3 10h18',
   ],
-  briefcase: [
-    'M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16',
-    'M4 6h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z',
-  ],
 };
 
 const iconPaths = computed<string[]>(() => paths[props.name]);

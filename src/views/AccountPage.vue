@@ -5,6 +5,7 @@ import { RouterLink, useRouter } from 'vue-router';
 
 import {
   BookOpen,
+  Briefcase,
   Building2,
   ChevronLeft,
   ChevronRight,
@@ -126,7 +127,7 @@ const details = computed<ProfileDetail[]>(() => {
     return [
       email,
       { icon: Building2, label: 'Кафедра', value: data.department },
-      { icon: 'briefcase', label: 'Должность', value: data.position },
+      { icon: Briefcase, label: 'Должность', value: data.position },
     ];
   }
 
