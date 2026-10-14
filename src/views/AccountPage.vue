@@ -7,6 +7,7 @@ import {
   BookOpen,
   Briefcase,
   Building2,
+  Calendar,
   ChevronLeft,
   ChevronRight,
   GraduationCap,
@@ -16,20 +17,17 @@ import {
   Settings,
 } from '@lucide/vue';
 
-import AppIcon from '@/components/AppIcon.vue';
 import { useAccountProfile } from '@/composables/useAccountProfile.ts';
 import { useSemesters } from '@/composables/useSemesters.ts';
 import { useTaughtCourses } from '@/composables/useTaughtCourses.ts';
 import { useUserStore } from '@/stores/user.ts';
 import type { Course } from '@/api/courses/Course.dto.ts';
-import type { IconName } from '@/types/IconName.ts';
 import type { UserRole } from '@/types/UserRole.ts';
 import { formatGrade } from '@/utils/GradeFormatter.ts';
 import { formatPercent, getPercent } from '@/utils/ProgressPercentage.ts';
 
 interface ProfileDetail {
-  // пока часть иконок рисует AppIcon, часть — @lucide/vue
-  icon: IconName | Component;
+  icon: Component;
   label: string;
   value: string;
 }
@@ -136,7 +134,7 @@ const details = computed<ProfileDetail[]>(() => {
     email,
     { icon: GraduationCap, label: 'Направление', value: data.direction },
     {
-      icon: 'calendar',
+      icon: Calendar,
       label: 'Курс и поток',
       value: `${String(data.courseYear)} курс · ${data.stream}`,
     },
@@ -308,15 +306,8 @@ function retry(): void {
               class="account-page__detail"
               :title="detail.label"
             >
-              <AppIcon
-                v-if="typeof detail.icon === 'string'"
-                class="account-page__detail-icon"
-                :name="detail.icon"
-                :size="18"
-              />
               <component
                 :is="detail.icon"
-                v-else
                 class="account-page__detail-icon"
                 :size="18"
               />
