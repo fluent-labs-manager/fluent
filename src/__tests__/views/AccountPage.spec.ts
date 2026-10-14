@@ -242,14 +242,10 @@ describe('AccountPage', () => {
       expect(mockedGetProfile).toHaveBeenCalledWith('teacher');
     });
 
-    it('не зависит от ошибки загрузки семестров — она нужна только студенту', async () => {
-      mockedGetSemesters.mockRejectedValue(
-        new ApiRequestError(503, 'Сервис временно недоступен'),
-      );
-      const wrapper = await mountPage();
+    it('не запрашивает семестры — они нужны только студенту', async () => {
+      await mountPage();
 
-      expect(wrapper.find('[role="alert"]').exists()).toBe(false);
-      expect(wrapper.text()).toContain('Мои дисциплины');
+      expect(mockedGetSemesters).not.toHaveBeenCalled();
     });
 
     it('без дисциплин показывает «Дисциплин пока нет»', async () => {
