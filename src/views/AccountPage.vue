@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import type { Component } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 
 import {
   BookOpen,
   ChevronLeft,
   ChevronRight,
+  Mail,
   Pencil,
   RotateCw,
   Settings,
@@ -23,7 +25,8 @@ import { formatGrade } from '@/utils/GradeFormatter.ts';
 import { formatPercent, getPercent } from '@/utils/ProgressPercentage.ts';
 
 interface ProfileDetail {
-  icon: IconName;
+  // пока часть иконок рисует AppIcon, часть — @lucide/vue
+  icon: IconName | Component;
   label: string;
   value: string;
 }
@@ -113,7 +116,7 @@ const details = computed<ProfileDetail[]>(() => {
   }
 
   const email: ProfileDetail = {
-    icon: 'mail',
+    icon: Mail,
     label: 'Корпоративная почта',
     value: data.email,
   };
@@ -303,8 +306,15 @@ function retry(): void {
               :title="detail.label"
             >
               <AppIcon
+                v-if="typeof detail.icon === 'string'"
                 class="account-page__detail-icon"
                 :name="detail.icon"
+                :size="18"
+              />
+              <component
+                :is="detail.icon"
+                v-else
+                class="account-page__detail-icon"
                 :size="18"
               />
               <span class="account-page__detail-value">{{ detail.value }}</span>

@@ -12,10 +12,6 @@ const props = withDefaults(
 );
 
 const paths: Record<IconName, string[]> = {
-  mail: [
-    'M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z',
-    'm22 7-10 6L2 7',
-  ],
   'graduation-cap': [
     'M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z',
     'M22 10v6',
