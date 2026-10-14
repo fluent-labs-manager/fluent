@@ -182,10 +182,11 @@ const stats = computed<ProfileStat[]>(() => {
     },
   ];
   if (currentSemester.value !== undefined) {
+    const grade = currentSemester.value.averageGrade;
     result.push({
       label: 'Средний балл',
-      value: `${formatGrade(currentSemester.value.averageGrade)} / 5`,
-      hint: 'за текущий семестр',
+      value: grade === null ? '—' : `${formatGrade(grade)} / 5`,
+      hint: grade === null ? 'оценок пока нет' : 'за текущий семестр',
       accent: false,
     });
   }
