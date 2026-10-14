@@ -139,7 +139,7 @@ const details = computed<ProfileDetail[]>(() => {
   if (data.role === 'teacher') {
     return [
       email,
-      { icon: Building2, label: 'Кафедра', value: data.department },
+      { icon: Building2, label: 'Подразделение', value: data.department },
       { icon: Briefcase, label: 'Должность', value: data.position },
     ];
   }

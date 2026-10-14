@@ -11,6 +11,7 @@ export interface StudentProfile {
 export interface TeacherProfile {
   role: 'teacher';
   email: string;
+  // кафедра или факультет; название поля согласовать
   department: string;
   position: string;
 }

@@ -217,6 +217,11 @@ describe('AccountPage', () => {
       expect(details).toContain('Доцент');
       expect(details).not.toContain('Корпоративная почта');
       expect(details).not.toContain('Кафедра');
+      expect(
+        wrapper
+          .findAll('.account-page__detail')
+          .map((detail) => detail.attributes('title')),
+      ).toEqual(['Корпоративная почта', 'Подразделение', 'Должность']);
       expect(details).not.toContain('Должность');
     });
 
