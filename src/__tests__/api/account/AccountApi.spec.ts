@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getAccountProfileStub } from '@/api/account/AccountApi.ts';
 import { MOCK_DELAY_MS } from '@/mocks/mockMode.ts';
-import type { UserRole } from '@/types/UserRole.ts';
 import { ApiRequestError } from '@/utils/ApiResolver.ts';
 
 // проверяем режимы заглушки, через которые видны состояния страницы
@@ -16,9 +15,9 @@ describe('getAccountProfileStub', () => {
     window.history.replaceState(null, '', '/');
   });
 
-  async function request(role: UserRole, search = ''): Promise<unknown> {
+  async function request(search = ''): Promise<unknown> {
     window.history.replaceState(null, '', `/account${search}`);
-    const settled = getAccountProfileStub(role).then(
+    const settled = getAccountProfileStub().then(
       (value) => value,
       (error: unknown) => error,
     );
@@ -26,17 +25,15 @@ describe('getAccountProfileStub', () => {
     return settled;
   }
 
-  it('для студента возвращает профиль студента', async () => {
-    expect(await request('student')).toMatchObject({ role: 'student' });
+  it('по умолчанию возвращает профиль студента', async () => {
+    expect(await request()).toMatchObject({ role: 'student' });
   });
 
-  it('для преподавателя возвращает профиль преподавателя', async () => {
-    expect(await request('teacher')).toMatchObject({ role: 'teacher' });
+  it('с ?role=teacher возвращает профиль преподавателя', async () => {
+    expect(await request('?role=teacher')).toMatchObject({ role: 'teacher' });
   });
 
   it('с ?mock=error бросает ApiRequestError, как ApiResolver', async () => {
-    expect(await request('student', '?mock=error')).toBeInstanceOf(
-      ApiRequestError,
-    );
+    expect(await request('?mock=error')).toBeInstanceOf(ApiRequestError);
   });
 });

@@ -37,7 +37,7 @@ const {
   isLoading: isProfileLoading,
   error: profileError,
   reload: reloadProfile,
-} = useAccountProfile(() => role.value);
+} = useAccountProfile();
 
 const isStudent = computed<boolean>(() => role.value === 'student');
 

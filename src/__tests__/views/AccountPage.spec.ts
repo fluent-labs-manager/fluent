@@ -163,10 +163,10 @@ describe('AccountPage', () => {
       expect(text).not.toContain('Ждут проверки');
     });
 
-    it('запрашивает профиль студента', async () => {
+    it('не запрашивает дисциплины преподавателя', async () => {
       await mountPage();
 
-      expect(mockedGetProfile).toHaveBeenCalledWith('student');
+      expect(mockedGetTaughtCourses).not.toHaveBeenCalled();
     });
 
     it('без дисциплин в текущем семестре показывает «Дисциплин пока нет»', async () => {
@@ -243,12 +243,6 @@ describe('AccountPage', () => {
       expect(text).not.toContain('Курс и поток');
       expect(text).not.toContain('Сдано работ');
       expect(text).not.toContain('Средний балл');
-    });
-
-    it('запрашивает профиль преподавателя', async () => {
-      await mountPage();
-
-      expect(mockedGetProfile).toHaveBeenCalledWith('teacher');
     });
 
     it('не запрашивает семестры — они нужны только студенту', async () => {
