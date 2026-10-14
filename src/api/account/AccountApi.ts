@@ -6,6 +6,7 @@ import { ApiRequestError } from '@/utils/ApiResolver.ts';
 /**
  * временная заглушка: данные личного кабинета текущего пользователя
  * TODO: заменить на запрос через ApiResolver, когда появится контракт API
+ * предлагаемый путь — GET /me/profile, согласовать с бэком
  */
 // роль бэкенд возьмёт из токена, поэтому параметра нет
 export async function getAccountProfileStub(): Promise<AccountProfile> {

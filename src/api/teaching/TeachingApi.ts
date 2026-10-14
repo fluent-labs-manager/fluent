@@ -6,6 +6,7 @@ import { ApiRequestError } from '@/utils/ApiResolver.ts';
 /**
  * временная заглушка: дисциплины, которые ведёт текущий преподаватель
  * TODO: заменить на запрос через ApiResolver, когда появится контракт API
+ * предлагаемый путь — GET /teacher/courses, согласовать с бэком
  */
 export async function getTaughtCoursesStub(): Promise<TaughtCourse[]> {
   await mockDelay();

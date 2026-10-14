@@ -6,6 +6,7 @@ import { ApiRequestError } from '@/utils/ApiResolver.ts';
 /**
  * временная заглушка: семестры пользователя с дисциплинами и прогрессом
  * TODO: заменить на запрос через ApiResolver, когда появится контракт API
+ * предлагаемый путь — GET /semesters, согласовать с бэком
  */
 export async function getSemestersStub(): Promise<Semester[]> {
   await mockDelay();
