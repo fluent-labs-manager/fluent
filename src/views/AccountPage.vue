@@ -85,8 +85,22 @@ const isLoading = computed<boolean>(() => {
   return isProfileLoading.value || areCoursesLoading.value;
 });
 
+// разметка строится по роли пользователя, профиль другой роли — ошибка
+const isProfileMismatch = computed<boolean>(
+  () =>
+    profile.value !== null &&
+    role.value !== null &&
+    profile.value.role !== role.value,
+);
+
 const error = computed<string | null>(
-  () => userStore.error ?? profileError.value ?? coursesError.value,
+  () =>
+    userStore.error ??
+    profileError.value ??
+    (isProfileMismatch.value
+      ? 'Профиль не совпадает с ролью пользователя'
+      : null) ??
+    coursesError.value,
 );
 
 // фото в данных нет — показываем инициалы. Нужен ли avatarUrl — согласовать
@@ -355,7 +369,7 @@ function retry(): void {
       </section>
 
       <section
-        v-if="profile.role === 'student'"
+        v-if="isStudent"
         class="account-page__column"
         aria-labelledby="account-courses-heading"
       >

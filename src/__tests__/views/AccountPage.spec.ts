@@ -347,6 +347,18 @@ describe('AccountPage', () => {
       );
     });
 
+    it('если роль профиля не совпала с ролью пользователя, показывает ошибку, а не чужую разметку', async () => {
+      mockedGetProfile.mockResolvedValue(
+        structuredClone(teacherProfileFixture),
+      );
+      const wrapper = await mountPage();
+
+      expect(wrapper.find('[role="alert"]').text()).toBe(
+        'Не удалось загрузить профиль: Профиль не совпадает с ролью пользователя',
+      );
+      expect(wrapper.find('.account-page__profile').exists()).toBe(false);
+    });
+
     it('после «Повторить» загружает данные заново', async () => {
       mockedGetProfile.mockRejectedValueOnce(
         new ApiRequestError(503, 'Сервис временно недоступен'),
