@@ -38,15 +38,15 @@ const {
   reload: reloadProfile,
 } = useAccountProfile(() => role.value);
 
+const isStudent = computed<boolean>(() => role.value === 'student');
+
 // дисциплины и прогресс студента уже есть в семестрах — берём оттуда
 const {
   semesters,
   isLoading: areSemestersLoading,
   error: semestersError,
   reload: reloadSemesters,
-} = useSemesters();
-
-const isStudent = computed<boolean>(() => role.value === 'student');
+} = useSemesters(() => isStudent.value);
 
 const isLoading = computed<boolean>(() => {
   if (userStore.user === null) {

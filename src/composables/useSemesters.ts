@@ -1,5 +1,5 @@
-import { ref } from 'vue';
-import type { Ref } from 'vue';
+import { ref, toValue, watch } from 'vue';
+import type { MaybeRefOrGetter, Ref } from 'vue';
 
 import { getSemestersStub } from '@/api/semesters/SemestersApi.ts';
 import type { Semester } from '@/api/semesters/Semester.dto.ts';
@@ -12,7 +12,10 @@ interface UseSemestersResult {
   reload: () => Promise<void>;
 }
 
-export function useSemesters(): UseSemestersResult {
+// enabled — грузить ли данные: в кабинете они нужны только студенту
+export function useSemesters(
+  enabled: MaybeRefOrGetter<boolean> = true,
+): UseSemestersResult {
   const semesters = ref<Semester[]>([]);
   const isLoading = ref<boolean>(true);
   const error = ref<string | null>(null);
@@ -32,6 +35,16 @@ export function useSemesters(): UseSemestersResult {
       isLoading.value = false;
     }
   }
-  void reload();
+
+  watch(
+    () => toValue(enabled),
+    (isEnabled) => {
+      if (isEnabled) {
+        void reload();
+      }
+    },
+    { immediate: true },
+  );
+
   return { semesters, isLoading, error, reload };
 }
