@@ -2,10 +2,9 @@
 import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
 
-import { RotateCw } from '@lucide/vue';
+import { ArrowLeft, RotateCw } from '@lucide/vue';
 
 import ActiveLabCard from '@/components/ActiveLabCard.vue';
-import AppIcon from '@/components/AppIcon.vue';
 import LabListItem from '@/components/LabListItem.vue';
 import { useCourseLabs } from '@/composables/useCourseLabs.ts';
 import { useNow } from '@/composables/useNow.ts';
@@ -75,10 +74,7 @@ function openTask(): void {
         aria-label="К дисциплинам"
         title="К дисциплинам"
       >
-        <AppIcon
-          name="arrow-left"
-          :size="16"
-        />
+        <ArrowLeft :size="16" />
       </RouterLink>
 
       <p
