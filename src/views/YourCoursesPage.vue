@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { RouterLink } from 'vue-router';
 
 import AppIcon from '@/components/AppIcon.vue';
 import CourseCard from '@/components/CourseCard.vue';
@@ -128,12 +129,17 @@ function retry(): void {
         v-else
         class="courses-page__list"
       >
-        <CourseCard
+        <RouterLink
           v-for="course in courses"
           :key="course.id"
-          :course="course"
-          :role="role"
-        />
+          class="courses-page__link"
+          :to="{ name: 'course-labs', params: { courseId: course.id } }"
+        >
+          <CourseCard
+            :course="course"
+            :role="role"
+          />
+        </RouterLink>
       </section>
     </template>
   </main>
@@ -246,5 +252,21 @@ function retry(): void {
   gap: 1.25rem;
   grid-template-columns: repeat(auto-fit, minmax(18.75rem, 1fr));
   grid-auto-rows: 1fr;
+}
+
+.courses-page__link {
+  border-radius: 1rem;
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.courses-page__link:hover {
+  transform: translateY(-0.125rem);
+}
+
+.courses-page__link:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 0.125rem;
 }
 </style>

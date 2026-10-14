@@ -35,6 +35,16 @@
   --color-accent: #5d6b4f;
   --color-success: #5f8a5f;
   --color-error: #a14a3b;
+  --color-deadline: #5b6158;
+
+  /* бейджи статусов: фон и текст */
+  --color-success-surface: #dfe8da;
+  --color-success-text: #476b47;
+  --color-review-surface: #f5e9cf;
+  --color-review: #805a1a;
+  --color-error-surface: #f2dcd6;
+  --color-locked-surface: #e2e2ec;
+  --color-locked: #4f5570;
 
   /* RegistrationRolePage */
   --color-sidebar-bg: #46563d;

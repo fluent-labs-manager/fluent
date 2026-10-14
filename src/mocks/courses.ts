@@ -29,6 +29,13 @@ export const semesters: Semester[] = [
         completedLabs: 5,
         totalLabs: 5,
       },
+      {
+        id: 4,
+        title: 'Базы данных',
+        teacher: 'Николаев Игорь',
+        completedLabs: 3,
+        totalLabs: 6,
+      },
     ],
   },
   {
@@ -37,13 +44,6 @@ export const semesters: Semester[] = [
     isCurrent: false,
     averageGrade: 4.6,
     courses: [
-      {
-        id: 4,
-        title: 'Базы данных',
-        teacher: 'Николаев Игорь',
-        completedLabs: 6,
-        totalLabs: 6,
-      },
       {
         id: 5,
         title: 'Компьютерные сети',

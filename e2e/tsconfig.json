@@ -1,4 +1,10 @@
 {
   "extends": "@tsconfig/node24/tsconfig.json",
-  "include": ["./**/*"]
+  "include": ["./**/*"],
+  "compilerOptions": {
+    // код внутри page.evaluate() выполняется в браузере — нужны типы DOM
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  }
 }

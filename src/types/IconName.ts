@@ -6,4 +6,5 @@ export type IconName =
   | 'award'
   | 'chevron-down'
   | 'chevron-right'
+  | 'arrow-left'
   | 'refresh';

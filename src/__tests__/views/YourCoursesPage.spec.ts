@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { flushPromises, mount } from '@vue/test-utils';
+import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils';
 import { createPinia } from 'pinia';
 import YourCoursesPage from '@/views/YourCoursesPage.vue';
 import { getSemestersStub } from '@/api/semesters/SemestersApi.ts';
@@ -20,6 +20,7 @@ async function mountPage(): Promise<ReturnType<typeof mount>> {
   const wrapper = mount(YourCoursesPage, {
     global: {
       plugins: [createPinia()],
+      stubs: { RouterLink: RouterLinkStub },
     },
   });
   await flushPromises();
@@ -171,6 +172,17 @@ describe('YourCoursesPage', () => {
 
       expect(wrapper.findAll('.course-card')).toHaveLength(3);
       expect(wrapper.find('.semester-progress').exists()).toBe(false);
+    });
+
+    it('ведёт с карточки курса на страницу его лабораторных', async () => {
+      const wrapper = await mountPage();
+      const link = wrapper.findAllComponents(RouterLinkStub)[0];
+
+      expect(link?.props('to')).toEqual({
+        name: 'course-labs',
+        params: { courseId: 11 },
+      });
+      expect(link?.find('.course-card').exists()).toBe(true);
     });
   });
 });

@@ -95,29 +95,82 @@ Unit test files live under `src/**/__tests__/`: `*.spec.ts` / `*.test.ts`.
 
 ### End-to-end tests — [Playwright](https://playwright.dev)
 
+E2e test files are located in `e2e/` (shared locators and helpers — in `e2e/helpers.ts`).
+
+#### Setup
+
 ```sh
-# First run: install browsers
-npx playwright install
+# Install dependencies (also pins the Playwright version from package-lock.json)
+npm ci
 
-# Run all e2e tests
-npm run test:e2e
+# Install browsers matching that Playwright version (chromium, firefox, webkit)
+npm run test:e2e:install
 
-# Run on Chromium only
-npm run test:e2e -- --project=chromium
-
-# Run a specific test file
-npm run test:e2e -- e2e/vue.spec.ts
-
-# Run in headed mode (see the browser)
-npm run test:e2e -- --headed
-
-# Run in debug mode
-npm run test:e2e -- --debug
+# Linux only: also install system libraries the browsers need (uses sudo)
+npm run test:e2e:install -- --with-deps
 ```
 
-> **Note:** on CI, build the project first with `npm run build` before running e2e tests.
+Environment variables: while the API is stubbed (`src/api/*Api.ts`), none are required.
+Playwright passes `VITE_API_URL` / `VITE_API_SOCKET_URL` from your environment if they are set
+(e.g. `doppler run -- npm run test:e2e`). `VITE_SENTRY_DSN_URL` is always empty during e2e runs,
+so test sessions never reach Sentry.
 
-E2e test files are located in `e2e/`.
+#### Run
+
+```sh
+# Run all e2e tests in all three browsers (headless, non-interactive)
+npm run test:e2e
+```
+
+Playwright starts its own dev server on `http://localhost:5180` (`--strictPort`, so it fails fast
+if the port is busy instead of silently switching). If a server is already running on that port,
+it is reused. Your regular `npm run dev` on 5173 is not affected.
+
+#### Targeted runs
+
+```sh
+# One browser
+npm run test:e2e -- --project=chromium
+
+# One file
+npm run test:e2e -- e2e/courses.spec.ts
+
+# One test by line number
+npm run test:e2e -- e2e/courses.spec.ts:11
+
+# Tests whose title matches a pattern
+npm run test:e2e -- -g "Повторить"
+```
+
+#### Debugging
+
+```sh
+# Watch the browser while tests run
+npm run test:e2e -- --headed
+
+# Step through a test with the Playwright Inspector
+npm run test:e2e -- --debug
+
+# Interactive UI mode: pick tests, time-travel through each step
+npm run test:e2e -- --ui
+
+# Open the HTML report of the last run
+npx playwright show-report
+
+# Open a trace of a failed test
+npx playwright show-trace test-results/<test-folder>/trace.zip
+```
+
+On failure, Playwright prints the expected/received values to the console and saves a screenshot,
+a trace and `error-context.md` to `test-results/`; the HTML report goes to `playwright-report/`.
+The report never opens automatically, so the command does not block a terminal or CI.
+
+#### CI
+
+The `code-e2e-testing` job in `.github/workflows/ci.yml` builds the app, serves it with
+`npm run preview` on port 4173 and runs `npm run test:e2e -- --project=chromium` with 2 retries.
+Only Chromium runs in CI: the scenarios test application logic, not engine differences.
+The HTML report (with traces of failed tests) is uploaded as the `playwright-report` artifact.
 
 ---
 
