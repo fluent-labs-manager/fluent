@@ -5,6 +5,7 @@ import { RouterLink, useRouter } from 'vue-router';
 
 import {
   BookOpen,
+  Building2,
   ChevronLeft,
   ChevronRight,
   Mail,
@@ -124,7 +125,7 @@ const details = computed<ProfileDetail[]>(() => {
   if (data.role === 'teacher') {
     return [
       email,
-      { icon: 'building', label: 'Кафедра', value: data.department },
+      { icon: Building2, label: 'Кафедра', value: data.department },
       { icon: 'briefcase', label: 'Должность', value: data.position },
     ];
   }

@@ -1,2 +1,2 @@
 // Иконки, которые умеет рисовать AppIcon
-export type IconName = 'graduation-cap' | 'calendar' | 'building' | 'briefcase';
+export type IconName = 'graduation-cap' | 'calendar' | 'briefcase';
