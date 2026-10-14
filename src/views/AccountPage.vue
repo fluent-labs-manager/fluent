@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 
-import { ChevronRight, RotateCw } from '@lucide/vue';
+import { ChevronLeft, ChevronRight, RotateCw } from '@lucide/vue';
 
 import AppIcon from '@/components/AppIcon.vue';
 import { useAccountProfile } from '@/composables/useAccountProfile.ts';
@@ -228,10 +228,7 @@ function retry(): void {
         type="button"
         @click="goBack"
       >
-        <AppIcon
-          name="chevron-left"
-          :size="16"
-        />
+        <ChevronLeft :size="16" />
         Назад
       </button>
       <h1 class="account-page__title">Личный кабинет</h1>
