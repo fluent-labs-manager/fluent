@@ -76,6 +76,7 @@ const error = computed<string | null>(
   () => userStore.error ?? profileError.value ?? coursesError.value,
 );
 
+// фото в данных нет — показываем инициалы. Нужен ли avatarUrl — согласовать
 const initials = computed<string>(() =>
   (userStore.user?.name ?? '')
     .split(/\s+/)
@@ -135,6 +136,7 @@ const currentCourses = computed<Course[]>(
   () => currentSemester.value?.courses ?? [],
 );
 
+// сводку считаем на фронте из списков; если бэк будет отдавать готовые числа — брать их
 const stats = computed<ProfileStat[]>(() => {
   const data = profile.value;
   if (data === null) {
@@ -156,6 +158,7 @@ const stats = computed<ProfileStat[]>(() => {
         hint: 'работ без оценки',
         accent: pending > 0,
       },
+      // эту карточку придумали сами, на макете её нет — согласовать
       {
         label: 'Дисциплин',
         value: String(taughtCourses.value.length),
