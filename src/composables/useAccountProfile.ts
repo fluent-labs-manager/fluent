@@ -12,7 +12,7 @@ interface UseAccountProfileResult {
   reload: () => Promise<void>;
 }
 
-// данные личного кабинета текущего пользователя
+// данные лк текущего пользователя
 export function useAccountProfile(): UseAccountProfileResult {
   const profile = ref<AccountProfile | null>(null);
   const isLoading = ref<boolean>(true);

@@ -16,6 +16,6 @@ export const studentProfile: StudentProfile = {
 export const teacherProfile: TeacherProfile = {
   role: 'teacher',
   email: 's.mikhailyuk@niuitmo.ru',
-  department: 'Кафедра информационных систем',
+  department: 'Факультет программной инженерии и компьютерной техники',
   position: 'Старший преподаватель',
 };

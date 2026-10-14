@@ -4,14 +4,12 @@ import type { UserRole } from '@/types/UserRole.ts';
 
 declare module 'vue-router' {
   interface RouteMeta {
-    // кому доступна страница; без поля — всем
+    // кому доступна страница
     roles?: UserRole[];
   }
 }
 
-// доступна ли страница пользователю с этой ролью. Учитываются и родительские
-// маршруты: ограничение на разделе действует на все его страницы.
-// это только интерфейс — бэк тоже должен проверять роль и отвечать 403
+// это интерфейс — бэк тоже должен проверять роль и отвечать 403
 export function canAccess(
   route: Pick<RouteLocationNormalized, 'matched'>,
   role: UserRole,

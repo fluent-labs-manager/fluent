@@ -34,7 +34,6 @@ export function useCourseLabs(
       data = await getCourseLabsStub(toValue(courseId));
     } catch (loadError: unknown) {
       // TODO: обработать 401 — отправить пользователя на вход через ITMO ID.
-      // только причина: заголовок «Не удалось загрузить…» выводит страница
       message =
         loadError instanceof ApiRequestError
           ? loadError.message

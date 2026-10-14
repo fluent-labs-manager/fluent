@@ -12,7 +12,7 @@ interface UseSemestersResult {
   reload: () => Promise<void>;
 }
 
-// enabled — грузить ли данные: в кабинете они нужны только студенту
+// enabled — грузить ли данные
 export function useSemesters(
   enabled: MaybeRefOrGetter<boolean> = true,
 ): UseSemestersResult {

@@ -54,7 +54,7 @@ const {
 
 const isStudent = computed<boolean>(() => role.value === 'student');
 
-// дисциплины и прогресс студента уже есть в семестрах — берём оттуда
+// дисциплины и прогресс студента уже есть в семестрах
 const {
   semesters,
   isLoading: areSemestersLoading,
@@ -69,7 +69,7 @@ const {
   reload: reloadTaughtCourses,
 } = useTaughtCourses(() => role.value === 'teacher');
 
-// списки дисциплин зависят от роли: у студента — семестры, у преподавателя — ведомые
+// списки дисциплин зависят от роли
 const areCoursesLoading = computed<boolean>(() =>
   isStudent.value ? areSemestersLoading.value : areTaughtCoursesLoading.value,
 );
@@ -171,7 +171,7 @@ const stats = computed<ProfileStat[]>(() => {
         hint: 'работ без оценки',
         accent: pending > 0,
       },
-      // эту карточку придумали сами, на макете её нет — согласовать
+      // эту карточку придумали, на макете её нет
       {
         label: 'Дисциплин',
         value: String(taughtCourses.value.length),
@@ -209,8 +209,6 @@ const stats = computed<ProfileStat[]>(() => {
   return result;
 });
 
-// «Назад» ведёт на предыдущую страницу приложения; если кабинет открыли
-// по прямой ссылке, истории внутри приложения нет — тогда на главную
 function goBack(): void {
   const state = window.history.state as { back?: unknown } | null;
   if (typeof state?.back === 'string') {
@@ -483,7 +481,7 @@ function retry(): void {
   gap: 1.5rem;
   padding: var(--page-offset-top) 2.5rem 2.5rem;
 
-  /* колонки перестраиваются по ширине страницы, а не окна: часть окна занимает меню */
+  /* колонки перестраиваются по ширине страницы: часть окна занимает меню */
   container: account-page / inline-size;
 }
 
@@ -818,14 +816,14 @@ function retry(): void {
   font-size: var(--font-size-md);
 }
 
-/* двум колонкам тесно: личные данные и дисциплины идут друг под другом */
+/* двум колонкам тесно */
 @container account-page (width < 46rem) {
   .account-page__content {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
-/* совсем узко: сводка и кнопки в одну колонку, цифра дисциплины под названием */
+/* совсем узко */
 @container account-page (width < 28rem) {
   .account-page__stats {
     grid-template-columns: minmax(0, 1fr);
