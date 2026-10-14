@@ -5,5 +5,4 @@ export type IconName =
   | 'calendar'
   | 'building'
   | 'briefcase'
-  | 'pencil'
   | 'settings';

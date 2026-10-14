@@ -2,7 +2,13 @@
 import { computed } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 
-import { BookOpen, ChevronLeft, ChevronRight, RotateCw } from '@lucide/vue';
+import {
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  Pencil,
+  RotateCw,
+} from '@lucide/vue';
 
 import AppIcon from '@/components/AppIcon.vue';
 import { useAccountProfile } from '@/composables/useAccountProfile.ts';
@@ -312,10 +318,7 @@ function retry(): void {
               disabled
               title="Скоро будет доступно"
             >
-              <AppIcon
-                name="pencil"
-                :size="16"
-              />
+              <Pencil :size="16" />
               Редактировать
             </button>
             <button
