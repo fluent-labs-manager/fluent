@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 
-import { ChevronLeft, ChevronRight, RotateCw } from '@lucide/vue';
+import { BookOpen, ChevronLeft, ChevronRight, RotateCw } from '@lucide/vue';
 
 import AppIcon from '@/components/AppIcon.vue';
 import { useAccountProfile } from '@/composables/useAccountProfile.ts';
@@ -386,10 +386,7 @@ function retry(): void {
                 class="account-page__course-icon"
                 aria-hidden="true"
               >
-                <AppIcon
-                  name="book"
-                  :size="18"
-                />
+                <BookOpen :size="18" />
               </span>
               <span class="account-page__course-info">
                 <span class="account-page__course-title">{{
@@ -448,10 +445,7 @@ function retry(): void {
               class="account-page__course-icon"
               aria-hidden="true"
             >
-              <AppIcon
-                name="book"
-                :size="18"
-              />
+              <BookOpen :size="18" />
             </span>
             <span class="account-page__course-info">
               <span class="account-page__course-title">{{ course.title }}</span>
