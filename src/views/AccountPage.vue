@@ -232,13 +232,16 @@ function goBack(): void {
   }
 }
 
+// повторяем только то, что не загрузилось
 function retry(): void {
-  void userStore.loadUser();
-  void reloadProfile();
-  if (isStudent.value) {
-    void reloadSemesters();
-  } else if (role.value === 'teacher') {
-    void reloadTaughtCourses();
+  if (userStore.error !== null) {
+    void userStore.loadUser();
+  }
+  if (profileError.value !== null || isProfileMismatch.value) {
+    void reloadProfile();
+  }
+  if (coursesError.value !== null) {
+    void (isStudent.value ? reloadSemesters() : reloadTaughtCourses());
   }
 }
 </script>

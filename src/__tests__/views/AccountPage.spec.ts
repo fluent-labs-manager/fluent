@@ -364,6 +364,37 @@ describe('AccountPage', () => {
       expect(wrapper.find('.account-page__profile').exists()).toBe(false);
     });
 
+    it('«Повторить» загружает заново только то, что не загрузилось', async () => {
+      mockedGetSemesters.mockRejectedValueOnce(
+        new ApiRequestError(503, 'Сервис временно недоступен'),
+      );
+      const wrapper = await mountPage();
+
+      await wrapper.find('.account-page__retry').trigger('click');
+      await flushPromises();
+
+      expect(mockedGetSemesters).toHaveBeenCalledTimes(2);
+      expect(mockedGetProfile).toHaveBeenCalledTimes(1);
+      expect(mockedGetCurrentUser).toHaveBeenCalledTimes(1);
+      expect(wrapper.text()).toContain('Курс А');
+    });
+
+    it('после ошибки пользователя «Повторить» загружает его и данные страницы', async () => {
+      mockedGetCurrentUser.mockRejectedValueOnce(
+        new ApiRequestError(500, 'Ошибка сервера'),
+      );
+      const wrapper = await mountPage();
+
+      await wrapper.find('.account-page__retry').trigger('click');
+      await flushPromises();
+
+      expect(mockedGetCurrentUser).toHaveBeenCalledTimes(2);
+      expect(mockedGetSemesters).toHaveBeenCalledTimes(1);
+      expect(wrapper.find('.account-page__name').text()).toBe(
+        'Тестовый Студент',
+      );
+    });
+
     it('после «Повторить» загружает данные заново', async () => {
       mockedGetProfile.mockRejectedValueOnce(
         new ApiRequestError(503, 'Сервис временно недоступен'),
