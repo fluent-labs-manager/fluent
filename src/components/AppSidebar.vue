@@ -1,7 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import AppIcon from '@/components/AppIcon.vue';
+import {
+  Award,
+  BookOpen,
+  ChevronDown,
+  ClipboardCheck,
+  House,
+  LayoutGrid,
+  Shuffle,
+  Sparkles,
+  Users,
+} from '@lucide/vue';
+
 import type { User } from '@/api/users/User.dto.ts';
 import type { NavItem } from '@/types/NavItem.ts';
 
@@ -11,26 +22,26 @@ const props = defineProps<{
 }>();
 
 const studentNavItems: NavItem[] = [
-  { label: 'Главная', icon: 'home', to: { name: 'home' } },
-  { label: 'Дисциплины', icon: 'book', to: { name: 'courses' } },
-  { label: 'События', icon: 'award' },
+  { label: 'Главная', icon: House, to: { name: 'home' } },
+  { label: 'Дисциплины', icon: BookOpen, to: { name: 'courses' } },
+  { label: 'События', icon: Award },
 ];
 
 // у преподавателя свои разделы и нет страницы «Дисциплины».
 // Страниц разделов ещё нет — пункты неактивны, как «События» у студента
 const teacherNavItems: NavItem[] = [
-  { label: 'Главная', icon: 'layout-grid', to: { name: 'home' } },
-  { label: 'Варианты', icon: 'shuffle' },
-  { label: 'ИИ-предфильтр', icon: 'sparkles' },
-  { label: 'Очереди', icon: 'users' },
-  { label: 'Конструктор баллов', icon: 'sparkles' },
-  { label: 'Оценивание', icon: 'clipboard-check' },
+  { label: 'Главная', icon: LayoutGrid, to: { name: 'home' } },
+  { label: 'Варианты', icon: Shuffle },
+  { label: 'ИИ-предфильтр', icon: Sparkles },
+  { label: 'Очереди', icon: Users },
+  { label: 'Конструктор баллов', icon: Sparkles },
+  { label: 'Оценивание', icon: ClipboardCheck },
 ];
 
 // пока роль неизвестна, показываем только общий для обеих ролей пункт,
 // чтобы у преподавателя не мелькало меню студента
 const loadingNavItems: NavItem[] = [
-  { label: 'Главная', icon: 'home', to: { name: 'home' } },
+  { label: 'Главная', icon: House, to: { name: 'home' } },
 ];
 
 const navItems = computed<NavItem[]>(() => {
@@ -56,7 +67,12 @@ const navItems = computed<NavItem[]>(() => {
           class="app-sidebar__link"
           exact-active-class="app-sidebar__link--active"
         >
-          <AppIcon :name="item.icon" />
+          <component
+            :is="item.icon"
+            :size="20"
+            class="app-sidebar__icon"
+            aria-hidden="true"
+          />
           {{ item.label }}
         </RouterLink>
         <span
@@ -64,7 +80,12 @@ const navItems = computed<NavItem[]>(() => {
           class="app-sidebar__link"
           aria-disabled="true"
         >
-          <AppIcon :name="item.icon" />
+          <component
+            :is="item.icon"
+            :size="20"
+            class="app-sidebar__icon"
+            aria-hidden="true"
+          />
           {{ item.label }}
         </span>
       </template>
@@ -87,9 +108,10 @@ const navItems = computed<NavItem[]>(() => {
           user.role === 'teacher' ? 'Преподаватель' : user.group
         }}</span>
       </span>
-      <AppIcon
-        name="chevron-down"
+      <ChevronDown
         :size="18"
+        class="app-sidebar__icon"
+        aria-hidden="true"
       />
     </RouterLink>
   </aside>
@@ -147,7 +169,11 @@ const navItems = computed<NavItem[]>(() => {
   font-weight: 700;
 }
 
-.app-sidebar__link--active .app-icon {
+.app-sidebar__icon {
+  flex-shrink: 0;
+}
+
+.app-sidebar__link--active .app-sidebar__icon {
   color: var(--color-accent);
 }
 

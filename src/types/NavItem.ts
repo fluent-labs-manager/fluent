@@ -1,11 +1,11 @@
+import type { Component } from 'vue';
 import type { RouteLocationRaw } from 'vue-router';
-
-import type { IconName } from '@/types/IconName.ts';
 
 // Пункт бокового меню
 export interface NavItem {
   label: string;
-  icon: IconName;
+  // иконка из @lucide/vue
+  icon: Component;
   // TODO: добавить маршруты, когда появятся соответствующие страницы
   to?: RouteLocationRaw;
 }
