@@ -2,7 +2,6 @@
 export type IconName =
   | 'book'
   | 'arrow-left'
-  | 'refresh'
   | 'chevron-left'
   | 'mail'
   | 'graduation-cap'

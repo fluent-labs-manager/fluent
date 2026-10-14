@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 
-import { ChevronRight } from '@lucide/vue';
+import { ChevronRight, RotateCw } from '@lucide/vue';
 
 import AppIcon from '@/components/AppIcon.vue';
 import { useAccountProfile } from '@/composables/useAccountProfile.ts';
@@ -258,10 +258,7 @@ function retry(): void {
         title="Повторить"
         @click="retry"
       >
-        <AppIcon
-          name="refresh"
-          :size="16"
-        />
+        <RotateCw :size="16" />
       </button>
     </div>
 

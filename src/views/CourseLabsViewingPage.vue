@@ -2,6 +2,8 @@
 import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
 
+import { RotateCw } from '@lucide/vue';
+
 import ActiveLabCard from '@/components/ActiveLabCard.vue';
 import AppIcon from '@/components/AppIcon.vue';
 import LabListItem from '@/components/LabListItem.vue';
@@ -100,10 +102,7 @@ function openTask(): void {
           title="Повторить"
           @click="retry"
         >
-          <AppIcon
-            name="refresh"
-            :size="16"
-          />
+          <RotateCw :size="16" />
         </button>
       </div>
 
