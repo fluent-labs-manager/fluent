@@ -2,6 +2,8 @@
 import { computed } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 
+import { ChevronRight } from '@lucide/vue';
+
 import AppIcon from '@/components/AppIcon.vue';
 import { useAccountProfile } from '@/composables/useAccountProfile.ts';
 import { useSemesters } from '@/composables/useSemesters.ts';
@@ -411,9 +413,8 @@ function retry(): void {
                   >лабораторных сдано</span
                 >
               </span>
-              <AppIcon
+              <ChevronRight
                 class="account-page__course-arrow"
-                name="chevron-right"
                 :size="18"
               />
             </RouterLink>

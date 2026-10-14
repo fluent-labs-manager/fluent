@@ -16,7 +16,6 @@ const paths: Record<IconName, string[]> = {
     'M12 7v14',
     'M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z',
   ],
-  'chevron-right': ['m9 6 6 6-6 6'],
   'arrow-left': ['M19 12H5', 'm12 19-7-7 7-7'],
   refresh: ['M21 12a9 9 0 1 1-2.64-6.36', 'M21 3v6h-6'],
   'chevron-left': ['m15 18-6-6 6-6'],

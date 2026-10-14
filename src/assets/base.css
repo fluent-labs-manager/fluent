@@ -89,3 +89,8 @@ button,
 input {
   font: inherit;
 }
+
+/* иконки @lucide/vue не сжимаются во flex-контейнерах */
+.lucide {
+  flex-shrink: 0;
+}
