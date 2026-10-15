@@ -20,6 +20,15 @@ describe('getMockRole', () => {
     expect(getMockRole()).toBe(UserRole.Student);
   });
 
+  it('в адресе роль пишется строчными, а возвращается значением с бэка', () => {
+    openAt('/?role=teacher');
+    expect(getMockRole()).toBe('TEACHER');
+
+    openAt('/?role=TEACHER');
+    sessionStorage.clear();
+    expect(getMockRole()).toBe(UserRole.Student);
+  });
+
   it('помнит преподавателя, когда параметр пропал из адреса', () => {
     openAt('/?role=teacher');
     getMockRole();
