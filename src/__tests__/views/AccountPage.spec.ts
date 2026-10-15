@@ -9,6 +9,7 @@ import { getAccountProfileStub } from '@/api/account/AccountApi.ts';
 import { getSemestersStub } from '@/api/semesters/SemestersApi.ts';
 import { getTaughtCoursesStub } from '@/api/teaching/TeachingApi.ts';
 import { getCurrentUserStub } from '@/api/users/UsersApi.ts';
+import { useUserStore } from '@/stores/user.ts';
 import { ApiRequestError } from '@/utils/ApiResolver.ts';
 import {
   semestersFixture,
@@ -55,9 +56,13 @@ async function mountPage(
   await router.push('/account');
   await router.isReady();
 
+  // пользователя загружает MainLayout, страница только читает его из стора
+  const pinia = createPinia();
+  void useUserStore(pinia).loadUser();
+
   const wrapper = mount(AccountPage, {
     global: {
-      plugins: [createPinia(), router],
+      plugins: [pinia, router],
     },
   });
   await flushPromises();

@@ -40,8 +40,8 @@ interface ProfileStat {
 }
 
 const router = useRouter();
+// пользователя загружает MainLayout
 const userStore = useUserStore();
-void userStore.loadUser();
 
 const role = computed<UserRole | null>(() => userStore.user?.role ?? null);
 
