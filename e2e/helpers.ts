@@ -24,3 +24,8 @@ export function courseCard(page: Page, title: string): Locator {
 export function courseCards(page: Page): Locator {
   return page.getByRole('main').getByRole('link');
 }
+
+/** Карточка пользователя внизу бокового меню — ссылка на личный кабинет. */
+export function userCard(page: Page): Locator {
+  return page.getByRole('complementary').getByTitle('Личный кабинет');
+}

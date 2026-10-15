@@ -1,3 +1,8 @@
+import type {
+  StudentProfile,
+  TeacherProfile,
+} from '@/api/account/AccountProfile.dto.ts';
+import type { TaughtCourse } from '@/api/teaching/TaughtCourse.dto.ts';
 import type { Semester } from '@/api/semesters/Semester.dto.ts';
 import type { CourseLabs } from '@/api/labs/CourseLabs.dto.ts';
 import type { User } from '@/api/users/User.dto.ts';
@@ -11,6 +16,43 @@ export const studentFixture: User = {
   group: 'P0000',
   role: 'student',
 };
+
+export const teacherFixture: User = {
+  id: 200,
+  name: 'Тестовый Преподаватель',
+  group: null,
+  role: 'teacher',
+};
+
+export const studentProfileFixture: StudentProfile = {
+  role: 'student',
+  email: 'student@test.ru',
+  direction: 'Тестовое направление',
+  courseYear: 2,
+  stream: '2025/26',
+};
+
+export const teacherProfileFixture: TeacherProfile = {
+  role: 'teacher',
+  email: 'teacher@test.ru',
+  department: 'Тестовая кафедра',
+  position: 'Доцент',
+};
+
+export const taughtCoursesFixture: TaughtCourse[] = [
+  {
+    id: 31,
+    title: 'Дисциплина Г',
+    groups: ['P1111', 'P1112'],
+    pendingReviews: 4,
+  },
+  {
+    id: 32,
+    title: 'Дисциплина Д',
+    groups: ['P1111'],
+    pendingReviews: 0,
+  },
+];
 
 export const semestersFixture: Semester[] = [
   {

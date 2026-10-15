@@ -2,7 +2,8 @@
 import { computed, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 
-import AppIcon from '@/components/AppIcon.vue';
+import { RotateCw } from '@lucide/vue';
+
 import CourseCard from '@/components/CourseCard.vue';
 import SemesterProgress from '@/components/SemesterProgress.vue';
 import { useSemesters } from '@/composables/useSemesters.ts';
@@ -82,10 +83,7 @@ function retry(): void {
           title="Повторить"
           @click="retry"
         >
-          <AppIcon
-            name="refresh"
-            :size="16"
-          />
+          <RotateCw :size="16" />
         </button>
       </div>
       <div

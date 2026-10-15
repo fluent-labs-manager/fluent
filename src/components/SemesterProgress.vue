@@ -21,8 +21,10 @@ const percent = computed<string>(() =>
   formatPercent(getPercent(completedLabs.value, totalLabs.value)),
 );
 
-const averageGrade = computed<string>(() =>
-  formatGrade(props.semester.averageGrade),
+const gradeSummary = computed<string>(() =>
+  props.semester.averageGrade === null
+    ? 'оценок пока нет'
+    : `средний балл ${formatGrade(props.semester.averageGrade)}`,
 );
 </script>
 
@@ -31,8 +33,8 @@ const averageGrade = computed<string>(() =>
     <div class="semester-progress__info">
       <h2 class="semester-progress__title">Прогресс семестра</h2>
       <p class="semester-progress__details">
-        {{ completedLabs }} из {{ totalLabs }} лабораторных выполнены · средний
-        балл {{ averageGrade }}
+        {{ completedLabs }} из {{ totalLabs }} лабораторных выполнены ·
+        {{ gradeSummary }}
       </p>
     </div>
     <span class="semester-progress__percent">{{ percent }} выполнено</span>
