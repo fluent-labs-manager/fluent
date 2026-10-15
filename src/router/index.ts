@@ -3,6 +3,7 @@ import type { RouteRecordRaw } from 'vue-router';
 import MainLayout from '@/layouts/MainLayout.vue';
 import { canAccess } from '@/router/access.ts';
 import { useUserStore } from '@/stores/user.ts';
+import { UserRole } from '@/types/UserRole.ts';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -21,14 +22,14 @@ const routes: RouteRecordRaw[] = [
         name: 'courses',
         component: () => import('@/views/YourCoursesPage.vue'),
         // у преподавателя нет страницы дисциплин
-        meta: { roles: ['student'] },
+        meta: { roles: [UserRole.Student] },
       },
       {
         path: 'courses/:courseId',
         name: 'course-labs',
         component: () => import('@/views/CourseLabsViewingPage.vue'),
         props: (route) => ({ courseId: Number(route.params.courseId) }),
-        meta: { roles: ['student'] },
+        meta: { roles: [UserRole.Student] },
       },
       {
         path: 'account',

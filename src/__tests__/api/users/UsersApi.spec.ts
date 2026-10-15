@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getCurrentUserStub } from '@/api/users/UsersApi.ts';
 import { MOCK_DELAY_MS } from '@/mocks/mockMode.ts';
+import { UserRole } from '@/types/UserRole.ts';
 
 describe('getCurrentUserStub', () => {
   beforeEach(() => {
@@ -24,13 +25,13 @@ describe('getCurrentUserStub', () => {
   it('по умолчанию возвращает студента с группой', async () => {
     const user = (await requestWith('')) as { group: string | null };
 
-    expect(user).toMatchObject({ role: 'student' });
+    expect(user).toMatchObject({ role: UserRole.Student });
     expect(user.group).not.toBeNull();
   });
 
   it('с ?role=teacher возвращает преподавателя без группы', async () => {
     expect(await requestWith('?role=teacher')).toMatchObject({
-      role: 'teacher',
+      role: UserRole.Teacher,
       group: null,
     });
   });

@@ -6,6 +6,7 @@ import type { TaughtCourse } from '@/api/teaching/TaughtCourse.dto.ts';
 import type { Semester } from '@/api/semesters/Semester.dto.ts';
 import type { CourseLabs } from '@/api/labs/CourseLabs.dto.ts';
 import type { User } from '@/api/users/User.dto.ts';
+import { UserRole } from '@/types/UserRole.ts';
 import { LabStatus } from '@/types/LabStatus.ts';
 import { toIsoDateTime } from '@/utils/IsoDateTime.ts';
 
@@ -14,18 +15,18 @@ export const studentFixture: User = {
   id: 100,
   name: 'Тестовый Студент',
   group: 'P0000',
-  role: 'student',
+  role: UserRole.Student,
 };
 
 export const teacherFixture: User = {
   id: 200,
   name: 'Тестовый Преподаватель',
   group: null,
-  role: 'teacher',
+  role: UserRole.Teacher,
 };
 
 export const studentProfileFixture: StudentProfile = {
-  role: 'student',
+  role: UserRole.Student,
   email: 'student@test.ru',
   direction: 'Тестовое направление',
   courseYear: 2,
@@ -33,7 +34,7 @@ export const studentProfileFixture: StudentProfile = {
 };
 
 export const teacherProfileFixture: TeacherProfile = {
-  role: 'teacher',
+  role: UserRole.Teacher,
   email: 'teacher@test.ru',
   department: 'Тестовая кафедра',
   position: 'Доцент',

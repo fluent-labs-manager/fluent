@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { getMockRole } from '@/mocks/mockMode.ts';
+import { UserRole } from '@/types/UserRole.ts';
 
 describe('getMockRole', () => {
   afterEach(() => {
@@ -16,7 +17,7 @@ describe('getMockRole', () => {
   it('по умолчанию — студент', () => {
     openAt('/');
 
-    expect(getMockRole()).toBe('student');
+    expect(getMockRole()).toBe(UserRole.Student);
   });
 
   it('помнит преподавателя, когда параметр пропал из адреса', () => {
@@ -24,7 +25,7 @@ describe('getMockRole', () => {
     getMockRole();
     openAt('/account');
 
-    expect(getMockRole()).toBe('teacher');
+    expect(getMockRole()).toBe(UserRole.Teacher);
   });
 
   it('?role=student переключает обратно на студента', () => {
@@ -34,7 +35,7 @@ describe('getMockRole', () => {
     getMockRole();
     openAt('/account');
 
-    expect(getMockRole()).toBe('student');
+    expect(getMockRole()).toBe(UserRole.Student);
   });
 
   it('без доступа к хранилищу берёт роль только из адреса', () => {
@@ -46,8 +47,8 @@ describe('getMockRole', () => {
     });
 
     openAt('/?role=teacher');
-    expect(getMockRole()).toBe('teacher');
+    expect(getMockRole()).toBe(UserRole.Teacher);
     openAt('/account');
-    expect(getMockRole()).toBe('student');
+    expect(getMockRole()).toBe(UserRole.Student);
   });
 });

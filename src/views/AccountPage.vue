@@ -22,7 +22,7 @@ import { useSemesters } from '@/composables/useSemesters.ts';
 import { useTaughtCourses } from '@/composables/useTaughtCourses.ts';
 import { useUserStore } from '@/stores/user.ts';
 import type { Course } from '@/api/courses/Course.dto.ts';
-import type { UserRole } from '@/types/UserRole.ts';
+import { UserRole } from '@/types/UserRole.ts';
 import { formatGrade } from '@/utils/GradeFormatter.ts';
 import { formatPercent, getPercent } from '@/utils/ProgressPercentage.ts';
 
@@ -52,7 +52,7 @@ const {
   reload: reloadProfile,
 } = useAccountProfile();
 
-const isStudent = computed<boolean>(() => role.value === 'student');
+const isStudent = computed<boolean>(() => role.value === UserRole.Student);
 
 // дисциплины и прогресс студента уже есть в семестрах
 const {
@@ -67,7 +67,7 @@ const {
   isLoading: areTaughtCoursesLoading,
   error: taughtCoursesError,
   reload: reloadTaughtCourses,
-} = useTaughtCourses(() => role.value === 'teacher');
+} = useTaughtCourses(() => role.value === UserRole.Teacher);
 
 // списки дисциплин зависят от роли
 const areCoursesLoading = computed<boolean>(() =>
@@ -118,7 +118,7 @@ const roleLabel = computed<string>(() => {
   if (user === null) {
     return '';
   }
-  if (user.role === 'teacher') {
+  if (user.role === UserRole.Teacher) {
     return 'Преподаватель';
   }
   return user.group === null ? 'Студент' : `Студент · ${user.group}`;
@@ -136,7 +136,7 @@ const details = computed<ProfileDetail[]>(() => {
     value: data.email,
   };
 
-  if (data.role === 'teacher') {
+  if (data.role === UserRole.Teacher) {
     return [
       email,
       { icon: Building2, label: 'Подразделение', value: data.department },
@@ -170,7 +170,7 @@ const stats = computed<ProfileStat[]>(() => {
     return [];
   }
 
-  if (data.role === 'teacher') {
+  if (data.role === UserRole.Teacher) {
     const pending = taughtCourses.value.reduce(
       (sum, course) => sum + course.pendingReviews,
       0,

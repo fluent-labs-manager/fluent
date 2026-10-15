@@ -1,5 +1,7 @@
+import type { UserRole } from '@/types/UserRole.ts';
+
 export interface StudentProfile {
-  role: 'student';
+  role: typeof UserRole.Student;
   email: string;
   // направление подготовки
   direction: string;
@@ -9,7 +11,7 @@ export interface StudentProfile {
 }
 
 export interface TeacherProfile {
-  role: 'teacher';
+  role: typeof UserRole.Teacher;
   email: string;
   // кафедра или факультет; название поля согласовать
   department: string;

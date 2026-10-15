@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getAccountProfileStub } from '@/api/account/AccountApi.ts';
 import { MOCK_DELAY_MS } from '@/mocks/mockMode.ts';
+import { UserRole } from '@/types/UserRole.ts';
 import { ApiRequestError } from '@/utils/ApiResolver.ts';
 
 // проверяем режимы заглушки, через которые видны состояния страницы
@@ -27,11 +28,13 @@ describe('getAccountProfileStub', () => {
   }
 
   it('по умолчанию возвращает профиль студента', async () => {
-    expect(await request()).toMatchObject({ role: 'student' });
+    expect(await request()).toMatchObject({ role: UserRole.Student });
   });
 
   it('с ?role=teacher возвращает профиль преподавателя', async () => {
-    expect(await request('?role=teacher')).toMatchObject({ role: 'teacher' });
+    expect(await request('?role=teacher')).toMatchObject({
+      role: UserRole.Teacher,
+    });
   });
 
   it('с ?mock=error бросает ApiRequestError, как ApiResolver', async () => {

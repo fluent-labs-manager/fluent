@@ -1,6 +1,7 @@
 import { studentProfile, teacherProfile } from '@/mocks/account.ts';
 import { getMockMode, getMockRole, mockDelay } from '@/mocks/mockMode.ts';
 import type { AccountProfile } from '@/api/account/AccountProfile.dto.ts';
+import { UserRole } from '@/types/UserRole.ts';
 import { ApiRequestError } from '@/utils/ApiResolver.ts';
 
 /**
@@ -15,6 +16,6 @@ export async function getAccountProfileStub(): Promise<AccountProfile> {
   }
 
   return structuredClone(
-    getMockRole() === 'teacher' ? teacherProfile : studentProfile,
+    getMockRole() === UserRole.Teacher ? teacherProfile : studentProfile,
   );
 }

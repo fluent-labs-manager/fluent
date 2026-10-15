@@ -16,6 +16,7 @@ import {
 
 import type { User } from '@/api/users/User.dto.ts';
 import type { NavItem } from '@/types/NavItem.ts';
+import { UserRole } from '@/types/UserRole.ts';
 
 const props = defineProps<{
   //null, пока пользователь загружается
@@ -49,7 +50,9 @@ const navItems = computed<NavItem[]>(() => {
   if (props.user === null) {
     return loadingNavItems;
   }
-  return props.user.role === 'teacher' ? teacherNavItems : studentNavItems;
+  return props.user.role === UserRole.Teacher
+    ? teacherNavItems
+    : studentNavItems;
 });
 </script>
 
@@ -106,7 +109,7 @@ const navItems = computed<NavItem[]>(() => {
       <span class="app-sidebar__user-info">
         <span class="app-sidebar__user-name">{{ user.name }}</span>
         <span class="app-sidebar__user-group">{{
-          user.role === 'teacher' ? 'Преподаватель' : user.group
+          user.role === UserRole.Teacher ? 'Преподаватель' : user.group
         }}</span>
       </span>
       <ChevronDown
