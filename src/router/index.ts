@@ -4,8 +4,21 @@ import MainLayout from '@/layouts/MainLayout.vue';
 
 const routes: RouteRecordRaw[] = [
   {
-    // Страницы с боковым меню. Страницы без меню (например, вход)
-    // добавляются отдельными маршрутами на верхнем уровне.
+    path: '/auth',
+    name: 'auth',
+    component: () => import('@/views/AuthPage.vue'),
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: () => import('@/views/RegistrationRolePage.vue'),
+  },
+  {
+    path: '/registration-details',
+    name: 'registration-details',
+    component: () => import('@/views/RegistrationDetailsPage.vue'),
+  },
+  {
     path: '/',
     component: MainLayout,
     children: [
