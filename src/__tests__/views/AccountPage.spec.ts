@@ -196,7 +196,9 @@ describe('AccountPage', () => {
       expect(wrapper.find('.account-page__empty').text()).toBe(
         'Дисциплин пока нет.',
       );
-      expect(wrapper.text()).not.toContain('Средний балл');
+      expect(statsOf(wrapper)).toEqual([
+        ['Сдано работ', '—', 'работ пока нет'],
+      ]);
     });
   });
 

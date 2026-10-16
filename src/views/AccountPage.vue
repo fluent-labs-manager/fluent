@@ -208,13 +208,21 @@ const stats = computed<ProfileStat[]>(() => {
     (sum, course) => sum + course.totalLabs,
     0,
   );
+  // без работ «0 из 0 · 0%» выглядит как ошибка
   const result: ProfileStat[] = [
-    {
-      label: 'Сдано работ',
-      value: `${String(done)} из ${String(total)}`,
-      hint: `${formatPercent(getPercent(done, total))} общего плана`,
-      accent: true,
-    },
+    total === 0
+      ? {
+          label: 'Сдано работ',
+          value: '—',
+          hint: 'работ пока нет',
+          accent: false,
+        }
+      : {
+          label: 'Сдано работ',
+          value: `${String(done)} из ${String(total)}`,
+          hint: `${formatPercent(getPercent(done, total))} общего плана`,
+          accent: true,
+        },
   ];
   if (currentSemester.value !== undefined) {
     const grade = currentSemester.value.averageGrade;
