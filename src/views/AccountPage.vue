@@ -445,7 +445,6 @@ function retryCourses(): void {
               <RouterLink
                 class="account-page__card account-page__course account-page__course--link"
                 :to="{ name: 'course-labs', params: { courseId: course.id } }"
-                :aria-label="course.title"
               >
                 <span
                   class="account-page__course-icon"

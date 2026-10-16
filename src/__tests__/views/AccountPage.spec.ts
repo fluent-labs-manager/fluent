@@ -135,10 +135,11 @@ describe('AccountPage', () => {
       const links = wrapper.findAll('.account-page__course--link');
 
       expect(wrapper.text()).toContain('Текущие дисциплины');
-      expect(links.map((link) => link.attributes('aria-label'))).toEqual([
-        'Курс А',
-        'Курс Б',
-      ]);
+      expect(
+        links.map((link) => link.find('.account-page__course-title').text()),
+      ).toEqual(['Курс А', 'Курс Б']);
+      // без aria-label: скринридер читает и преподавателя, и прогресс
+      expect(links[0]?.attributes('aria-label')).toBeUndefined();
       expect(links[0]?.attributes('href')).toBe('/courses/11');
       expect(links[0]?.text()).toContain('1 / 3');
     });
