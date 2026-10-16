@@ -82,7 +82,7 @@ const isLoading = computed<boolean>(() => {
   if (userStore.user === null) {
     return userStore.error === null;
   }
-  return isProfileLoading.value || areCoursesLoading.value;
+  return isProfileLoading.value;
 });
 
 // разметка строится по роли пользователя, профиль другой роли — ошибка
@@ -93,14 +93,19 @@ const isProfileMismatch = computed<boolean>(
     profile.value.role !== role.value,
 );
 
+// без дисциплин профиль всё равно показываем — их ошибка в своей колонке
 const error = computed<string | null>(
   () =>
     userStore.error ??
     profileError.value ??
     (isProfileMismatch.value
       ? 'Профиль не совпадает с ролью пользователя'
-      : null) ??
-    coursesError.value,
+      : null),
+);
+
+// сводка считается из дисциплин, без них она была бы нулевой
+const areCoursesReady = computed<boolean>(
+  () => !areCoursesLoading.value && coursesError.value === null,
 );
 
 // фото в данных нет — показываем инициалы. Нужен ли avatarUrl — согласовать
@@ -241,8 +246,12 @@ function retry(): void {
     void reloadProfile();
   }
   if (coursesError.value !== null) {
-    void (isStudent.value ? reloadSemesters() : reloadTaughtCourses());
+    retryCourses();
   }
+}
+
+function retryCourses(): void {
+  void (isStudent.value ? reloadSemesters() : reloadTaughtCourses());
 }
 </script>
 
@@ -353,7 +362,10 @@ function retry(): void {
           </div>
         </article>
 
-        <div class="account-page__stats">
+        <div
+          v-if="areCoursesReady"
+          class="account-page__stats"
+        >
           <div
             v-for="stat in stats"
             :key="stat.label"
@@ -372,7 +384,6 @@ function retry(): void {
       </section>
 
       <section
-        v-if="isStudent"
         class="account-page__column"
         aria-labelledby="account-courses-heading"
       >
@@ -380,27 +391,101 @@ function retry(): void {
           id="account-courses-heading"
           class="account-page__section-title"
         >
-          Текущие дисциплины
+          {{ isStudent ? 'Текущие дисциплины' : 'Мои дисциплины' }}
         </h2>
 
         <p
-          v-if="currentCourses.length === 0"
-          class="account-page__empty"
+          v-if="areCoursesLoading"
+          class="account-page__status"
+          role="status"
         >
-          Дисциплин пока нет.
+          Загрузка дисциплин…
         </p>
-        <ul
-          v-else
-          class="account-page__courses"
+
+        <div
+          v-else-if="coursesError !== null"
+          class="account-page__status account-page__status--error"
+          role="alert"
         >
-          <li
-            v-for="course in currentCourses"
-            :key="course.id"
+          <span>Не удалось загрузить дисциплины: {{ coursesError }}</span>
+          <button
+            class="account-page__retry"
+            type="button"
+            aria-label="Повторить"
+            title="Повторить"
+            @click="retryCourses"
           >
-            <RouterLink
-              class="account-page__card account-page__course account-page__course--link"
-              :to="{ name: 'course-labs', params: { courseId: course.id } }"
-              :aria-label="course.title"
+            <RotateCw :size="16" />
+          </button>
+        </div>
+
+        <template v-else-if="isStudent">
+          <p
+            v-if="currentCourses.length === 0"
+            class="account-page__empty"
+          >
+            Дисциплин пока нет.
+          </p>
+          <ul
+            v-else
+            class="account-page__courses"
+          >
+            <li
+              v-for="course in currentCourses"
+              :key="course.id"
+            >
+              <RouterLink
+                class="account-page__card account-page__course account-page__course--link"
+                :to="{ name: 'course-labs', params: { courseId: course.id } }"
+                :aria-label="course.title"
+              >
+                <span
+                  class="account-page__course-icon"
+                  aria-hidden="true"
+                >
+                  <BookOpen :size="18" />
+                </span>
+                <span class="account-page__course-info">
+                  <span class="account-page__course-title">{{
+                    course.title
+                  }}</span>
+                  <span class="account-page__course-meta">{{
+                    course.teacher
+                  }}</span>
+                </span>
+                <span class="account-page__course-figure">
+                  <span class="account-page__course-value"
+                    >{{ course.completedLabs }} / {{ course.totalLabs }}</span
+                  >
+                  <span class="account-page__course-meta"
+                    >лабораторных сдано</span
+                  >
+                </span>
+                <ChevronRight
+                  class="account-page__course-arrow"
+                  :size="18"
+                />
+              </RouterLink>
+            </li>
+          </ul>
+        </template>
+
+        <template v-else>
+          <p
+            v-if="taughtCourses.length === 0"
+            class="account-page__empty"
+          >
+            Дисциплин пока нет.
+          </p>
+          <!-- TODO: строки станут ссылками, когда появится страница дисциплины для преподавателя -->
+          <ul
+            v-else
+            class="account-page__courses"
+          >
+            <li
+              v-for="course in taughtCourses"
+              :key="course.id"
+              class="account-page__card account-page__course"
             >
               <span
                 class="account-page__course-icon"
@@ -412,80 +497,24 @@ function retry(): void {
                 <span class="account-page__course-title">{{
                   course.title
                 }}</span>
-                <span class="account-page__course-meta">{{
-                  course.teacher
-                }}</span>
+                <span class="account-page__course-meta"
+                  >Группы: {{ course.groups.join(', ') }}</span
+                >
               </span>
               <span class="account-page__course-figure">
-                <span class="account-page__course-value"
-                  >{{ course.completedLabs }} / {{ course.totalLabs }}</span
+                <span
+                  class="account-page__course-value"
+                  :class="{
+                    'account-page__course-value--muted':
+                      course.pendingReviews === 0,
+                  }"
+                  >{{ course.pendingReviews }}</span
                 >
-                <span class="account-page__course-meta"
-                  >лабораторных сдано</span
-                >
+                <span class="account-page__course-meta">ждут проверки</span>
               </span>
-              <ChevronRight
-                class="account-page__course-arrow"
-                :size="18"
-              />
-            </RouterLink>
-          </li>
-        </ul>
-      </section>
-
-      <section
-        v-else
-        class="account-page__column"
-        aria-labelledby="account-courses-heading"
-      >
-        <h2
-          id="account-courses-heading"
-          class="account-page__section-title"
-        >
-          Мои дисциплины
-        </h2>
-
-        <p
-          v-if="taughtCourses.length === 0"
-          class="account-page__empty"
-        >
-          Дисциплин пока нет.
-        </p>
-        <!-- TODO: строки станут ссылками, когда появится страница дисциплины для преподавателя -->
-        <ul
-          v-else
-          class="account-page__courses"
-        >
-          <li
-            v-for="course in taughtCourses"
-            :key="course.id"
-            class="account-page__card account-page__course"
-          >
-            <span
-              class="account-page__course-icon"
-              aria-hidden="true"
-            >
-              <BookOpen :size="18" />
-            </span>
-            <span class="account-page__course-info">
-              <span class="account-page__course-title">{{ course.title }}</span>
-              <span class="account-page__course-meta"
-                >Группы: {{ course.groups.join(', ') }}</span
-              >
-            </span>
-            <span class="account-page__course-figure">
-              <span
-                class="account-page__course-value"
-                :class="{
-                  'account-page__course-value--muted':
-                    course.pendingReviews === 0,
-                }"
-                >{{ course.pendingReviews }}</span
-              >
-              <span class="account-page__course-meta">ждут проверки</span>
-            </span>
-          </li>
-        </ul>
+            </li>
+          </ul>
+        </template>
       </section>
     </div>
   </main>

@@ -283,7 +283,7 @@ describe('AccountPage', () => {
       const wrapper = await mountPage();
 
       expect(wrapper.find('[role="alert"]').text()).toBe(
-        'Не удалось загрузить данные: Сервис временно недоступен',
+        'Не удалось загрузить дисциплины: Сервис временно недоступен',
       );
 
       await wrapper.find('.account-page__retry').trigger('click');
@@ -346,15 +346,36 @@ describe('AccountPage', () => {
       );
     });
 
-    it('у студента показывает ошибку загрузки дисциплин', async () => {
+    it('при ошибке дисциплин оставляет профиль и показывает ошибку в их колонке', async () => {
       mockedGetSemesters.mockRejectedValue(
         new ApiRequestError(503, 'Сервис временно недоступен'),
       );
       const wrapper = await mountPage();
 
       expect(wrapper.find('[role="alert"]').text()).toBe(
-        'Не удалось загрузить данные: Сервис временно недоступен',
+        'Не удалось загрузить дисциплины: Сервис временно недоступен',
       );
+      expect(wrapper.find('.account-page__name').text()).toBe(
+        'Тестовый Студент',
+      );
+      expect(wrapper.find('h2#account-courses-heading').text()).toBe(
+        'Текущие дисциплины',
+      );
+      // сводка считается из дисциплин — без них её не показываем
+      expect(wrapper.find('.account-page__stats').exists()).toBe(false);
+    });
+
+    it('пока дисциплины загружаются, профиль уже виден', async () => {
+      mockedGetSemesters.mockReturnValue(new Promise(() => undefined));
+      const wrapper = await mountPage();
+
+      expect(wrapper.find('.account-page__name').text()).toBe(
+        'Тестовый Студент',
+      );
+      expect(wrapper.find('[role="status"]').text()).toBe(
+        'Загрузка дисциплин…',
+      );
+      expect(wrapper.find('.account-page__stats').exists()).toBe(false);
     });
 
     it('если роль профиля не совпала с ролью пользователя, показывает ошибку, а не чужую разметку', async () => {
@@ -398,6 +419,22 @@ describe('AccountPage', () => {
       expect(wrapper.find('.account-page__name').text()).toBe(
         'Тестовый Студент',
       );
+    });
+
+    it('если не загрузились и профиль, и дисциплины, общий «Повторить» грузит оба', async () => {
+      mockedGetProfile.mockRejectedValueOnce(
+        new ApiRequestError(503, 'Сервис временно недоступен'),
+      );
+      mockedGetSemesters.mockRejectedValueOnce(
+        new ApiRequestError(503, 'Сервис временно недоступен'),
+      );
+      const wrapper = await mountPage();
+
+      await wrapper.find('.account-page__retry').trigger('click');
+      await flushPromises();
+
+      expect(wrapper.find('[role="alert"]').exists()).toBe(false);
+      expect(wrapper.text()).toContain('Курс А');
     });
 
     it('после «Повторить» загружает данные заново', async () => {
