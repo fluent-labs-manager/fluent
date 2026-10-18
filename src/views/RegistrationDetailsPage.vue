@@ -10,12 +10,10 @@ const role = computed<'student' | 'teacher'>(() => {
   return route.query.role === 'teacher' ? 'teacher' : 'student';
 });
 
-const university = ref('ITMO');
-const academicGroupOrDept = ref(
-  role.value === 'teacher' ? 'Кафедра ВТ' : 'P3322',
-);
+const university = ref('');
+const academicGroupOrDept = ref('');
+const corporateEmail = ref('');
 const verificationCode = ref('');
-const corporateEmail = ref('465591@niuitmo.ru');
 
 const isCodeSent = ref(false);
 const universityError = ref('');

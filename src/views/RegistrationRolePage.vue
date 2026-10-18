@@ -7,7 +7,7 @@ const router = useRouter();
 type Role = 'student' | 'teacher';
 
 const selectedRole = ref<Role>('student');
-const fullName = ref('Александр Павлов');
+const fullName = ref('');
 const fullNameError = ref('');
 
 const goToNext = (): void => {
