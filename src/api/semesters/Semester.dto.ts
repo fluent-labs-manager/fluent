@@ -4,6 +4,6 @@ export interface Semester {
   id: number;
   title: string;
   isCurrent: boolean;
-  averageGrade: number;
+  averageGrade: number | null;
   courses: Course[];
 }

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import AppIcon from '@/components/AppIcon.vue';
+import { ChevronRight } from '@lucide/vue';
+
 import ProgressBar from '@/components/ProgressBar.vue';
 import type { Course } from '@/api/courses/Course.dto.ts';
-import type { UserRole } from '@/types/UserRole.ts';
+import { UserRole } from '@/types/UserRole.ts';
 import { formatPercent, getPercent } from '@/utils/ProgressPercentage.ts';
 
 const props = defineProps<{
@@ -13,7 +14,7 @@ const props = defineProps<{
 }>();
 
 const progressLabel = computed<string>(() =>
-  props.role === 'teacher'
+  props.role === UserRole.Teacher
     ? 'Проверено лабораторных'
     : 'Выполнено лабораторных',
 );
@@ -33,9 +34,8 @@ const percent = computed<string>(() =>
         >
           {{ course.title }}
         </h2>
-        <AppIcon
+        <ChevronRight
           class="course-card__arrow"
-          name="chevron-right"
           :size="22"
         />
       </div>

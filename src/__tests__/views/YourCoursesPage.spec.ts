@@ -155,6 +155,19 @@ describe('YourCoursesPage', () => {
       expect(summary).toContain('60%');
     });
 
+    it('без оценок в семестре пишет «оценок пока нет» вместо среднего балла', async () => {
+      mockedGetSemesters.mockResolvedValue(
+        structuredClone(semestersFixture).map((semester) =>
+          semester.isCurrent ? { ...semester, averageGrade: null } : semester,
+        ),
+      );
+      const wrapper = await mountPage();
+      const summary = wrapper.find('.semester-progress').text();
+
+      expect(summary).toContain('оценок пока нет');
+      expect(summary).not.toContain('средний балл');
+    });
+
     it('отмечает выбранный семестр через aria-pressed', async () => {
       const wrapper = await mountPage();
       const buttons = wrapper.findAll('.courses-page__filter');

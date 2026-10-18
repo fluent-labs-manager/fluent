@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import CourseCard from '@/components/CourseCard.vue';
 import type { Course } from '@/api/courses/Course.dto.ts';
-import type { UserRole } from '@/types/UserRole.ts';
+import { UserRole } from '@/types/UserRole.ts';
 
 const course: Course = {
   id: 1,
@@ -13,7 +13,9 @@ const course: Course = {
   totalLabs: 3,
 };
 
-function mountCard(role: UserRole = 'student'): ReturnType<typeof mount> {
+function mountCard(
+  role: UserRole = UserRole.Student,
+): ReturnType<typeof mount> {
   return mount(CourseCard, {
     props: { course, role },
   });
@@ -32,7 +34,11 @@ describe('CourseCard', () => {
   });
 
   it('подписывает прогресс в зависимости от роли', () => {
-    expect(mountCard('student').text()).toContain('Выполнено лабораторных');
-    expect(mountCard('teacher').text()).toContain('Проверено лабораторных');
+    expect(mountCard(UserRole.Student).text()).toContain(
+      'Выполнено лабораторных',
+    );
+    expect(mountCard(UserRole.Teacher).text()).toContain(
+      'Проверено лабораторных',
+    );
   });
 });

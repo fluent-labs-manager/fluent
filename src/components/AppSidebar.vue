@@ -1,19 +1,59 @@
 <script setup lang="ts">
-import AppIcon from '@/components/AppIcon.vue';
+import { computed } from 'vue';
+
+import {
+  Award,
+  BookOpen,
+  Calculator,
+  ChevronDown,
+  ClipboardCheck,
+  House,
+  LayoutGrid,
+  Shuffle,
+  Sparkles,
+  Users,
+} from '@lucide/vue';
+
 import type { User } from '@/api/users/User.dto.ts';
 import type { NavItem } from '@/types/NavItem.ts';
+import { UserRole } from '@/types/UserRole.ts';
 
-defineProps<{
+const props = defineProps<{
   //null, пока пользователь загружается
   user: User | null;
 }>();
 
-const navItems: NavItem[] = [
-  { label: 'Главная', icon: 'home', to: { name: 'home' } },
-  { label: 'Дисциплины', icon: 'book', to: { name: 'courses' } },
-  { label: 'Лабораторные', icon: 'flask' },
-  { label: 'События', icon: 'award' },
+const studentNavItems: NavItem[] = [
+  { label: 'Главная', icon: House, to: { name: 'home' } },
+  { label: 'Дисциплины', icon: BookOpen, to: { name: 'courses' } },
+  { label: 'События', icon: Award },
 ];
+
+// у преподавателя свои разделы и нет страницы «Дисциплины».
+// Страниц разделов ещё нет — пункты неактивны, как «События» у студента
+const teacherNavItems: NavItem[] = [
+  { label: 'Главная', icon: LayoutGrid, to: { name: 'home' } },
+  { label: 'Варианты', icon: Shuffle },
+  { label: 'ИИ-предфильтр', icon: Sparkles },
+  { label: 'Очереди', icon: Users },
+  { label: 'Конструктор баллов', icon: Calculator },
+  { label: 'Оценивание', icon: ClipboardCheck },
+];
+
+// пока роль неизвестна, показываем только общий для обеих ролей пункт,
+// чтобы у преподавателя не мелькало меню студента
+const loadingNavItems: NavItem[] = [
+  { label: 'Главная', icon: House, to: { name: 'home' } },
+];
+
+const navItems = computed<NavItem[]>(() => {
+  if (props.user === null) {
+    return loadingNavItems;
+  }
+  return props.user.role === UserRole.Teacher
+    ? teacherNavItems
+    : studentNavItems;
+});
 </script>
 
 <template>
@@ -31,7 +71,12 @@ const navItems: NavItem[] = [
           class="app-sidebar__link"
           exact-active-class="app-sidebar__link--active"
         >
-          <AppIcon :name="item.icon" />
+          <component
+            :is="item.icon"
+            :size="20"
+            class="app-sidebar__icon"
+            aria-hidden="true"
+          />
           {{ item.label }}
         </RouterLink>
         <span
@@ -39,16 +84,23 @@ const navItems: NavItem[] = [
           class="app-sidebar__link"
           aria-disabled="true"
         >
-          <AppIcon :name="item.icon" />
+          <component
+            :is="item.icon"
+            :size="20"
+            class="app-sidebar__icon"
+            aria-hidden="true"
+          />
           {{ item.label }}
         </span>
       </template>
     </nav>
 
-    <button
+    <RouterLink
       v-if="user"
       class="app-sidebar__user"
-      type="button"
+      exact-active-class="app-sidebar__user--active"
+      :to="{ name: 'account' }"
+      title="Личный кабинет"
     >
       <span
         class="app-sidebar__avatar"
@@ -56,13 +108,16 @@ const navItems: NavItem[] = [
       ></span>
       <span class="app-sidebar__user-info">
         <span class="app-sidebar__user-name">{{ user.name }}</span>
-        <span class="app-sidebar__user-group">{{ user.group }}</span>
+        <span class="app-sidebar__user-group">{{
+          user.role === UserRole.Teacher ? 'Преподаватель' : user.group
+        }}</span>
       </span>
-      <AppIcon
-        name="chevron-down"
+      <ChevronDown
         :size="18"
+        class="app-sidebar__icon"
+        aria-hidden="true"
       />
-    </button>
+    </RouterLink>
   </aside>
 </template>
 
@@ -118,7 +173,11 @@ const navItems: NavItem[] = [
   font-weight: 700;
 }
 
-.app-sidebar__link--active .app-icon {
+.app-sidebar__icon {
+  flex-shrink: 0;
+}
+
+.app-sidebar__link--active .app-sidebar__icon {
   color: var(--color-accent);
 }
 
@@ -132,8 +191,13 @@ const navItems: NavItem[] = [
   border-radius: 0.75rem;
   background-color: var(--color-surface);
   color: var(--color-text);
-  text-align: left;
-  cursor: pointer;
+  text-decoration: none;
+  transition: border-color 0.2s ease;
+}
+
+.app-sidebar__user:hover,
+.app-sidebar__user--active {
+  border-color: var(--color-accent);
 }
 
 .app-sidebar__avatar {
