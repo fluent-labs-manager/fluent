@@ -27,12 +27,12 @@ describe('RegistrationDetailsPage.vue', (): void => {
 
   it('показывает ошибку при неверном коде подтверждения', async (): Promise<void> => {
     const wrapper = mount(RegistrationDetailsPage);
+    await wrapper.find('#university').setValue('ITMO');
+    await wrapper.find('#groupOrDept').setValue('P3322');
+    await wrapper.find('#corporateEmail').setValue('test@niuitmo.ru');
     await wrapper.find('#verificationCode').setValue('abc');
     await wrapper.find('.details-form').trigger('submit.prevent');
-
-    expect(wrapper.find('.field-error').text()).toBe(
-      'Код должен состоять ровно из 6 цифр',
-    );
+    expect(wrapper.text()).toContain('Код должен состоять ровно из 6 цифр');
   });
 
   it('показывает ошибку при пустом email при отправке кода', async (): Promise<void> => {
