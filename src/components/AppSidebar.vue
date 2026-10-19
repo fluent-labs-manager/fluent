@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 import {
   Award,
@@ -9,6 +10,7 @@ import {
   ClipboardCheck,
   House,
   LayoutGrid,
+  Menu,
   Shuffle,
   Sparkles,
   Users,
@@ -22,6 +24,10 @@ const props = defineProps<{
   //null, пока пользователь загружается
   user: User | null;
 }>();
+
+const route = useRoute();
+const menuOpen = ref(false);
+const menuToggle = ref<HTMLButtonElement | null>(null);
 
 const studentNavItems: NavItem[] = [
   { label: 'Главная', icon: House, to: { name: 'home' } },
@@ -53,6 +59,66 @@ const navItems = computed<NavItem[]>(() => {
   return props.user.role === UserRole.Teacher
     ? teacherNavItems
     : studentNavItems;
+});
+
+function closeMenu(): void {
+  menuOpen.value = false;
+}
+
+function handleKeydown(event: KeyboardEvent): void {
+  if (!menuOpen.value) {
+    return;
+  }
+
+  if (event.key === 'Escape') {
+    closeMenu();
+    menuToggle.value?.focus();
+    return;
+  }
+
+  if (event.key !== 'Tab') {
+    return;
+  }
+
+  const drawer = document.querySelector<HTMLElement>(
+    '.mobile-navigation__drawer',
+  );
+  const focusableItems = drawer?.querySelectorAll<HTMLElement>(
+    'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+  );
+  if (focusableItems === undefined || focusableItems.length === 0) {
+    return;
+  }
+
+  const firstItem = focusableItems[0];
+  const lastItem = focusableItems[focusableItems.length - 1];
+
+  if (event.shiftKey && document.activeElement === firstItem) {
+    event.preventDefault();
+    lastItem?.focus();
+  } else if (!event.shiftKey && document.activeElement === lastItem) {
+    event.preventDefault();
+    firstItem?.focus();
+  }
+}
+
+watch(menuOpen, async (isOpen) => {
+  if (!isOpen) {
+    menuToggle.value?.focus();
+    return;
+  }
+
+  await nextTick();
+  document
+    .querySelector<HTMLElement>('.mobile-navigation__drawer a[href]')
+    ?.focus();
+});
+
+watch(() => route.fullPath, closeMenu);
+
+window.addEventListener('keydown', handleKeydown);
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown);
 });
 </script>
 
@@ -119,6 +185,85 @@ const navItems = computed<NavItem[]>(() => {
       />
     </RouterLink>
   </aside>
+
+  <header class="mobile-header">
+    <span class="mobile-header__logo">Fluent</span>
+    <button
+      ref="menuToggle"
+      class="mobile-header__toggle"
+      type="button"
+      @click="menuOpen = !menuOpen"
+    >
+      <Menu
+        :size="20"
+        class="app-sidebar__icon"
+      />
+    </button>
+  </header>
+
+  <div
+    v-if="menuOpen"
+    class="mobile-navigation__backdrop"
+    @click.self="closeMenu"
+  >
+    <aside class="mobile-navigation__drawer">
+      <span class="mobile-navigation__drawer-logo">Fluent</span>
+
+      <nav class="app-sidebar__nav">
+        <template
+          v-for="item in navItems"
+          :key="item.label"
+        >
+          <RouterLink
+            v-if="item.to"
+            :to="item.to"
+            class="app-sidebar__link"
+            exact-active-class="app-sidebar__link--active"
+            @click="closeMenu"
+          >
+            <component
+              :is="item.icon"
+              :size="20"
+              class="app-sidebar__icon"
+            />
+            {{ item.label }}
+          </RouterLink>
+          <span
+            v-else
+            class="app-sidebar__link"
+          >
+            <component
+              :is="item.icon"
+              :size="20"
+              class="app-sidebar__icon"
+            />
+            {{ item.label }}
+          </span>
+        </template>
+      </nav>
+
+      <RouterLink
+        v-if="user"
+        class="app-sidebar__user"
+        exact-active-class="app-sidebar__user--active"
+        :to="{ name: 'account' }"
+        title="Личный кабинет"
+        @click="closeMenu"
+      >
+        <span class="app-sidebar__avatar"></span>
+        <span class="app-sidebar__user-info">
+          <span class="app-sidebar__user-name">{{ user.name }}</span>
+          <span class="app-sidebar__user-group">{{
+            user.role === UserRole.Teacher ? 'Преподаватель' : user.group
+          }}</span>
+        </span>
+        <ChevronDown
+          :size="18"
+          class="app-sidebar__icon"
+        />
+      </RouterLink>
+    </aside>
+  </div>
 </template>
 
 <style scoped>
@@ -223,5 +368,86 @@ const navItems = computed<NavItem[]>(() => {
 .app-sidebar__user-group {
   color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
+}
+
+.mobile-header {
+  display: none;
+}
+
+.mobile-navigation__backdrop {
+  position: fixed;
+  z-index: 3;
+  inset: 0;
+  display: flex;
+  background-color: var(--color-backdrop);
+}
+
+.mobile-navigation__drawer {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  width: min(18.5rem, 85vw);
+  height: 100%;
+  padding: 1.25rem;
+  background-color: var(--color-sidebar);
+  box-shadow: var(--shadow-card);
+  animation: mobile-navigation-enter 0.2s ease-out;
+}
+
+.mobile-navigation__drawer-logo {
+  padding-left: 0.25rem;
+  font-size: var(--font-size-4xl);
+  font-weight: 700;
+  line-height: var(--page-title-line-height);
+  text-transform: uppercase;
+}
+
+@keyframes mobile-navigation-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-1rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (width <= 768px) {
+  .app-sidebar {
+    display: none;
+  }
+
+  .mobile-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 4rem;
+    padding: 0.5rem 1.25rem;
+    border-bottom: 1px solid var(--color-border);
+    background-color: var(--color-sidebar);
+  }
+
+  .mobile-header__logo {
+    font-size: var(--font-size-4xl);
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .mobile-header__toggle {
+    display: grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    place-items: center;
+    border: 1px solid var(--color-border);
+    border-radius: 0.7rem;
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+  }
 }
 </style>
