@@ -66,7 +66,9 @@ function closeMenu(): void {
 }
 
 function handleKeydown(event: KeyboardEvent): void {
-  if (!menuOpen.value) return;
+  if (!menuOpen.value) {
+    return;
+  }
 
   if (event.key === 'Escape') {
     closeMenu();
@@ -74,7 +76,9 @@ function handleKeydown(event: KeyboardEvent): void {
     return;
   }
 
-  if (event.key !== 'Tab') return;
+  if (event.key !== 'Tab') {
+    return;
+  }
 
   const drawer = document.querySelector<HTMLElement>(
     '.mobile-navigation__drawer',
@@ -82,7 +86,9 @@ function handleKeydown(event: KeyboardEvent): void {
   const focusableItems = drawer?.querySelectorAll<HTMLElement>(
     'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
   );
-  if (!focusableItems?.length) return;
+  if (focusableItems === undefined || focusableItems.length === 0) {
+    return;
+  }
 
   const firstItem = focusableItems[0];
   const lastItem = focusableItems[focusableItems.length - 1];
@@ -111,7 +117,9 @@ watch(menuOpen, async (isOpen) => {
 watch(() => route.fullPath, closeMenu);
 
 window.addEventListener('keydown', handleKeydown);
-onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown);
+});
 </script>
 
 <template>
@@ -242,9 +250,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
         title="Личный кабинет"
         @click="closeMenu"
       >
-        <span
-          class="app-sidebar__avatar"
-        ></span>
+        <span class="app-sidebar__avatar"></span>
         <span class="app-sidebar__user-info">
           <span class="app-sidebar__user-name">{{ user.name }}</span>
           <span class="app-sidebar__user-group">{{
@@ -398,13 +404,13 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
 
 @keyframes mobile-navigation-enter {
   from {
-    transform: translateX(-1rem);
     opacity: 0;
+    transform: translateX(-1rem);
   }
 
   to {
-    transform: translateX(0);
     opacity: 1;
+    transform: translateX(0);
   }
 }
 
@@ -415,11 +421,11 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
 
   .mobile-header {
     position: sticky;
-    z-index: 2;
     top: 0;
+    z-index: 2;
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
     min-height: 4rem;
     padding: 0.5rem 1.25rem;
     border-bottom: 1px solid var(--color-border);
