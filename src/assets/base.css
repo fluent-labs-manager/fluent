@@ -59,6 +59,9 @@
   --color-btn-primary-hover: #4e5c44;
   --color-close-border: #c8cdc3;
 
+  /* Затемнение фона */
+  --color-backdrop: rgb(28 28 26 / 40%);
+
   /* тени: карточки и «приподнятые» элементы (выбранная вкладка) */
   --shadow-card: 0 2px 6px rgb(28 28 26 / 6%);
   --shadow-raised: 0 1px 3px rgb(28 28 26 / 12%);
