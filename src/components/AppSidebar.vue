@@ -427,7 +427,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
   }
 
   .mobile-header__logo {
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-4xl);
     font-weight: 700;
     text-transform: uppercase;
   }
