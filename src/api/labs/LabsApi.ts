@@ -5,6 +5,8 @@ import { getMockMode, mockDelay } from '@/mocks/mockMode.ts';
 import type { CourseLabs } from '@/api/labs/CourseLabs.dto.ts';
 import type { LabSubmissionDetails } from '@/api/labs/LabSubmission.dto.ts';
 import { ApiRequestError } from '@/utils/ApiResolver.ts';
+import { mockReviewQueue } from '@/mocks/reviewQueue.ts';
+import type { ReviewQueueItem } from '@/api/labs/ReviewQueue.dto.ts';
 
 /**
  * временная заглушка: лабораторные работы дисциплины
@@ -70,4 +72,21 @@ export async function submitLabWorkStub(
   mockLabSubmission.labId = labId;
   mockLabSubmission.status = 'in_review';
   mockLabSubmission.studentComment = comment;
+}
+/**
+ * Очередь работ на проверку для преподавателя
+ */
+export async function getReviewQueueStub(): Promise<ReviewQueueItem[]> {
+  await mockDelay();
+  const mode = getMockMode();
+
+  if (mode === 'error') {
+    throw new ApiRequestError(503, 'Сервис временно недоступен');
+  }
+
+  if (mode === 'empty') {
+    return [];
+  }
+
+  return structuredClone(mockReviewQueue);
 }
