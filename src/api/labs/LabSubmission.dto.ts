@@ -1,8 +1,5 @@
 export type SubmissionStatus =
-  | 'not_submitted'
-  | 'in_review'
-  | 'accepted'
-  | 'rejected';
+  'not_submitted' | 'in_review' | 'accepted' | 'rejected';
 
 export interface SubmissionAttempt {
   id: number;

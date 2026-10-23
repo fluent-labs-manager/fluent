@@ -1,9 +1,6 @@
 import { ref } from 'vue';
 import type { Ref } from 'vue';
-import {
-  getLabSubmissionStub,
-  submitLabWorkStub,
-} from '@/api/labs/LabsApi.ts';
+import { getLabSubmissionStub, submitLabWorkStub } from '@/api/labs/LabsApi.ts';
 import type { LabSubmissionDetails } from '@/api/labs/LabSubmission.dto.ts';
 import { ApiRequestError } from '@/utils/ApiResolver.ts';
 
