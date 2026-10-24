@@ -85,13 +85,23 @@ function mountPage(
 const selectedFile = new File(['%PDF'], 'otchet_v3.pdf');
 Object.defineProperty(selectedFile, 'size', { value: 2_516_582 });
 
+// выбор в окне: в jsdom список файлов поля задаётся подменой свойства
+async function chooseFile(
+  wrapper: ReturnType<typeof mount>,
+  file: File,
+): Promise<void> {
+  const input = wrapper.find('input[type="file"]');
+  Object.defineProperty(input.element, 'files', {
+    value: [file],
+    configurable: true,
+  });
+  await input.trigger('change');
+}
+
 async function mountWithFile(): Promise<ReturnType<typeof mount>> {
   const wrapper = mountPage();
   await flushPromises();
-  // выбор в окне: в jsdom список файлов поля задаётся подменой свойства
-  const input = wrapper.find('input[type="file"]');
-  Object.defineProperty(input.element, 'files', { value: [selectedFile] });
-  await input.trigger('change');
+  await chooseFile(wrapper, selectedFile);
   return wrapper;
 }
 
@@ -334,6 +344,53 @@ describe('LabSubmissionPage', () => {
     });
   });
 
+  describe('проверка файла', () => {
+    it('файл другого типа не принимает и объясняет почему', async () => {
+      const wrapper = mountPage();
+      await flushPromises();
+
+      await chooseFile(wrapper, new File(['MZ'], 'setup.exe'));
+
+      expect(wrapper.find('.lab-submission-page__file-error').text()).toBe(
+        'Этот тип файла не принимается. Можно: PDF, ZIP, IPYNB, PY, JAVA',
+      );
+      expect(wrapper.find('.submitted-file-card').exists()).toBe(false);
+      expect(wrapper.find('.file-dropzone').exists()).toBe(true);
+      expect(
+        wrapper.find('button[type="submit"]').attributes('disabled'),
+      ).toBeDefined();
+    });
+
+    it('слишком большой файл не принимает', async () => {
+      const wrapper = mountPage();
+      await flushPromises();
+      const bigFile = new File(['PK'], 'project.zip');
+      Object.defineProperty(bigFile, 'size', { value: 21 * 1024 * 1024 });
+
+      await chooseFile(wrapper, bigFile);
+
+      expect(wrapper.find('.lab-submission-page__file-error').text()).toBe(
+        'Файл больше 20 МБ',
+      );
+      expect(wrapper.find('.submitted-file-card').exists()).toBe(false);
+    });
+
+    it('после подходящего файла ошибка пропадает', async () => {
+      const wrapper = mountPage();
+      await flushPromises();
+      await chooseFile(wrapper, new File(['MZ'], 'setup.exe'));
+
+      await chooseFile(wrapper, selectedFile);
+
+      expect(wrapper.find('.lab-submission-page__file-error').exists()).toBe(
+        false,
+      );
+      expect(wrapper.find('.submitted-file-card').text()).toContain(
+        'otchet_v3.pdf',
+      );
+    });
+  });
+
   describe('отправка', () => {
     it('отправляет выбранный файл и комментарий без лишних пробелов', async () => {
       createPendingSubmit();
@@ -437,6 +494,45 @@ describe('LabSubmissionPage', () => {
       expect(
         wrapper.find('button[type="submit"]').attributes('disabled'),
       ).toBeUndefined();
+    });
+
+    it('«Повторить отправку» отправляет тот же файл ещё раз', async () => {
+      mockedSubmit.mockRejectedValueOnce(
+        new ApiRequestError(500, 'Загрузка файла прервалась'),
+      );
+      const wrapper = await mountWithFile();
+      await wrapper.find('textarea').setValue('Исправил формы.');
+      await wrapper.find('form').trigger('submit');
+      await flushPromises();
+
+      mockedSubmit.mockResolvedValueOnce(createSubmittedThirdAttempt());
+      await wrapper
+        .find('button[aria-label="Повторить отправку"]')
+        .trigger('click');
+      await flushPromises();
+
+      expect(mockedSubmit).toHaveBeenCalledTimes(2);
+      expect(mockedSubmit.mock.calls[1]?.slice(0, 4)).toEqual([
+        11,
+        2,
+        selectedFile,
+        'Исправил формы.',
+      ]);
+      expect(wrapper.find('.lab-status-bar').text()).toBe('На проверке');
+      expect(wrapper.find('[role="alert"]').exists()).toBe(false);
+    });
+
+    it('если убрать файл после ошибки, ошибка пропадает', async () => {
+      mockedSubmit.mockRejectedValueOnce(new ApiRequestError(500, 'Сбой'));
+      const wrapper = await mountWithFile();
+      await wrapper.find('form').trigger('submit');
+      await flushPromises();
+
+      await wrapper.find('.submitted-file-card__remove').trigger('click');
+
+      expect(wrapper.find('.lab-submission-page__submit-error').exists()).toBe(
+        false,
+      );
     });
 
     it('ответ на отправку прошлой работы не заменяет открытую', async () => {

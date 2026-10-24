@@ -188,4 +188,26 @@ describe('submitLabAttemptStub', () => {
 
     expect(await submit(1, 102)).toBeInstanceOf(SubmitError);
   });
+
+  it('с ?mock=upload-error первая загрузка обрывается, а повтор проходит', async () => {
+    window.history.replaceState(
+      null,
+      '',
+      '/courses/1/labs/102?mock=upload-error',
+    );
+    const progress: number[] = [];
+
+    const error = await submit(1, 102, (percent) => {
+      progress.push(percent);
+    });
+
+    expect(error).toBeInstanceOf(SubmitError);
+    expect((error as ApiRequestError).message).toBe(
+      'Загрузка файла прервалась',
+    );
+    expect(progress).toEqual([20, 40]);
+    // оборванная загрузка ничего не меняет в моках
+    const result = (await submit(1, 102)) as LabSubmission;
+    expect(result.attempts.map((attempt) => attempt.number)).toEqual([1, 2, 3]);
+  });
 });

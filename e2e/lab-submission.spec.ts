@@ -130,3 +130,58 @@ test.describe('отправка работы на проверку', () => {
     ).toBeVisible();
   });
 });
+
+test.describe('ошибки при сдаче', () => {
+  test('файл другого типа не принимается', async ({ page }) => {
+    await page.goto('/courses/1/labs/102');
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: 'setup.exe',
+      mimeType: 'application/octet-stream',
+      buffer: Buffer.from('MZ'),
+    });
+
+    await expect(page.getByRole('alert')).toHaveText(
+      'Этот тип файла не принимается. Можно: PDF, ZIP, IPYNB, PY, JAVA',
+    );
+    await expect(page.getByText('setup.exe')).toHaveCount(0);
+    await expect(
+      page.getByRole('button', { name: 'Отправить работу на проверку' }),
+    ).toBeDisabled();
+  });
+
+  test('файл больше 20 МБ не принимается', async ({ page }) => {
+    await page.goto('/courses/1/labs/102');
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: 'project.zip',
+      mimeType: 'application/zip',
+      buffer: Buffer.alloc(21 * 1024 * 1024),
+    });
+
+    await expect(page.getByRole('alert')).toHaveText('Файл больше 20 МБ');
+  });
+
+  test('после сбоя загрузки повтор отправляет работу', async ({ page }) => {
+    await page.goto('/courses/1/labs/102?mock=upload-error');
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: 'gorelova_v3.pdf',
+      mimeType: 'application/pdf',
+      buffer: Buffer.from('%PDF-1.4'),
+    });
+    await page
+      .getByRole('button', { name: 'Отправить работу на проверку' })
+      .click();
+
+    await expect(page.getByRole('alert')).toContainText(
+      'Загрузка файла прервалась',
+    );
+    await expect(page.getByText('gorelova_v3.pdf')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Повторить отправку' }).click();
+
+    await expect(page.locator('.lab-status-bar')).toHaveText('На проверке');
+    await expect(page.getByRole('alert')).toHaveCount(0);
+  });
+});

@@ -13,6 +13,7 @@ import type { LabAttempt } from '@/api/labs/LabAttempt.dto.ts';
 import { useLabAttemptSubmit } from '@/composables/useLabAttemptSubmit.ts';
 import { useLabSubmission } from '@/composables/useLabSubmission.ts';
 import { LabStatus } from '@/types/LabStatus.ts';
+import { validateSubmissionFile } from '@/utils/FileValidation.ts';
 
 const props = defineProps<{
   courseId: number;
@@ -54,6 +55,8 @@ const history = computed<LabAttempt[]>(() =>
 // файл и комментарий живут только на странице, пока работу не отправили
 const selectedFile = ref<File | null>(null);
 const comment = ref<string>('');
+// почему последний выбранный файл не принят
+const fileError = ref<string | null>(null);
 
 // у другой работы форма начинается заново
 watch(
@@ -61,15 +64,23 @@ watch(
   () => {
     selectedFile.value = null;
     comment.value = '';
+    fileError.value = null;
+    submitError.value = null;
   },
 );
 
+// неподходящий файл не принимается: прежний выбор остаётся пустым
 function selectFile(file: File): void {
-  selectedFile.value = file;
+  fileError.value = validateSubmissionFile(file);
+  submitError.value = null;
+  if (fileError.value === null) {
+    selectedFile.value = file;
+  }
 }
 
 function removeFile(): void {
   selectedFile.value = null;
+  submitError.value = null;
 }
 
 async function submitWork(): Promise<void> {
@@ -176,10 +187,16 @@ function retry(): void {
               :removable="!isSubmitting"
               @remove="removeFile"
             />
-            <FileDropzone
-              v-else
-              @select="selectFile"
-            />
+            <template v-else>
+              <FileDropzone @select="selectFile" />
+              <p
+                v-if="fileError !== null"
+                class="lab-submission-page__file-error"
+                role="alert"
+              >
+                {{ fileError }}
+              </p>
+            </template>
             <label class="lab-submission-page__field">
               <span class="lab-submission-page__label">
                 Комментарий к работе
@@ -205,13 +222,23 @@ function retry(): void {
                 :max="100"
               />
             </div>
-            <p
+            <div
               v-if="submitError !== null"
               class="lab-submission-page__submit-error"
               role="alert"
             >
-              Не удалось отправить работу: {{ submitError }}
-            </p>
+              <span>Не удалось отправить работу: {{ submitError }}</span>
+              <!-- файл и комментарий на месте: повтор отправляет их же -->
+              <button
+                class="lab-submission-page__retry"
+                type="button"
+                aria-label="Повторить отправку"
+                title="Повторить отправку"
+                @click="submitWork"
+              >
+                <RotateCw :size="16" />
+              </button>
+            </div>
             <div class="lab-submission-page__actions">
               <!-- без выбранного файла отправлять нечего, а во время загрузки —
                    второй раз нельзя -->
@@ -475,9 +502,17 @@ function retry(): void {
 }
 
 .lab-submission-page__submit-error {
-  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   color: var(--color-error);
   font-size: var(--font-size-md);
+}
+
+.lab-submission-page__file-error {
+  margin: 0;
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
 }
 
 .lab-submission-page__note {

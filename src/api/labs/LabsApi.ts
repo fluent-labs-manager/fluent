@@ -71,6 +71,9 @@ export async function getLabSubmissionStub(
 // на сколько шагов делится имитация загрузки файла
 const UPLOAD_STEPS = 5;
 
+// в режиме upload-error обрывается только первая загрузка: так виден повтор
+let hasUploadFailed = false;
+
 /**
  * временная заглушка: отправка работы на проверку. Имитирует загрузку файла
  * и сообщает её ход в onProgress (от 0 до 100). Попытка и новый статус
@@ -107,8 +110,15 @@ export async function submitLabAttemptStub(
     throw new ApiRequestError(409, 'Работу сейчас нельзя отправить');
   }
 
+  const failsAtStep =
+    getMockMode() === 'upload-error' && !hasUploadFailed ? 3 : null;
+
   for (let step = 1; step <= UPLOAD_STEPS; step += 1) {
     await mockDelay(MOCK_DELAY_MS / UPLOAD_STEPS);
+    if (step === failsAtStep) {
+      hasUploadFailed = true;
+      throw new ApiRequestError(500, 'Загрузка файла прервалась');
+    }
     onProgress((step * 100) / UPLOAD_STEPS);
   }
 
