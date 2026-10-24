@@ -4,7 +4,7 @@ export const ALLOWED_FILE_EXTENSIONS = [
   'pdf',
   'zip',
   'ipynb',
-  'py',,
+  'py',
   'java',
 ] as const;
 

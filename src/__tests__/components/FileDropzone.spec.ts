@@ -21,10 +21,10 @@ describe('FileDropzone', () => {
     const wrapper = mount(FileDropzone);
 
     expect(wrapper.find('.file-dropzone__hint').text()).toBe(
-      'PDF, ZIP, IPYNB, PY, H, JAVA до 20 МБ',
+      'PDF, ZIP, IPYNB, PY, JAVA до 20 МБ',
     );
     expect(wrapper.find('input[type="file"]').attributes('accept')).toBe(
-      '.pdf,.zip,.ipynb,.py,.h,.java',
+      '.pdf,.zip,.ipynb,.py,.java',
     );
   });
 
