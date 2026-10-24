@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils';
 import LabSubmissionPage from '@/views/LabSubmissionPage.vue';
-import { getLabSubmissionStub } from '@/api/labs/LabsApi.ts';
+import {
+  getLabSubmissionStub,
+  submitLabAttemptStub,
+} from '@/api/labs/LabsApi.ts';
 import type { LabSubmission } from '@/api/labs/LabSubmission.dto.ts';
 import { AttemptResult } from '@/types/AttemptResult.ts';
 import { LabStatus } from '@/types/LabStatus.ts';
@@ -10,9 +13,62 @@ import { ApiRequestError } from '@/utils/ApiResolver.ts';
 import { toIsoDateTime } from '@/utils/IsoDateTime.ts';
 import { labSubmissionFixture } from '../fixtures.ts';
 
-vi.mock('@/api/labs/LabsApi.ts', () => ({ getLabSubmissionStub: vi.fn() }));
+vi.mock('@/api/labs/LabsApi.ts', () => ({
+  getLabSubmissionStub: vi.fn(),
+  submitLabAttemptStub: vi.fn(),
+}));
 
 const mockedGetLabSubmission = vi.mocked(getLabSubmissionStub);
+const mockedSubmit = vi.mocked(submitLabAttemptStub);
+
+interface PendingSubmit {
+  resolve: (data: LabSubmission) => void;
+  reject: (error: unknown) => void;
+  // сообщить странице, сколько процентов файла загружено
+  progress: (percent: number) => void;
+}
+
+// отправка, которая завершается вручную: так видно состояние во время загрузки
+function createPendingSubmit(): PendingSubmit {
+  const pending: PendingSubmit = {
+    resolve: () => undefined,
+    reject: () => undefined,
+    progress: () => undefined,
+  };
+  mockedSubmit.mockImplementation(
+    (_courseId, _labId, _file, _comment, onProgress) =>
+      new Promise<LabSubmission>((resolve, reject) => {
+        pending.resolve = resolve;
+        pending.reject = reject;
+        pending.progress = (percent): void => {
+          onProgress?.(percent);
+        };
+      }),
+  );
+  return pending;
+}
+
+// работа после отправки: на проверке, третья попытка ждёт ответа
+function createSubmittedThirdAttempt(): LabSubmission {
+  const data = structuredClone(labSubmissionFixture);
+  const submittedAt = toIsoDateTime('2026-10-24T16:40:00+03:00');
+  data.lab = {
+    ...data.lab,
+    status: LabStatus.PendingReview,
+    variant: 42,
+    submittedAt,
+  };
+  data.attempts.push({
+    id: 24,
+    number: 3,
+    submittedAt,
+    file: { name: 'otchet_v3.pdf', size: 2_516_582 },
+    comment: 'Исправил формы.',
+    teacherComment: null,
+    result: AttemptResult.Pending,
+  });
+  return data;
+}
 
 function mountPage(
   props: { courseId: number; labId: number } = { courseId: 11, labId: 2 },
@@ -23,6 +79,20 @@ function mountPage(
       stubs: { RouterLink: RouterLinkStub },
     },
   });
+}
+
+// файл в 2,4 МБ: содержимое не важно, размер задаём явно
+const selectedFile = new File(['%PDF'], 'otchet_v3.pdf');
+Object.defineProperty(selectedFile, 'size', { value: 2_516_582 });
+
+async function mountWithFile(): Promise<ReturnType<typeof mount>> {
+  const wrapper = mountPage();
+  await flushPromises();
+  // выбор в окне: в jsdom список файлов поля задаётся подменой свойства
+  const input = wrapper.find('input[type="file"]');
+  Object.defineProperty(input.element, 'files', { value: [selectedFile] });
+  await input.trigger('change');
+  return wrapper;
 }
 
 // работа на проверке: одна попытка ждёт ответа преподавателя
@@ -70,6 +140,7 @@ function createSubmitted(): LabSubmission {
 describe('LabSubmissionPage', () => {
   beforeEach(() => {
     mockedGetLabSubmission.mockReset();
+    mockedSubmit.mockReset();
     mockedGetLabSubmission.mockResolvedValue(
       structuredClone(labSubmissionFixture),
     );
@@ -219,23 +290,6 @@ describe('LabSubmissionPage', () => {
   });
 
   describe('выбор файла', () => {
-    // файл в 2,4 МБ: содержимое не важно, размер задаём явно
-    function createFile(): File {
-      const file = new File(['%PDF'], 'otchet_v3.pdf');
-      Object.defineProperty(file, 'size', { value: 2_516_582 });
-      return file;
-    }
-
-    async function mountWithFile(): Promise<ReturnType<typeof mount>> {
-      const wrapper = mountPage();
-      await flushPromises();
-      // выбор в окне: в jsdom список файлов поля задаётся подменой свойства
-      const input = wrapper.find('input[type="file"]');
-      Object.defineProperty(input.element, 'files', { value: [createFile()] });
-      await input.trigger('change');
-      return wrapper;
-    }
-
     it('выбранный файл показывается карточкой вместо области', async () => {
       const wrapper = await mountWithFile();
       const card = wrapper.find('.submitted-file-card');
@@ -277,6 +331,126 @@ describe('LabSubmissionPage', () => {
       expect(
         (wrapper.find('textarea').element as HTMLTextAreaElement).value,
       ).toBe('');
+    });
+  });
+
+  describe('отправка', () => {
+    it('отправляет выбранный файл и комментарий без лишних пробелов', async () => {
+      createPendingSubmit();
+      const wrapper = await mountWithFile();
+      await wrapper.find('textarea').setValue('  Исправил формы.  ');
+
+      await wrapper.find('form').trigger('submit');
+
+      expect(mockedSubmit).toHaveBeenCalledWith(
+        11,
+        2,
+        selectedFile,
+        'Исправил формы.',
+        expect.any(Function),
+      );
+    });
+
+    it('пустой комментарий не отправляет', async () => {
+      createPendingSubmit();
+      const wrapper = await mountWithFile();
+      await wrapper.find('textarea').setValue('   ');
+
+      await wrapper.find('form').trigger('submit');
+
+      expect(mockedSubmit.mock.calls[0]?.[3]).toBeNull();
+    });
+
+    it('во время загрузки показывает прогресс и блокирует форму', async () => {
+      const pending = createPendingSubmit();
+      const wrapper = await mountWithFile();
+
+      await wrapper.find('form').trigger('submit');
+      pending.progress(40);
+      await flushPromises();
+
+      expect(wrapper.find('.lab-submission-page__upload').text()).toBe(
+        'Загрузка файла… 40%',
+      );
+      expect(
+        wrapper.find('[role="progressbar"]').attributes('aria-valuenow'),
+      ).toBe('40');
+      expect(
+        wrapper.find('button[type="submit"]').attributes('disabled'),
+      ).toBeDefined();
+      expect(wrapper.find('textarea').attributes('disabled')).toBeDefined();
+      expect(wrapper.find('.submitted-file-card__remove').exists()).toBe(false);
+      const draft = wrapper
+        .findAll('button')
+        .find((button) => button.text() === 'Сохранить черновик');
+      expect(draft?.attributes('disabled')).toBeDefined();
+    });
+
+    it('пока файл загружается, второй раз работу не отправить', async () => {
+      createPendingSubmit();
+      const wrapper = await mountWithFile();
+
+      await wrapper.find('form').trigger('submit');
+      await wrapper.find('form').trigger('submit');
+
+      expect(mockedSubmit).toHaveBeenCalledTimes(1);
+    });
+
+    it('после отправки работа на проверке, а попытка — сверху истории', async () => {
+      const pending = createPendingSubmit();
+      const wrapper = await mountWithFile();
+
+      await wrapper.find('form').trigger('submit');
+      pending.resolve(createSubmittedThirdAttempt());
+      await flushPromises();
+
+      expect(wrapper.find('.lab-status-bar').text()).toBe('На проверке');
+      expect(wrapper.find('form').exists()).toBe(false);
+      expect(wrapper.find('.submitted-file-card').text()).toContain(
+        'otchet_v3.pdf',
+      );
+      expect(wrapper.find('.lab-submission-page__note').text()).toBe(
+        'Ваш комментарий: Исправил формы.',
+      );
+      const attempts = wrapper.findAll('.lab-attempt-card');
+      expect(attempts).toHaveLength(3);
+      expect(attempts[0]?.find('h3').text()).toBe('Попытка 3 — 24.10.2026');
+      expect(attempts[0]?.find('.lab-attempt-card__result').text()).toBe(
+        'На проверке',
+      );
+    });
+
+    it('если отправить не удалось, показывает ошибку и оставляет файл', async () => {
+      const pending = createPendingSubmit();
+      const wrapper = await mountWithFile();
+
+      await wrapper.find('form').trigger('submit');
+      pending.reject(new ApiRequestError(503, 'Сервис временно недоступен'));
+      await flushPromises();
+
+      expect(wrapper.find('.lab-submission-page__submit-error').text()).toBe(
+        'Не удалось отправить работу: Сервис временно недоступен',
+      );
+      expect(wrapper.find('.submitted-file-card').text()).toContain(
+        'otchet_v3.pdf',
+      );
+      expect(
+        wrapper.find('button[type="submit"]').attributes('disabled'),
+      ).toBeUndefined();
+    });
+
+    it('ответ на отправку прошлой работы не заменяет открытую', async () => {
+      const pending = createPendingSubmit();
+      const wrapper = await mountWithFile();
+
+      await wrapper.find('form').trigger('submit');
+      await wrapper.setProps({ courseId: 11, labId: 4 });
+      await flushPromises();
+      pending.resolve(createSubmittedThirdAttempt());
+      await flushPromises();
+
+      expect(wrapper.find('.lab-status-bar').text()).toBe('Не сдано');
+      expect(wrapper.findAll('.lab-attempt-card')).toHaveLength(2);
     });
   });
 

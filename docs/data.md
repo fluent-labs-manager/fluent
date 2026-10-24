@@ -14,6 +14,7 @@ src/stores/user.ts        текущий пользователь (Pinia) — н
 src/composables/*.ts      данные страницы: useSemesters() → semesters, isLoading, error, reload
                           useCourseLabs(courseId) → courseLabs, isLoading, error, reload
                           useLabSubmission(courseId, labId) → submission, isLoading, error, reload
+                          useLabAttemptSubmit(courseId, labId) → progress, isSubmitting, error, submit
                           useAccountProfile() → profile, isLoading, error, reload
                           useTaughtCourses(enabled) → courses, isLoading, error, reload
                           useNow() → текущее время, обновляется раз в минуту
@@ -24,7 +25,7 @@ src/components/*.vue      компоненты получают данные т�
 ```
 
 - Компоненты и страницы не импортируют `src/mocks/` напрямую — только заглушки в `src/api/` знают о моках.
-- Ошибки загрузки ловятся там, где данные загружаются: в [`useSemesters`](../src/composables/useSemesters.ts), [`useCourseLabs`](../src/composables/useCourseLabs.ts) и в [хранилище пользователя](../src/stores/user.ts). Текст `ApiRequestError` показывается пользователю, для остальных ошибок — общее сообщение.
+- Ошибки загрузки ловятся там, где данные загружаются: в [`useSemesters`](../src/composables/useSemesters.ts), [`useCourseLabs`](../src/composables/useCourseLabs.ts), [`useLabSubmission`](../src/composables/useLabSubmission.ts), [`useLabAttemptSubmit`](../src/composables/useLabAttemptSubmit.ts) и в [хранилище пользователя](../src/stores/user.ts). Текст `ApiRequestError` показывается пользователю, для остальных ошибок — общее сообщение.
 - Заглушки бросают `ApiRequestError`, как [ApiResolver](./utils/ApiResolver.md), поэтому обработка ошибок уже рассчитана на настоящие запросы.
 - Даты в DTO имеют тип [`IsoDateTime`](../src/types/IsoDateTime.ts): дата, время и часовой пояс в формате ISO 8601. Получить его можно только через [`toIsoDateTime`](../src/utils/IsoDateTime.ts) — она бросает ошибку на дате без времени, без часового пояса или с несуществующим днём. В моках даты создаются через неё же; когда появится API, даты из ответа нужно пропускать через неё в `src/api/`.
 
@@ -67,10 +68,17 @@ src/components/*.vue      компоненты получают данные т�
 
 Что показывает страница:
 
-- `not-submitted` — область для файла, комментарий, «Отправить работу на проверку» (без файла неактивна) и «Сохранить черновик» (заглушка). Файл выбирают кнопкой «Выбрать файл» или перетаскивают в область; к попытке прикладывается один файл, из нескольких перетащенных берётся первый. Выбранный файл показывается карточкой с «Удалить файл». Отправка пока не работает;
+- `not-submitted` — область для файла, комментарий, «Отправить работу на проверку» (без файла неактивна) и «Сохранить черновик» (заглушка). Файл выбирают кнопкой «Выбрать файл» или перетаскивают в область; к попытке прикладывается один файл, из нескольких перетащенных берётся первый. Выбранный файл показывается карточкой с «Удалить файл»;
 - `pending-review` и `submitted` — только просмотр: последний отправленный файл, у сданной рядом со статусом оценка;
 - `locked` — «Работа пока недоступна», без файлов и истории;
 - справа — «История»: попытки, последняя сверху.
+
+«Отправить работу на проверку» загружает файл через [`submitLabAttemptStub`](../src/api/labs/LabsApi.ts) ([`useLabAttemptSubmit`](../src/composables/useLabAttemptSubmit.ts)):
+
+- пока файл грузится, видна полоса с процентом, а форма заблокирована — второй раз работу не отправить;
+- после отправки работа переходит в `pending-review`, в истории сверху новая попытка «На проверке» со следующим номером — так же и при повторной сдаче после возврата;
+- если отправить не удалось, под формой ошибка, файл и комментарий остаются;
+- заглушка записывает попытку и статус в моки, поэтому до перезагрузки вкладки новый статус виден и на странице дисциплины. Отправить можно только работу `not-submitted`.
 
 Принимаются файлы PDF, ZIP, IPYNB, PY и JAVA до 20 МБ — константы в [`src/constants/labSubmission.ts`](../src/constants/labSubmission.ts); окончательный список нужно согласовать с бэкендом. Пока ограничения подсказывают окну выбора файла, проверка с сообщением об ошибке появится вместе с отправкой.
 

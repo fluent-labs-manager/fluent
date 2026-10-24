@@ -83,3 +83,50 @@ test.describe('страница лабораторной по прямой сс�
     await expect(page.getByRole('alert')).toContainText('Работа не найдена');
   });
 });
+
+test.describe('отправка работы на проверку', () => {
+  test('после отправки работа на проверке здесь и на странице дисциплины', async ({
+    page,
+  }) => {
+    await page.clock.setFixedTime(new Date('2026-10-24T16:40:00+03:00'));
+    await page.goto('/courses/1/labs/102');
+    const submit = page.getByRole('button', {
+      name: 'Отправить работу на проверку',
+    });
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: 'gorelova_v3.pdf',
+      mimeType: 'application/pdf',
+      buffer: Buffer.from('%PDF-1.4'),
+    });
+    await page.getByLabel('Комментарий к работе').fill('Исправил формы.');
+    await submit.click();
+
+    // пока файл грузится, второй раз отправить нельзя
+    await expect(page.getByRole('progressbar')).toBeVisible();
+    await expect(submit).toBeDisabled();
+
+    await expect(page.locator('.lab-status-bar')).toHaveText('На проверке');
+    await expect(submit).toHaveCount(0);
+    const attempts = page
+      .getByRole('region', { name: 'История' })
+      .getByRole('listitem');
+    await expect(attempts).toHaveCount(3);
+    await expect(attempts.first()).toContainText('Попытка 3 — 24.10.2026');
+    await expect(attempts.first()).toContainText('На проверке');
+    await expect(attempts.first()).toContainText('Исправил формы.');
+
+    await page.getByRole('link', { name: 'Назад' }).click();
+
+    await expect(page).toHaveURL('/courses/1?lab=102');
+    await expect(
+      page
+        .getByRole('region', { name: 'Все работы дисциплины' })
+        .getByRole('listitem')
+        .filter({ hasText: 'Создание пользовательских интерфейсов' }),
+    ).toContainText('ждёт оценки');
+    await expect(
+      page.getByRole('link', { name: 'Открыть работу' }),
+    ).toBeVisible();
+  });
+});

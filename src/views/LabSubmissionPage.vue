@@ -7,8 +7,10 @@ import { ChevronLeft, RotateCw } from '@lucide/vue';
 import FileDropzone from '@/components/FileDropzone.vue';
 import LabAttemptCard from '@/components/LabAttemptCard.vue';
 import LabStatusBar from '@/components/LabStatusBar.vue';
+import ProgressBar from '@/components/ProgressBar.vue';
 import SubmittedFileCard from '@/components/SubmittedFileCard.vue';
 import type { LabAttempt } from '@/api/labs/LabAttempt.dto.ts';
+import { useLabAttemptSubmit } from '@/composables/useLabAttemptSubmit.ts';
 import { useLabSubmission } from '@/composables/useLabSubmission.ts';
 import { LabStatus } from '@/types/LabStatus.ts';
 
@@ -18,6 +20,16 @@ const props = defineProps<{
 }>();
 
 const { submission, isLoading, error, reload } = useLabSubmission(
+  () => props.courseId,
+  () => props.labId,
+);
+
+const {
+  progress,
+  isSubmitting,
+  error: submitError,
+  submit,
+} = useLabAttemptSubmit(
   () => props.courseId,
   () => props.labId,
 );
@@ -58,6 +70,23 @@ function selectFile(file: File): void {
 
 function removeFile(): void {
   selectedFile.value = null;
+}
+
+async function submitWork(): Promise<void> {
+  if (selectedFile.value === null) {
+    return;
+  }
+  const labId = props.labId;
+  const text = comment.value.trim();
+  const result = await submit(selectedFile.value, text === '' ? null : text);
+
+  // пока файл грузился, студент мог перейти к другой работе
+  if (result === null || labId !== props.labId) {
+    return;
+  }
+  submission.value = result;
+  selectedFile.value = null;
+  comment.value = '';
 }
 
 function retry(): void {
@@ -139,12 +168,12 @@ function retry(): void {
           <form
             v-if="canSubmit"
             class="lab-submission-page__form"
-            @submit.prevent
+            @submit.prevent="submitWork"
           >
             <SubmittedFileCard
               v-if="selectedFile !== null"
               :file="{ name: selectedFile.name, size: selectedFile.size }"
-              removable
+              :removable="!isSubmitting"
               @remove="removeFile"
             />
             <FileDropzone
@@ -158,17 +187,38 @@ function retry(): void {
               <textarea
                 v-model="comment"
                 class="lab-submission-page__comment"
+                :disabled="isSubmitting"
                 rows="4"
                 placeholder="Необязательно"
               />
             </label>
+            <div
+              v-if="isSubmitting"
+              class="lab-submission-page__upload"
+              role="status"
+            >
+              <span class="lab-submission-page__upload-label">
+                Загрузка файла… {{ progress }}%
+              </span>
+              <ProgressBar
+                :value="progress"
+                :max="100"
+              />
+            </div>
+            <p
+              v-if="submitError !== null"
+              class="lab-submission-page__submit-error"
+              role="alert"
+            >
+              Не удалось отправить работу: {{ submitError }}
+            </p>
             <div class="lab-submission-page__actions">
-              <!-- без выбранного файла отправлять нечего -->
-              <!-- TODO: отправка — в следующем шаге задачи -->
+              <!-- без выбранного файла отправлять нечего, а во время загрузки —
+                   второй раз нельзя -->
               <button
                 class="lab-submission-page__button lab-submission-page__button--primary"
                 type="submit"
-                :disabled="selectedFile === null"
+                :disabled="selectedFile === null || isSubmitting"
               >
                 Отправить работу на проверку
               </button>
@@ -176,6 +226,7 @@ function retry(): void {
               <button
                 class="lab-submission-page__button lab-submission-page__button--secondary"
                 type="button"
+                :disabled="isSubmitting"
               >
                 Сохранить черновик
               </button>
@@ -347,6 +398,11 @@ function retry(): void {
   resize: vertical;
 }
 
+.lab-submission-page__comment:disabled {
+  background-color: var(--color-muted-surface);
+  color: var(--color-text-secondary);
+}
+
 .lab-submission-page__comment:focus {
   border-color: var(--color-accent);
   outline: none;
@@ -397,8 +453,31 @@ function retry(): void {
   color: var(--color-text);
 }
 
-.lab-submission-page__button--secondary:hover {
+.lab-submission-page__button--secondary:disabled {
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+.lab-submission-page__button--secondary:hover:enabled {
   border-color: var(--color-text);
+}
+
+.lab-submission-page__upload {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lab-submission-page__upload-label {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.lab-submission-page__submit-error {
+  margin: 0;
+  color: var(--color-error);
+  font-size: var(--font-size-md);
 }
 
 .lab-submission-page__note {
