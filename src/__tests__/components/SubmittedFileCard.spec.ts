@@ -21,6 +21,14 @@ describe('SubmittedFileCard', () => {
     );
   });
 
+  it('без даты загрузки показывает только размер', () => {
+    const wrapper = mount(SubmittedFileCard, {
+      props: { file: { name: 'otchet.pdf', size: 524_288 } },
+    });
+
+    expect(wrapper.find('.submitted-file-card__details').text()).toBe('512 КБ');
+  });
+
   it('без расширения не показывает тип файла', () => {
     expect(mountCard().find('.submitted-file-card__type').exists()).toBe(false);
   });

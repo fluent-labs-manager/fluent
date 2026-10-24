@@ -11,21 +11,24 @@ import { formatFileSize, getFileType } from '@/utils/FileFormatter.ts';
 const props = withDefaults(
   defineProps<{
     file: SubmittedFile;
-    uploadedAt: IsoDateTime;
+    // у выбранного, но ещё не отправленного файла даты нет
+    uploadedAt?: IsoDateTime | null;
     // файл, отправленный на проверку, удалить нельзя
     removable?: boolean;
   }>(),
-  { removable: false },
+  { uploadedAt: null, removable: false },
 );
 
 const emit = defineEmits<{
   remove: [];
 }>();
 
-const details = computed<string>(
-  () =>
-    `Загружено ${formatDateTime(props.uploadedAt)} · ${formatFileSize(props.file.size)}`,
-);
+const details = computed<string>(() => {
+  const size = formatFileSize(props.file.size);
+  return props.uploadedAt === null
+    ? size
+    : `Загружено ${formatDateTime(props.uploadedAt)} · ${size}`;
+});
 
 const fileType = computed<string>(() => getFileType(props.file.name));
 </script>

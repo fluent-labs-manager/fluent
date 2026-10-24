@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 
 import { ChevronLeft, RotateCw } from '@lucide/vue';
@@ -38,6 +38,27 @@ const latestAttempt = computed<LabAttempt | null>(() => {
 const history = computed<LabAttempt[]>(() =>
   [...(submission.value?.attempts ?? [])].reverse(),
 );
+
+// файл и комментарий живут только на странице, пока работу не отправили
+const selectedFile = ref<File | null>(null);
+const comment = ref<string>('');
+
+// у другой работы форма начинается заново
+watch(
+  () => [props.courseId, props.labId],
+  () => {
+    selectedFile.value = null;
+    comment.value = '';
+  },
+);
+
+function selectFile(file: File): void {
+  selectedFile.value = file;
+}
+
+function removeFile(): void {
+  selectedFile.value = null;
+}
 
 function retry(): void {
   void reload();
@@ -120,12 +141,22 @@ function retry(): void {
             class="lab-submission-page__form"
             @submit.prevent
           >
-            <FileDropzone />
+            <SubmittedFileCard
+              v-if="selectedFile !== null"
+              :file="{ name: selectedFile.name, size: selectedFile.size }"
+              removable
+              @remove="removeFile"
+            />
+            <FileDropzone
+              v-else
+              @select="selectFile"
+            />
             <label class="lab-submission-page__field">
               <span class="lab-submission-page__label">
                 Комментарий к работе
               </span>
               <textarea
+                v-model="comment"
                 class="lab-submission-page__comment"
                 rows="4"
                 placeholder="Необязательно"
@@ -133,10 +164,11 @@ function retry(): void {
             </label>
             <div class="lab-submission-page__actions">
               <!-- без выбранного файла отправлять нечего -->
+              <!-- TODO: отправка — в следующем шаге задачи -->
               <button
                 class="lab-submission-page__button lab-submission-page__button--primary"
                 type="submit"
-                disabled
+                :disabled="selectedFile === null"
               >
                 Отправить работу на проверку
               </button>

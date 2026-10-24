@@ -25,6 +25,29 @@ test.describe('страница лабораторной по прямой сс�
     await expect(attempts.last()).toContainText('1,9 МБ');
   });
 
+  test('выбранный файл можно убрать и выбрать снова', async ({ page }) => {
+    await page.goto('/courses/1/labs/102');
+    const submit = page.getByRole('button', {
+      name: 'Отправить работу на проверку',
+    });
+    const files = page.getByRole('region', { name: 'Файлы' });
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: 'gorelova_v3.pdf',
+      mimeType: 'application/pdf',
+      buffer: Buffer.from('%PDF-1.4'),
+    });
+
+    await expect(files.getByText('gorelova_v3.pdf')).toBeVisible();
+    await expect(submit).toBeEnabled();
+
+    await page.getByRole('button', { name: 'Удалить файл' }).click();
+
+    await expect(files.getByText('gorelova_v3.pdf')).toHaveCount(0);
+    await expect(page.getByText('Перетащите файл или выберите')).toBeVisible();
+    await expect(submit).toBeDisabled();
+  });
+
   test('работа на проверке открывается только для просмотра', async ({
     page,
   }) => {

@@ -218,6 +218,68 @@ describe('LabSubmissionPage', () => {
     });
   });
 
+  describe('выбор файла', () => {
+    // файл в 2,4 МБ: содержимое не важно, размер задаём явно
+    function createFile(): File {
+      const file = new File(['%PDF'], 'otchet_v3.pdf');
+      Object.defineProperty(file, 'size', { value: 2_516_582 });
+      return file;
+    }
+
+    async function mountWithFile(): Promise<ReturnType<typeof mount>> {
+      const wrapper = mountPage();
+      await flushPromises();
+      // выбор в окне: в jsdom список файлов поля задаётся подменой свойства
+      const input = wrapper.find('input[type="file"]');
+      Object.defineProperty(input.element, 'files', { value: [createFile()] });
+      await input.trigger('change');
+      return wrapper;
+    }
+
+    it('выбранный файл показывается карточкой вместо области', async () => {
+      const wrapper = await mountWithFile();
+      const card = wrapper.find('.submitted-file-card');
+
+      expect(wrapper.find('.file-dropzone').exists()).toBe(false);
+      expect(card.text()).toContain('otchet_v3.pdf');
+      expect(card.find('.submitted-file-card__details').text()).toBe('2,4 МБ');
+      expect(card.find('.submitted-file-card__type').text()).toBe('PDF');
+    });
+
+    it('с выбранным файлом работу можно отправить', async () => {
+      const wrapper = await mountWithFile();
+
+      expect(
+        wrapper.find('button[type="submit"]').attributes('disabled'),
+      ).toBeUndefined();
+    });
+
+    it('«Удалить файл» возвращает область и снова блокирует отправку', async () => {
+      const wrapper = await mountWithFile();
+
+      await wrapper.find('.submitted-file-card__remove').trigger('click');
+
+      expect(wrapper.find('.submitted-file-card').exists()).toBe(false);
+      expect(wrapper.find('.file-dropzone').exists()).toBe(true);
+      expect(
+        wrapper.find('button[type="submit"]').attributes('disabled'),
+      ).toBeDefined();
+    });
+
+    it('при переходе к другой работе файл и комментарий сбрасываются', async () => {
+      const wrapper = await mountWithFile();
+      await wrapper.find('textarea').setValue('Исправил формы.');
+
+      await wrapper.setProps({ courseId: 11, labId: 4 });
+      await flushPromises();
+
+      expect(wrapper.find('.file-dropzone').exists()).toBe(true);
+      expect(
+        (wrapper.find('textarea').element as HTMLTextAreaElement).value,
+      ).toBe('');
+    });
+  });
+
   describe('работа на проверке', () => {
     beforeEach(() => {
       mockedGetLabSubmission.mockResolvedValue(createPendingReview());
