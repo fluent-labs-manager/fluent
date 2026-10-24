@@ -202,10 +202,10 @@ const deadline = computed<string>(() => {
 
 .active-lab-card__button--secondary {
   background-color: var(--color-surface);
-  color: var(--color-text);
+  color: var(--color-accent);
 }
 
 .active-lab-card__button--secondary:hover {
-  border-color: var(--color-text);
+  background-color: var(--color-accent-surface);
 }
 </style>

@@ -129,16 +129,16 @@ function onDrop(event: DragEvent): void {
   border: 1px solid var(--color-accent);
   border-radius: 0.7em;
   background-color: var(--color-surface);
-  color: var(--color-text);
+  color: var(--color-accent);
   font-size: var(--font-size-md);
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
-  transition: border-color 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .file-dropzone__button:hover {
-  border-color: var(--color-text);
+  background-color: var(--color-accent-surface);
 }
 
 /* окно выбора открывает кнопка, само поле не видно */
