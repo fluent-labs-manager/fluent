@@ -11,7 +11,7 @@ test.describe('страница лабораторных курса по пря�
     );
     await expect(page.getByText('1 из 3 выполнено')).toBeVisible();
     await expect(
-      page.getByRole('heading', { name: 'Активная работа' }),
+      page.getByRole('heading', { name: 'Выбранная работа' }),
     ).toBeVisible();
     await expect(
       page
@@ -47,7 +47,7 @@ test.describe('выбор работы в карточке', () => {
     page,
   }) => {
     const cardTitle = page
-      .getByRole('region', { name: 'Активная работа' })
+      .getByRole('region', { name: 'Выбранная работа' })
       .getByRole('heading', { level: 3 });
 
     await page.goto('/courses/2');
@@ -67,7 +67,7 @@ test.describe('выбор работы в карточке', () => {
     page,
   }) => {
     const cardTitle = page
-      .getByRole('region', { name: 'Активная работа' })
+      .getByRole('region', { name: 'Выбранная работа' })
       .getByRole('heading', { level: 3 });
 
     await page.goto('/courses/2');

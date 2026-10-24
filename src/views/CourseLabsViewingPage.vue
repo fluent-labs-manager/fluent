@@ -159,13 +159,13 @@ function openTask(): void {
       >
         <section
           class="course-labs-page__section"
-          aria-labelledby="active-lab-heading"
+          aria-labelledby="selected-lab-heading"
         >
           <h2
-            id="active-lab-heading"
+            id="selected-lab-heading"
             class="course-labs-page__section-title"
           >
-            Активная работа
+            Выбранная работа
           </h2>
           <p
             v-if="selectedLab === null"

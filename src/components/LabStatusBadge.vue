@@ -1,20 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import { LabStatus } from '@/types/LabStatus.ts';
+import { LAB_STATUS_LABELS } from '@/constants/labStatusLabels.ts';
+import type { LabStatus } from '@/types/LabStatus.ts';
 
 const props = defineProps<{
   status: LabStatus;
 }>();
 
-const labels: Record<LabStatus, string> = {
-  [LabStatus.Submitted]: 'Сдано',
-  [LabStatus.PendingReview]: 'На проверке',
-  [LabStatus.NotSubmitted]: 'Не сдано',
-  [LabStatus.Locked]: 'Недоступно',
-};
-
-const label = computed<string>(() => labels[props.status]);
+const label = computed<string>(() => LAB_STATUS_LABELS[props.status]);
 </script>
 
 <template>

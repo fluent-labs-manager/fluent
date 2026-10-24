@@ -288,6 +288,14 @@ describe('CourseLabsViewingPage', () => {
       );
     });
 
+    it('блок с карточкой называется «Выбранная работа»', async () => {
+      const wrapper = await mountPage();
+
+      expect(wrapper.find('#selected-lab-heading').text()).toBe(
+        'Выбранная работа',
+      );
+    });
+
     it('без доступных для выбора работ показывает «Активных работ нет»', async () => {
       mockedGetCourseLabs.mockResolvedValue({
         ...structuredClone(courseLabsFixture),

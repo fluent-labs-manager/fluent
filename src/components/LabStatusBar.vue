@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 
 import type { Lab } from '@/api/labs/Lab.dto.ts';
+import { LAB_STATUS_LABELS } from '@/constants/labStatusLabels.ts';
 import { LabStatus } from '@/types/LabStatus.ts';
 import { formatGrade } from '@/utils/GradeFormatter.ts';
 
@@ -9,18 +10,11 @@ const props = defineProps<{
   lab: Lab;
 }>();
 
-const labels: Record<LabStatus, string> = {
-  [LabStatus.Submitted]: 'Сдано',
-  [LabStatus.PendingReview]: 'На проверке',
-  [LabStatus.NotSubmitted]: 'Не сдано',
-  [LabStatus.Locked]: 'Недоступно',
-};
-
 // у сданной работы рядом со статусом — оценка
 const label = computed<string>(() =>
   props.lab.status === LabStatus.Submitted
-    ? `${labels[props.lab.status]} · оценка ${formatGrade(props.lab.grade, 1)}`
-    : labels[props.lab.status],
+    ? `${LAB_STATUS_LABELS[props.lab.status]} · оценка ${formatGrade(props.lab.grade, 1)}`
+    : LAB_STATUS_LABELS[props.lab.status],
 );
 </script>
 

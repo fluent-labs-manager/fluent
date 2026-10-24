@@ -106,7 +106,11 @@ test.describe('отправка работы на проверку', () => {
     await expect(page.getByRole('progressbar')).toBeVisible();
     await expect(submit).toBeDisabled();
 
-    await expect(page.locator('.lab-status-bar')).toHaveText('На проверке');
+    await expect(
+      page
+        .getByRole('region', { name: 'Файлы' })
+        .getByText('На проверке', { exact: true }),
+    ).toBeVisible();
     await expect(submit).toHaveCount(0);
     const attempts = page
       .getByRole('region', { name: 'История' })
@@ -181,7 +185,11 @@ test.describe('ошибки при сдаче', () => {
 
     await page.getByRole('button', { name: 'Повторить отправку' }).click();
 
-    await expect(page.locator('.lab-status-bar')).toHaveText('На проверке');
+    await expect(
+      page
+        .getByRole('region', { name: 'Файлы' })
+        .getByText('На проверке', { exact: true }),
+    ).toBeVisible();
     await expect(page.getByRole('alert')).toHaveCount(0);
   });
 });
