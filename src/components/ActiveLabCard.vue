@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { RouterLink } from 'vue-router';
+import type { RouteLocationRaw } from 'vue-router';
 
 import LabStatusBadge from '@/components/LabStatusBadge.vue';
 import type { SelectableLab } from '@/api/labs/Lab.dto.ts';
@@ -12,6 +14,8 @@ const props = defineProps<{
   lab: SelectableLab;
   // текущее время: от него зависит, близок ли срок
   now: Date;
+  // страница лабораторной, где работу сдают
+  submissionTo: RouteLocationRaw;
 }>();
 
 const emit = defineEmits<{
@@ -26,6 +30,11 @@ const isNotSubmitted = computed<boolean>(
 
 const deadlineState = computed<DeadlineState>(() =>
   getDeadlineState(props.lab.deadline, props.now),
+);
+
+// несданную работу можно сдать и после срока, остальные — только посмотреть
+const submissionLabel = computed<string>(() =>
+  isNotSubmitted.value ? 'Сдать работу' : 'Открыть работу',
 );
 
 const deadline = computed<string>(() => {
@@ -66,7 +75,7 @@ const deadline = computed<string>(() => {
 
     <div class="active-lab-card__actions">
       <button
-        class="active-lab-card__button active-lab-card__button--primary"
+        class="active-lab-card__button active-lab-card__button--secondary"
         type="button"
         @click="emit('openVariant')"
       >
@@ -79,6 +88,12 @@ const deadline = computed<string>(() => {
       >
         Открыть задание
       </button>
+      <RouterLink
+        class="active-lab-card__button active-lab-card__button--primary"
+        :to="submissionTo"
+      >
+        {{ submissionLabel }}
+      </RouterLink>
     </div>
   </article>
 </template>
@@ -157,13 +172,17 @@ const deadline = computed<string>(() => {
 }
 
 .active-lab-card__button {
-  min-width: 11.25rem;
-  height: 2.75rem;
-  padding: 0 1.7em;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  height: 2.5rem;
+  padding: 0 1.15em;
   border: 1px solid var(--color-accent);
   border-radius: 0.7em;
   font-size: var(--font-size-md);
   font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
   cursor: pointer;
   transition:
     background-color 0.2s ease,

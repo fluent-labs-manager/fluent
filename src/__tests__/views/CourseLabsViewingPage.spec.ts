@@ -427,6 +427,39 @@ describe('CourseLabsViewingPage', () => {
       );
     });
 
+    // ссылка на страницу лабораторной — единственная ссылка в карточке
+    function submissionLink(wrapper: ReturnType<typeof mount>): {
+      text: string;
+      to: unknown;
+    } {
+      const link = wrapper
+        .find('.active-lab-card')
+        .findComponent(RouterLinkStub);
+      return { text: link.text(), to: link.props('to') };
+    }
+
+    it('у несданной работы — «Сдать работу», в том числе после срока', async () => {
+      const wrapper = await mountWithSelectionLabs();
+      expect(submissionLink(wrapper).text).toBe('Сдать работу');
+
+      await selectButton(wrapper, 4)?.trigger('click');
+
+      expect(submissionLink(wrapper)).toEqual({
+        text: 'Сдать работу',
+        to: { name: 'lab-submission', params: { courseId: 11, labId: 4 } },
+      });
+    });
+
+    it('у сданной работы и работы на проверке — «Открыть работу»', async () => {
+      const wrapper = await mountWithSelectionLabs();
+
+      await selectButton(wrapper, 1)?.trigger('click');
+      expect(submissionLink(wrapper).text).toBe('Открыть работу');
+
+      await selectButton(wrapper, 6)?.trigger('click');
+      expect(submissionLink(wrapper).text).toBe('Открыть работу');
+    });
+
     it('открывает сданную работу и работу на проверке — со статусом вместо срока', async () => {
       const wrapper = await mountWithSelectionLabs();
 
@@ -494,7 +527,7 @@ describe('CourseLabsViewingPage', () => {
 
     it('кнопки «Получить вариант» и «Открыть задание» доступны', async () => {
       const wrapper = await mountPage();
-      const buttons = wrapper.findAll('.active-lab-card__button');
+      const buttons = wrapper.findAll('button.active-lab-card__button');
 
       expect(buttons.map((button) => button.text())).toEqual([
         'Получить вариант',
@@ -505,11 +538,36 @@ describe('CourseLabsViewingPage', () => {
       });
     });
 
+    it('«Сдать работу» ведёт на страницу лабораторной', async () => {
+      const wrapper = await mountPage();
+      const link = wrapper
+        .findAllComponents(RouterLinkStub)
+        .find((item) => item.text() === 'Сдать работу');
+
+      expect(link?.props('to')).toEqual({
+        name: 'lab-submission',
+        params: { courseId: 11, labId: 2 },
+      });
+    });
+
+    it('основным цветом выделена только кнопка сдачи', async () => {
+      const wrapper = await mountPage();
+
+      expect(
+        wrapper
+          .findAll('.active-lab-card__button--primary')
+          .map((button) => button.text()),
+      ).toEqual(['Сдать работу']);
+    });
+
     it('«Получить вариант» ничего не запрашивает и не меняет страницу', async () => {
       const wrapper = await mountPage();
       const html = wrapper.html();
 
-      await wrapper.find('.active-lab-card__button--primary').trigger('click');
+      await wrapper
+        .findAll('.active-lab-card__button')
+        .find((button) => button.text() === 'Получить вариант')
+        ?.trigger('click');
       await flushPromises();
 
       expect(mockedGetCourseLabs).toHaveBeenCalledTimes(1);

@@ -56,6 +56,16 @@ const routes: RouteRecordRaw[] = [
         meta: { roles: [UserRole.Student] },
       },
       {
+        path: 'courses/:courseId/labs/:labId',
+        name: 'lab-submission',
+        component: () => import('@/views/LabSubmissionPage.vue'),
+        props: (route) => ({
+          courseId: Number(route.params.courseId),
+          labId: Number(route.params.labId),
+        }),
+        meta: { roles: [UserRole.Student] },
+      },
+      {
         path: 'account',
         name: 'account',
         component: () => import('@/views/AccountPage.vue'),

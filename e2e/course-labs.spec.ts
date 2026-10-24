@@ -63,6 +63,29 @@ test.describe('выбор работы в карточке', () => {
     await expect(cardTitle).toHaveText('Свёрточные сети');
   });
 
+  test('«Сдать работу» открывает страницу лабораторной, а «Назад» возвращает с той же работой в карточке', async ({
+    page,
+  }) => {
+    const cardTitle = page
+      .getByRole('region', { name: 'Активная работа' })
+      .getByRole('heading', { level: 3 });
+
+    await page.goto('/courses/2');
+    await expect(cardTitle).toHaveText('Обучение многослойного перцептрона');
+
+    await page.getByRole('link', { name: 'Сдать работу' }).click();
+
+    await expect(page).toHaveURL('/courses/2/labs/203');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'Лабораторная работа',
+    );
+
+    await page.getByRole('link', { name: 'Назад' }).click();
+
+    await expect(page).toHaveURL('/courses/2?lab=203');
+    await expect(cardTitle).toHaveText('Обучение многослойного перцептрона');
+  });
+
   test('недоступную работу выбрать нельзя', async ({ page }) => {
     await page.goto('/courses/1');
 

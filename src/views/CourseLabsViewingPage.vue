@@ -177,6 +177,10 @@ function openTask(): void {
             v-else
             :lab="selectedLab"
             :now="now"
+            :submission-to="{
+              name: 'lab-submission',
+              params: { courseId, labId: selectedLab.id },
+            }"
             @open-variant="openVariant"
             @open-task="openTask"
           />
