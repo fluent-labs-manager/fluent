@@ -1,26 +1,28 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import type { NotSubmittedLab } from '@/api/labs/Lab.dto.ts';
+import LabStatusBadge from '@/components/LabStatusBadge.vue';
+import type { SelectableLab } from '@/api/labs/Lab.dto.ts';
 import type { DeadlineState } from '@/types/DeadlineState.ts';
+import { LabStatus } from '@/types/LabStatus.ts';
 import { formatDateTime } from '@/utils/DateFormatter.ts';
 import { getDeadlineState } from '@/utils/DeadlineState.ts';
 
-const props = withDefaults(
-  defineProps<{
-    lab: NotSubmittedLab;
-    // текущее время: от него зависит, близок ли срок
-    now: Date;
-    // уменьшенная карточка для сетки из нескольких активных работ
-    compact?: boolean;
-  }>(),
-  { compact: false },
-);
+const props = defineProps<{
+  lab: SelectableLab;
+  // текущее время: от него зависит, близок ли срок
+  now: Date;
+}>();
 
 const emit = defineEmits<{
   openVariant: [];
   openTask: [];
 }>();
+
+// срок показывается только у несданной работы, у остальных — статус
+const isNotSubmitted = computed<boolean>(
+  () => props.lab.status === LabStatus.NotSubmitted,
+);
 
 const deadlineState = computed<DeadlineState>(() =>
   getDeadlineState(props.lab.deadline, props.now),
@@ -35,15 +37,13 @@ const deadline = computed<string>(() => {
 </script>
 
 <template>
-  <article
-    class="active-lab-card"
-    :class="{ 'active-lab-card--compact': compact }"
-  >
+  <article class="active-lab-card">
     <div class="active-lab-card__meta">
       <span class="active-lab-card__number">
         Лабораторная работа {{ lab.number }}
       </span>
       <span
+        v-if="isNotSubmitted"
         class="active-lab-card__deadline"
         :class="{
           'active-lab-card__deadline--urgent': deadlineState !== 'normal',
@@ -51,6 +51,10 @@ const deadline = computed<string>(() => {
       >
         {{ deadline }}
       </span>
+      <LabStatusBadge
+        v-else
+        :status="lab.status"
+      />
     </div>
 
     <h3 class="active-lab-card__title">{{ lab.title }}</h3>
@@ -91,10 +95,6 @@ const deadline = computed<string>(() => {
   box-shadow: var(--shadow-card);
 }
 
-.active-lab-card--compact {
-  padding: 1rem;
-}
-
 .active-lab-card__meta {
   display: flex;
   flex-wrap: wrap;
@@ -125,13 +125,6 @@ const deadline = computed<string>(() => {
   font-size: var(--font-size-3xl);
   font-weight: 700;
   line-height: 1.2;
-}
-
-/* название занимает свободное место, поэтому вариант и кнопки соседних
-   карточек стоят на одной линии */
-.active-lab-card--compact .active-lab-card__title {
-  flex-grow: 1;
-  font-size: var(--font-size-2xl);
 }
 
 .active-lab-card__variant {
@@ -176,12 +169,6 @@ const deadline = computed<string>(() => {
     background-color 0.2s ease,
     border-color 0.2s ease,
     color 0.2s ease;
-}
-
-.active-lab-card--compact .active-lab-card__button {
-  flex: 1 1 7.5rem;
-  min-width: 0;
-  padding: 0 0.85em;
 }
 
 .active-lab-card__button--primary {

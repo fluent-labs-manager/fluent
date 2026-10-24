@@ -1,11 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { nextTick } from 'vue';
+import { nextTick, ref } from 'vue';
+import { routerKey } from 'vue-router';
+import type { LocationQuery } from 'vue-router';
 import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils';
 import CourseLabsViewingPage from '@/views/CourseLabsViewingPage.vue';
 import { getCourseLabsStub } from '@/api/labs/LabsApi.ts';
 import type { CourseLabs } from '@/api/labs/CourseLabs.dto.ts';
 import type { Lab } from '@/api/labs/Lab.dto.ts';
+import type { IsoDateTime } from '@/types/IsoDateTime.ts';
 import { LabStatus } from '@/types/LabStatus.ts';
 import { ApiRequestError } from '@/utils/ApiResolver.ts';
 import { toIsoDateTime } from '@/utils/IsoDateTime.ts';
@@ -57,11 +60,24 @@ function createCourseLabs(id: number, title: string): CourseLabs {
   return data;
 }
 
-async function mountPage(courseId = 11): Promise<ReturnType<typeof mount>> {
+// роутер нужен странице только чтобы записать выбранную работу в адрес
+const routerReplace = vi.fn();
+const currentQuery = ref<LocationQuery>({});
+
+async function mountPage(
+  courseId = 11,
+  labId: number | null = null,
+): Promise<ReturnType<typeof mount>> {
   const wrapper = mount(CourseLabsViewingPage, {
-    props: { courseId },
+    props: { courseId, labId },
     global: {
       stubs: { RouterLink: RouterLinkStub },
+      provide: {
+        [routerKey as symbol]: {
+          currentRoute: ref({ query: currentQuery }),
+          replace: routerReplace,
+        },
+      },
     },
   });
   await flushPromises();
@@ -83,6 +99,7 @@ async function moveTimeTo(date: string): Promise<void> {
 describe('CourseLabsViewingPage', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    currentQuery.value = {};
     mockedGetCourseLabs.mockResolvedValue(structuredClone(courseLabsFixture));
     // подменяем дату и интервал обновления времени; остальные таймеры нужны
     // flushPromises
@@ -271,12 +288,11 @@ describe('CourseLabsViewingPage', () => {
       );
     });
 
-    it('без несданных работ показывает «Активных работ нет»', async () => {
-      const data = structuredClone(courseLabsFixture);
-      data.labs = data.labs.filter(
-        (lab) => lab.status !== LabStatus.NotSubmitted,
-      );
-      mockedGetCourseLabs.mockResolvedValue(data);
+    it('без доступных для выбора работ показывает «Активных работ нет»', async () => {
+      mockedGetCourseLabs.mockResolvedValue({
+        ...structuredClone(courseLabsFixture),
+        labs: [createLab(1, LabStatus.Locked), createLab(2, LabStatus.Locked)],
+      });
       const wrapper = await mountPage();
 
       expect(wrapper.find('.course-labs-page__empty').text()).toBe(
@@ -285,117 +301,188 @@ describe('CourseLabsViewingPage', () => {
       expect(wrapper.find('.active-lab-card').exists()).toBe(false);
       expect(wrapper.findAll('.lab-list-item')).toHaveLength(2);
     });
-
-    it('показывает карточку для каждой несданной работы по порядку номеров', async () => {
-      mockedGetCourseLabs.mockResolvedValue({
-        ...structuredClone(courseLabsFixture),
-        labs: [
-          createLab(3, LabStatus.NotSubmitted),
-          createLab(4, LabStatus.Locked),
-          createLab(1, LabStatus.NotSubmitted),
-        ],
-      });
-      const wrapper = await mountPage();
-      const cards = wrapper.findAll('.active-lab-card');
-
-      expect(
-        cards.map((card) => card.find('.active-lab-card__title').text()),
-      ).toEqual(['Работа 1', 'Работа 3']);
-      expect(
-        cards.map((card) =>
-          card.find('.active-lab-card__variant-value').text(),
-        ),
-      ).toEqual(['10', '30']);
-      // список работ остаётся в порядке, в котором пришёл
-      expect(
-        wrapper.findAll('.lab-list-item h3').map((title) => title.text()),
-      ).toEqual(['Лаб №3: Работа 3', 'Лаб №4: Работа 4', 'Лаб №1: Работа 1']);
-    });
   });
 
-  // одна или две работы идут столбиком, три и больше — сеткой в два столбца
-  describe('раскладка активных работ', () => {
-    async function mountWithActiveLabs(
-      count: number,
+  // одна карточка; какую работу в ней показать, студент выбирает в списке
+  describe('выбор работы', () => {
+    function deadline(date: string): IsoDateTime {
+      return toIsoDateTime(`${date}T23:59:00+03:00`);
+    }
+
+    // сегодня 2 октября: у работы 3 ближайший срок, у работы 4 срок уже прошёл
+    function createSelectionLabs(): Lab[] {
+      return [
+        {
+          id: 1,
+          number: 1,
+          title: 'Работа 1',
+          status: LabStatus.Submitted,
+          deadline: deadline('2026-09-20'),
+          variant: 10,
+          grade: 5,
+          submittedAt: deadline('2026-09-19'),
+        },
+        {
+          id: 2,
+          number: 2,
+          title: 'Работа 2',
+          status: LabStatus.NotSubmitted,
+          deadline: deadline('2026-10-20'),
+          variant: 20,
+        },
+        {
+          id: 3,
+          number: 3,
+          title: 'Работа 3',
+          status: LabStatus.NotSubmitted,
+          deadline: deadline('2026-10-10'),
+          variant: 30,
+        },
+        {
+          id: 4,
+          number: 4,
+          title: 'Работа 4',
+          status: LabStatus.NotSubmitted,
+          deadline: deadline('2026-09-30'),
+          variant: 40,
+        },
+        createLab(5, LabStatus.Locked),
+        {
+          id: 6,
+          number: 6,
+          title: 'Работа 6',
+          status: LabStatus.PendingReview,
+          deadline: deadline('2026-09-28'),
+          variant: 60,
+          submittedAt: deadline('2026-09-27'),
+        },
+      ];
+    }
+
+    async function mountWithSelectionLabs(
+      labId: number | null = null,
     ): Promise<ReturnType<typeof mount>> {
       mockedGetCourseLabs.mockResolvedValue({
         ...structuredClone(courseLabsFixture),
-        labs: [
-          createLab(10, LabStatus.Locked),
-          ...Array.from({ length: count }, (_, index) =>
-            createLab(index + 1, LabStatus.NotSubmitted),
-          ),
-        ],
+        labs: createSelectionLabs(),
       });
 
-      return mountPage();
+      return mountPage(11, labId);
     }
 
-    function isGrid(wrapper: ReturnType<typeof mount>): boolean {
+    function cardTitle(wrapper: ReturnType<typeof mount>): string {
+      return wrapper.find('.active-lab-card__title').text();
+    }
+
+    function selectButton(
+      wrapper: ReturnType<typeof mount>,
+      number: number,
+    ): ReturnType<ReturnType<typeof mount>['find']> | undefined {
       return wrapper
-        .find('.course-labs-page__active-labs')
-        .classes()
-        .includes('course-labs-page__active-labs--grid');
+        .findAll('.lab-list-item__select')
+        .find((button) => button.text().startsWith(`Лаб №${String(number)}:`));
     }
 
-    function isWide(wrapper: ReturnType<typeof mount>): boolean {
-      return wrapper
-        .find('.course-labs-page__content')
-        .classes()
-        .includes('course-labs-page__content--wide');
-    }
+    it('показывает одну карточку — несданную работу с ближайшим сроком', async () => {
+      const wrapper = await mountWithSelectionLabs();
 
-    it('одну работу показывает одной карточкой под заголовком «Активная работа»', async () => {
-      const wrapper = await mountWithActiveLabs(1);
-
-      expect(wrapper.find('#active-lab-heading').text()).toBe(
-        'Активная работа',
-      );
       expect(wrapper.findAll('.active-lab-card')).toHaveLength(1);
-      expect(wrapper.find('.active-lab-card--compact').exists()).toBe(false);
-      expect(isGrid(wrapper)).toBe(false);
-      expect(isWide(wrapper)).toBe(false);
+      expect(cardTitle(wrapper)).toBe('Работа 3');
+      expect(selectButton(wrapper, 3)?.attributes('aria-pressed')).toBe('true');
     });
 
-    it('две работы показывает столбиком под заголовком «Активные работы»', async () => {
-      const wrapper = await mountWithActiveLabs(2);
+    it('по нажатию на работу в списке открывает её в карточке и запоминает в адресе', async () => {
+      const wrapper = await mountWithSelectionLabs();
 
-      expect(wrapper.find('#active-lab-heading').text()).toBe(
-        'Активные работы',
+      await selectButton(wrapper, 2)?.trigger('click');
+
+      expect(cardTitle(wrapper)).toBe('Работа 2');
+      expect(wrapper.find('.active-lab-card__variant-value').text()).toBe('20');
+      expect(selectButton(wrapper, 2)?.attributes('aria-pressed')).toBe('true');
+      expect(selectButton(wrapper, 3)?.attributes('aria-pressed')).toBe(
+        'false',
       );
-      expect(wrapper.findAll('.active-lab-card')).toHaveLength(2);
-      expect(wrapper.find('.active-lab-card--compact').exists()).toBe(false);
-      expect(isGrid(wrapper)).toBe(false);
-      expect(isWide(wrapper)).toBe(false);
+      expect(routerReplace).toHaveBeenCalledWith({ query: { lab: '2' } });
     });
 
-    it.each([3, 4, 5])(
-      '%i работы показывает сеткой из компактных карточек',
-      async (count) => {
-        const wrapper = await mountWithActiveLabs(count);
+    it('сохраняет остальные параметры адреса', async () => {
+      currentQuery.value = { mock: 'empty', role: 'student' };
+      const wrapper = await mountWithSelectionLabs();
 
-        expect(wrapper.find('#active-lab-heading').text()).toBe(
-          'Активные работы',
-        );
-        expect(wrapper.findAll('.active-lab-card')).toHaveLength(count);
-        expect(wrapper.findAll('.active-lab-card--compact')).toHaveLength(
-          count,
-        );
-        expect(isGrid(wrapper)).toBe(true);
-        expect(isWide(wrapper)).toBe(true);
+      await selectButton(wrapper, 2)?.trigger('click');
+
+      expect(routerReplace).toHaveBeenCalledWith({
+        query: { mock: 'empty', role: 'student', lab: '2' },
+      });
+    });
+
+    it('открывает несданную работу с прошедшим сроком', async () => {
+      const wrapper = await mountWithSelectionLabs();
+
+      await selectButton(wrapper, 4)?.trigger('click');
+
+      expect(cardTitle(wrapper)).toBe('Работа 4');
+      expect(wrapper.find('.active-lab-card__deadline').text()).toBe(
+        'Срок истёк 30 сентября, 23:59',
+      );
+    });
+
+    it('открывает сданную работу и работу на проверке — со статусом вместо срока', async () => {
+      const wrapper = await mountWithSelectionLabs();
+
+      await selectButton(wrapper, 1)?.trigger('click');
+      expect(cardTitle(wrapper)).toBe('Работа 1');
+      expect(wrapper.find('.active-lab-card__deadline').exists()).toBe(false);
+      expect(wrapper.find('.active-lab-card .lab-status-badge').text()).toBe(
+        'Сдано',
+      );
+
+      await selectButton(wrapper, 6)?.trigger('click');
+      expect(cardTitle(wrapper)).toBe('Работа 6');
+      expect(wrapper.find('.active-lab-card .lab-status-badge').text()).toBe(
+        'На проверке',
+      );
+    });
+
+    it('недоступную работу выбрать нельзя', async () => {
+      const wrapper = await mountWithSelectionLabs();
+      const lockedItem = wrapper
+        .findAll('.lab-list-item')
+        .find((item) => item.text().includes('Лаб №5:'));
+
+      expect(selectButton(wrapper, 5)).toBeUndefined();
+      expect(lockedItem?.classes()).not.toContain('lab-list-item--selectable');
+
+      await lockedItem?.trigger('click');
+
+      expect(cardTitle(wrapper)).toBe('Работа 3');
+      expect(routerReplace).not.toHaveBeenCalled();
+    });
+
+    it('открывает работу из адреса', async () => {
+      const wrapper = await mountWithSelectionLabs(6);
+
+      expect(cardTitle(wrapper)).toBe('Работа 6');
+    });
+
+    it.each([
+      ['недоступна', 5],
+      ['не существует', 999],
+    ])(
+      'если работа из адреса %s, открывает работу по умолчанию',
+      async (_, labId) => {
+        const wrapper = await mountWithSelectionLabs(labId);
+
+        expect(cardTitle(wrapper)).toBe('Работа 3');
       },
     );
 
-    it('без активных работ оставляет заголовок «Активные работы»', async () => {
-      const wrapper = await mountWithActiveLabs(0);
+    it('при смене работы в адресе обновляет карточку', async () => {
+      const wrapper = await mountWithSelectionLabs();
 
-      expect(wrapper.find('#active-lab-heading').text()).toBe(
-        'Активные работы',
-      );
-      expect(wrapper.find('.course-labs-page__empty').text()).toBe(
-        'Активных работ нет.',
-      );
-      expect(isWide(wrapper)).toBe(false);
+      await wrapper.setProps({ labId: 4 });
+
+      expect(cardTitle(wrapper)).toBe('Работа 4');
     });
   });
 

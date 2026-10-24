@@ -110,6 +110,7 @@ export const courseLabsFixture: CourseLabs = {
       title: 'Работа А',
       status: LabStatus.Submitted,
       deadline: toIsoDateTime('2026-10-05T23:59:00+03:00'),
+      variant: 7,
       grade: 4.2,
       submittedAt: toIsoDateTime('2026-10-12T18:30:00+03:00'),
     },
