@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { nextTick, ref } from 'vue';
+
 import { submitLabAttemptStub } from '@/api/labs/LabsApi.ts';
 import type { LabSubmission } from '@/api/labs/LabSubmission.dto.ts';
 import { useLabAttemptSubmit } from '@/composables/useLabAttemptSubmit.ts';
@@ -88,5 +90,55 @@ describe('useLabAttemptSubmit', () => {
 
     expect(error.value).toBe('Неизвестная ошибка');
     expect(isSubmitting.value).toBe(false);
+  });
+
+  it('при смене работы во время отправки сбрасывает состояние и не отдаёт ответ', async () => {
+    let finish: (data: LabSubmission) => void = () => undefined;
+    let reportProgress: (percent: number) => void = () => undefined;
+    mockedSubmit.mockImplementation(
+      (_courseId, _labId, _file, _comment, onProgress) =>
+        new Promise<LabSubmission>((resolve) => {
+          finish = resolve;
+          reportProgress = (percent): void => {
+            onProgress?.(percent);
+          };
+        }),
+    );
+    const labId = ref(2);
+    const { progress, isSubmitting, submit } = useLabAttemptSubmit(11, labId);
+
+    const result = submit(file, null);
+    reportProgress(40);
+    labId.value = 4;
+    await nextTick();
+
+    expect(isSubmitting.value).toBe(false);
+    expect(progress.value).toBe(0);
+
+    reportProgress(80);
+    finish(labSubmissionFixture);
+
+    expect(await result).toBeNull();
+    expect(progress.value).toBe(0);
+    expect(isSubmitting.value).toBe(false);
+  });
+
+  it('ошибка отправки прошлой работы не попадает на новую', async () => {
+    let fail: (error: unknown) => void = () => undefined;
+    mockedSubmit.mockReturnValue(
+      new Promise<LabSubmission>((_resolve, reject) => {
+        fail = reject;
+      }),
+    );
+    const labId = ref(2);
+    const { error, submit } = useLabAttemptSubmit(11, labId);
+
+    const result = submit(file, null);
+    labId.value = 4;
+    await nextTick();
+    fail(new ApiRequestError(500, 'Загрузка файла прервалась'));
+    await result;
+
+    expect(error.value).toBeNull();
   });
 });

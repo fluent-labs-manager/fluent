@@ -535,6 +535,25 @@ describe('LabSubmissionPage', () => {
       );
     });
 
+    it('если во время загрузки открыть другую работу, её форма свободна', async () => {
+      const pending = createPendingSubmit();
+      const wrapper = await mountWithFile();
+
+      await wrapper.find('form').trigger('submit');
+      pending.progress(40);
+      await wrapper.setProps({ courseId: 11, labId: 4 });
+      await flushPromises();
+      pending.progress(80);
+      pending.reject(new ApiRequestError(500, 'Загрузка файла прервалась'));
+      await flushPromises();
+
+      expect(wrapper.find('.lab-submission-page__upload').exists()).toBe(false);
+      expect(wrapper.find('textarea').attributes('disabled')).toBeUndefined();
+      expect(wrapper.find('.lab-submission-page__submit-error').exists()).toBe(
+        false,
+      );
+    });
+
     it('ответ на отправку прошлой работы не заменяет открытую', async () => {
       const pending = createPendingSubmit();
       const wrapper = await mountWithFile();

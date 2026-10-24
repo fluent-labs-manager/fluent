@@ -12,6 +12,7 @@ import SubmittedFileCard from '@/components/SubmittedFileCard.vue';
 import type { LabAttempt } from '@/api/labs/LabAttempt.dto.ts';
 import { useLabAttemptSubmit } from '@/composables/useLabAttemptSubmit.ts';
 import { useLabSubmission } from '@/composables/useLabSubmission.ts';
+import { useStrayFileDropGuard } from '@/composables/useStrayFileDropGuard.ts';
 import { LabStatus } from '@/types/LabStatus.ts';
 import { validateSubmissionFile } from '@/utils/FileValidation.ts';
 
@@ -34,6 +35,8 @@ const {
   () => props.courseId,
   () => props.labId,
 );
+
+useStrayFileDropGuard();
 
 const lab = computed(() => submission.value?.lab ?? null);
 
@@ -65,7 +68,6 @@ watch(
     selectedFile.value = null;
     comment.value = '';
     fileError.value = null;
-    submitError.value = null;
   },
 );
 
@@ -87,12 +89,11 @@ async function submitWork(): Promise<void> {
   if (selectedFile.value === null) {
     return;
   }
-  const labId = props.labId;
   const text = comment.value.trim();
+  // null — не отправилось или, пока файл грузился, открыли другую работу
   const result = await submit(selectedFile.value, text === '' ? null : text);
 
-  // пока файл грузился, студент мог перейти к другой работе
-  if (result === null || labId !== props.labId) {
+  if (result === null) {
     return;
   }
   submission.value = result;

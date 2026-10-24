@@ -1,4 +1,4 @@
-import { ref, toValue } from 'vue';
+import { ref, toValue, watch } from 'vue';
 import type { MaybeRefOrGetter, Ref } from 'vue';
 
 import { submitLabAttemptStub } from '@/api/labs/LabsApi.ts';
@@ -11,6 +11,7 @@ interface UseLabAttemptSubmitResult {
   isSubmitting: Ref<boolean>;
   error: Ref<string | null>;
   // вернёт работу с новой попыткой или null, если отправить не удалось
+  // или пока файл грузился, открыли другую работу
   submit: (file: File, comment: string | null) => Promise<LabSubmission | null>;
 }
 
@@ -22,6 +23,22 @@ export function useLabAttemptSubmit(
   const isSubmitting = ref<boolean>(false);
   const error = ref<string | null>(null);
 
+  // номер последней отправки: прогресс, ошибка и ответ устаревшей отправки
+  // не попадут на другую работу
+  let lastRequestId = 0;
+
+  // страница не пересоздаётся при переходе между работами, поэтому
+  // состояние отправки прошлой работы сбрасывается
+  watch(
+    () => [toValue(courseId), toValue(labId)],
+    () => {
+      lastRequestId += 1;
+      progress.value = 0;
+      isSubmitting.value = false;
+      error.value = null;
+    },
+  );
+
   async function submit(
     file: File,
     comment: string | null,
@@ -30,29 +47,39 @@ export function useLabAttemptSubmit(
     if (isSubmitting.value) {
       return null;
     }
+    lastRequestId += 1;
+    const requestId = lastRequestId;
+    const isCurrent = (): boolean => requestId === lastRequestId;
     isSubmitting.value = true;
     progress.value = 0;
     error.value = null;
 
     try {
-      return await submitLabAttemptStub(
+      const result = await submitLabAttemptStub(
         toValue(courseId),
         toValue(labId),
         file,
         comment,
         (percent) => {
-          progress.value = percent;
+          if (isCurrent()) {
+            progress.value = percent;
+          }
         },
       );
+      return isCurrent() ? result : null;
     } catch (submitError: unknown) {
-      // TODO: обработать 401 — отправить пользователя на вход через ITMO ID.
-      error.value =
-        submitError instanceof ApiRequestError
-          ? submitError.message
-          : 'Неизвестная ошибка';
+      if (isCurrent()) {
+        // TODO: обработать 401 — отправить пользователя на вход через ITMO ID.
+        error.value =
+          submitError instanceof ApiRequestError
+            ? submitError.message
+            : 'Неизвестная ошибка';
+      }
       return null;
     } finally {
-      isSubmitting.value = false;
+      if (isCurrent()) {
+        isSubmitting.value = false;
+      }
     }
   }
 
