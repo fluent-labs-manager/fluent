@@ -477,7 +477,7 @@ function retry(): void {
 
 .lab-submission-page__button--secondary {
   background-color: var(--color-surface);
-  color: var(--color-text);
+  color: var(--color-accent);
 }
 
 .lab-submission-page__button--secondary:disabled {
@@ -487,7 +487,7 @@ function retry(): void {
 }
 
 .lab-submission-page__button--secondary:hover:enabled {
-  border-color: var(--color-text);
+  background-color: var(--color-accent-surface);
 }
 
 .lab-submission-page__upload {
