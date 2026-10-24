@@ -8,11 +8,12 @@
 src/mocks/*.ts            моковые данные
         ↓
 src/api/<раздел>/*Api.ts  функции получения данных (сейчас заглушки *Stub)
-src/api/<раздел>/*.dto.ts типы данных: User, AccountProfile, Course, Semester, TaughtCourse, Lab, CourseLabs
+src/api/<раздел>/*.dto.ts типы данных: User, AccountProfile, Course, Semester, TaughtCourse, Lab, CourseLabs, LabSubmission
         ↓
 src/stores/user.ts        текущий пользователь (Pinia) — нужен меню и страницам
 src/composables/*.ts      данные страницы: useSemesters() → semesters, isLoading, error, reload
                           useCourseLabs(courseId) → courseLabs, isLoading, error, reload
+                          useLabSubmission(courseId, labId) → submission, isLoading, error, reload
                           useAccountProfile() → profile, isLoading, error, reload
                           useTaughtCourses(enabled) → courses, isLoading, error, reload
                           useNow() → текущее время, обновляется раз в минуту
@@ -51,6 +52,27 @@ src/components/*.vue      компоненты получают данные т�
 - кнопка в карточке ведёт на страницу лабораторной `/courses/:courseId/labs/:labId`: у несданной работы, в том числе после срока, — «Сдать работу», у остальных — «Открыть работу». «Назад» на странице лабораторной возвращает к дисциплине с этой же работой в карточке.
 
 Срок сдачи в карточке и в списке сравнивается с временем из [`useNow`](../src/composables/useNow.ts), поэтому на открытой странице он становится красным и меняется на «Срок истёк» без перезагрузки.
+
+## Страница лабораторной
+
+`/courses/:courseId/labs/:labId` загружает работу вместе с попытками сдачи — [`LabSubmission`](../src/api/labs/LabSubmission.dto.ts). Каждая попытка ([`LabAttempt`](../src/api/labs/LabAttempt.dto.ts)) — один файл (имя и размер в байтах), комментарий студента, комментарий преподавателя и результат:
+
+| Результат  | Бейдж         |
+|------------|---------------|
+| `rejected` | «Отклонено»   |
+| `pending`  | «На проверке» |
+| `accepted` | «Принято»     |
+
+Значения заданы в [`AttemptResult`](../src/types/AttemptResult.ts). Отклонённую работу возвращают студенту: её статус снова `not-submitted`, а «Отклонено» остаётся только у попытки в истории.
+
+Что показывает страница:
+
+- `not-submitted` — область для файла, комментарий, «Отправить работу на проверку» (без файла неактивна) и «Сохранить черновик». Выбор файла и отправка пока не работают;
+- `pending-review` и `submitted` — только просмотр: последний отправленный файл, у сданной рядом со статусом оценка;
+- `locked` — «Работа пока недоступна», без файлов и истории;
+- справа — «История»: попытки, последняя сверху.
+
+Попытки в моках: у работы 102 — две отклонённые, у 202 — одна на проверке, у 101 — принятая ([`src/mocks/labAttempts.ts`](../src/mocks/labAttempts.ts)). Работа другой дисциплины или несуществующая — ошибка «Работа не найдена».
 
 ## Режимы моков
 

@@ -77,7 +77,7 @@ test.describe('выбор работы в карточке', () => {
 
     await expect(page).toHaveURL('/courses/2/labs/203');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-      'Лабораторная работа',
+      'Лабораторная работа 3',
     );
 
     await page.getByRole('link', { name: 'Назад' }).click();
