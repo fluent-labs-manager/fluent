@@ -74,6 +74,13 @@ const deadline = computed<string>(() => {
     </div>
 
     <div class="active-lab-card__actions">
+      <!-- главное действие идёт первым -->
+      <RouterLink
+        class="active-lab-card__button active-lab-card__button--primary"
+        :to="submissionTo"
+      >
+        {{ submissionLabel }}
+      </RouterLink>
       <button
         class="active-lab-card__button active-lab-card__button--secondary"
         type="button"
@@ -88,12 +95,6 @@ const deadline = computed<string>(() => {
       >
         Открыть задание
       </button>
-      <RouterLink
-        class="active-lab-card__button active-lab-card__button--primary"
-        :to="submissionTo"
-      >
-        {{ submissionLabel }}
-      </RouterLink>
     </div>
   </article>
 </template>

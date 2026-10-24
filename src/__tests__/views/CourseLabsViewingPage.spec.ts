@@ -550,6 +550,16 @@ describe('CourseLabsViewingPage', () => {
       });
     });
 
+    it('кнопка сдачи идёт первой', async () => {
+      const wrapper = await mountPage();
+
+      expect(
+        wrapper
+          .findAll('.active-lab-card__button')
+          .map((button) => button.text()),
+      ).toEqual(['Сдать работу', 'Получить вариант', 'Открыть задание']);
+    });
+
     it('основным цветом выделена только кнопка сдачи', async () => {
       const wrapper = await mountPage();
 
