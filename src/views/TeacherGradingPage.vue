@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import {
-  ChevronLeft,
-  Code,
-  FileText,
-  Trash2,
-} from '@lucide/vue';
+import { ChevronLeft, Code, FileText, Trash2 } from '@lucide/vue';
 
 const router = useRouter();
 
@@ -54,7 +49,7 @@ const handleSaveGrade = (): void => {
   gradeError.value = '';
 
   if (grade.value === '' || grade.value < 0 || grade.value > maxGrade) {
-    gradeError.value = `Балл должен быть от 0 до ${maxGrade}`;
+    gradeError.value = `Балл должен быть от 0 до ${String(maxGrade)}`;
     return;
   }
 
@@ -65,11 +60,7 @@ const handleSaveGrade = (): void => {
 <template>
   <main class="grading-page">
     <header class="page-header">
-      <button
-        class="back-btn"
-        type="button"
-        @click="handleGoBack"
-      >
+      <button class="back-btn" type="button" @click="handleGoBack">
         <ChevronLeft :size="16" />
         Назад в очередь
       </button>
@@ -84,7 +75,9 @@ const handleSaveGrade = (): void => {
             <span class="badge">
               {{ student.group }} • ВАРИАНТ {{ student.variant }}
             </span>
-            <span class="lab-number">Лабораторная №{{ student.labNumber }}</span>
+            <span class="lab-number"
+              >Лабораторная №{{ student.labNumber }}</span
+            >
           </div>
 
           <h2 class="student-name">{{ student.name }}</h2>
@@ -143,10 +136,7 @@ const handleSaveGrade = (): void => {
               rows="2"
             ></textarea>
 
-            <div
-              v-if="index < questions.length - 1"
-              class="divider"
-            ></div>
+            <div v-if="index < questions.length - 1" class="divider"></div>
           </div>
 
           <button
@@ -184,18 +174,11 @@ const handleSaveGrade = (): void => {
             <span class="grade-unit">/{{ maxGrade }}</span>
           </div>
 
-          <p
-            v-if="gradeError"
-            class="field-error"
-          >
+          <p v-if="gradeError" class="field-error">
             {{ gradeError }}
           </p>
 
-          <button
-            class="save-grade-btn"
-            type="button"
-            @click="handleSaveGrade"
-          >
+          <button class="save-grade-btn" type="button" @click="handleSaveGrade">
             Сохранить оценку
           </button>
         </article>
