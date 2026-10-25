@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import {
-  ChevronLeft,
-  ChevronRight,
-  Video,
-} from '@lucide/vue';
+import { ChevronLeft, ChevronRight, Video } from '@lucide/vue';
 
 interface QueueStudent {
   id: number;

@@ -60,7 +60,11 @@ const handleSaveGrade = (): void => {
 <template>
   <main class="grading-page">
     <header class="page-header">
-      <button class="back-btn" type="button" @click="handleGoBack">
+      <button
+        class="back-btn"
+        type="button"
+        @click="handleGoBack"
+      >
         <ChevronLeft :size="16" />
         Назад в очередь
       </button>
@@ -83,7 +87,10 @@ const handleSaveGrade = (): void => {
           <h2 class="student-name">{{ student.name }}</h2>
 
           <div class="file-chip">
-            <Code :size="17" class="file-icon" />
+            <Code
+              :size="17"
+              class="file-icon"
+            />
             <span class="file-name">{{ student.fileName }}</span>
           </div>
         </article>
@@ -136,7 +143,10 @@ const handleSaveGrade = (): void => {
               rows="2"
             ></textarea>
 
-            <div v-if="index < questions.length - 1" class="divider"></div>
+            <div
+              v-if="index < questions.length - 1"
+              class="divider"
+            ></div>
           </div>
 
           <button
@@ -174,11 +184,18 @@ const handleSaveGrade = (): void => {
             <span class="grade-unit">/{{ maxGrade }}</span>
           </div>
 
-          <p v-if="gradeError" class="field-error">
+          <p
+            v-if="gradeError"
+            class="field-error"
+          >
             {{ gradeError }}
           </p>
 
-          <button class="save-grade-btn" type="button" @click="handleSaveGrade">
+          <button
+            class="save-grade-btn"
+            type="button"
+            @click="handleSaveGrade"
+          >
             Сохранить оценку
           </button>
         </article>
