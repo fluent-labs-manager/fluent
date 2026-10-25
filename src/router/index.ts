@@ -65,6 +65,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/TeacherGradingPage.vue'),
         meta: { roles: [UserRole.Teacher] },
       },
+      {
+        path: 'review-queue',
+        name: 'review-queue',
+        component: () => import('@/views/TeacherReviewQueuePage.vue'),
+        meta: { roles: [UserRole.Teacher] },
+      },
     ],
   },
 ];
