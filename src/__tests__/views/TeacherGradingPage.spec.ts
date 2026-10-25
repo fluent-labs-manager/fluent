@@ -32,6 +32,8 @@ describe('TeacherGradingPage.vue', (): void => {
     await wrapper.find('.grade-input').setValue(15);
     await wrapper.find('.save-grade-btn').trigger('click');
 
-    expect(wrapper.find('.field-error').text()).toBe('Балл должен быть от 0 до 10');
+    expect(wrapper.find('.field-error').text()).toBe(
+      'Балл должен быть от 0 до 10',
+    );
   });
 });

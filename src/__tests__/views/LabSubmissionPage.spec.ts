@@ -4,10 +4,10 @@ import { nextTick } from 'vue';
 import LabSubmissionPage from '@/views/LabSubmissionPage.vue';
 
 vi.mock('vue-router', () => ({
-  useRouter: () => ({
+  useRouter: (): { push: ReturnType<typeof vi.fn> } => ({
     push: vi.fn(),
   }),
-  useRoute: () => ({
+  useRoute: (): { params: Record<string, string> } => ({
     params: { courseId: '1', labId: '3' },
   }),
 }));
@@ -17,7 +17,7 @@ vi.mock('@/api/labs/LabsApi.ts', () => ({
     id: 3,
     status: 'not_submitted',
     currentFile: { name: 'myau.py' },
-    history: []
+    history: [],
   }),
 }));
 

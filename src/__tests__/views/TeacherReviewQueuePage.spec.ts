@@ -15,7 +15,9 @@ vi.mock('vue-router', () => ({
 describe('TeacherReviewQueuePage.vue', (): void => {
   it('рендерит название курса и список студентов в очереди', (): void => {
     const wrapper = mount(TeacherReviewQueuePage);
-    expect(wrapper.find('.queue-title').text()).toBe('Разработка Веб-приложений');
+    expect(wrapper.find('.queue-title').text()).toBe(
+      'Разработка Веб-приложений',
+    );
     expect(wrapper.findAll('.student-item').length).toBeGreaterThan(0);
   });
 

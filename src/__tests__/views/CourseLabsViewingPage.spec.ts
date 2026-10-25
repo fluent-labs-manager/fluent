@@ -63,23 +63,22 @@ async function mountPage(courseId = 11): Promise<ReturnType<typeof mount>> {
     global: {
       stubs: { RouterLink: RouterLinkStub },
       provide: {
-        'router': {
+        router: {
           push: vi.fn(),
           replace: vi.fn(),
           resolve: vi.fn(),
         },
-        'route': {
+        route: {
           params: {},
           query: {},
-        }
-      }
+        },
+      },
     },
   });
   await flushPromises();
 
   return wrapper;
 }
-
 
 function setNow(date: string): void {
   vi.setSystemTime(new Date(date));
