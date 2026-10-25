@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 
 import { RotateCw } from '@lucide/vue';
+import Button from 'primevue/button';
 import SelectButton from 'primevue/selectbutton';
 
 import CourseCard from '@/components/CourseCard.vue';
@@ -77,15 +78,20 @@ function retry(): void {
         role="alert"
       >
         <span>Не удалось загрузить дисциплины: {{ error }}</span>
-        <button
+        <Button
           class="courses-page__retry"
-          type="button"
+          severity="secondary"
+          variant="outlined"
+          rounded
+          size="small"
           aria-label="Повторить"
           title="Повторить"
           @click="retry"
         >
-          <RotateCw :size="16" />
-        </button>
+          <template #icon>
+            <RotateCw :size="16" />
+          </template>
+        </Button>
       </div>
       <!-- allow-empty: повторный клик по выбранному семестру не снимает выбор -->
       <SelectButton
@@ -174,28 +180,6 @@ function retry(): void {
 
 .courses-page__status--error {
   color: var(--color-error);
-}
-
-.courses-page__retry {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
-  border: 1px solid var(--color-border);
-  border-radius: 50%;
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    color 0.2s ease;
-}
-
-.courses-page__retry:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
 }
 
 .courses-page__empty {

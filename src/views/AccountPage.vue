@@ -292,15 +292,20 @@ function retryCourses(): void {
       role="alert"
     >
       <span>Не удалось загрузить данные: {{ error }}</span>
-      <button
+      <Button
         class="account-page__retry"
-        type="button"
+        severity="secondary"
+        variant="outlined"
+        rounded
+        size="small"
         aria-label="Повторить"
         title="Повторить"
         @click="retry"
       >
-        <RotateCw :size="16" />
-      </button>
+        <template #icon>
+          <RotateCw :size="16" />
+        </template>
+      </Button>
     </div>
 
     <div
@@ -440,15 +445,20 @@ function retryCourses(): void {
           role="alert"
         >
           <span>Не удалось загрузить дисциплины: {{ coursesError }}</span>
-          <button
+          <Button
             class="account-page__retry"
-            type="button"
+            severity="secondary"
+            variant="outlined"
+            rounded
+            size="small"
             aria-label="Повторить"
             title="Повторить"
             @click="retryCourses"
           >
-            <RotateCw :size="16" />
-          </button>
+            <template #icon>
+              <RotateCw :size="16" />
+            </template>
+          </Button>
         </div>
 
         <template v-else-if="isStudent">
@@ -604,20 +614,6 @@ function retryCourses(): void {
 
 .account-page__status--error {
   color: var(--color-error);
-}
-
-.account-page__retry {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
-  border: 1px solid var(--color-border);
-  border-radius: 50%;
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  cursor: pointer;
 }
 
 .account-page__content {
