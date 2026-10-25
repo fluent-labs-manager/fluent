@@ -47,6 +47,22 @@ const FluentPreset = definePreset(Aura, {
         },
       },
     },
+    tooltip: {
+      root: {
+        padding: '0.25rem 0.5rem',
+        borderRadius: '0.375rem',
+      },
+      colorScheme: {
+        light: {
+          root: {
+            background: 'var(--color-accent)',
+            color: 'var(--color-surface)',
+          },
+        },
+      },
+      // у подсказки нет токена размера шрифта
+      css: '.p-tooltip-text { font-size: 0.75rem; }',
+    },
     togglebutton: {
       colorScheme: {
         light: {
