@@ -1,17 +1,23 @@
 import { mount, flushPromises } from '@vue/test-utils';
 import { describe, it, expect, vi } from 'vitest';
+import { nextTick } from 'vue';
 import LabSubmissionPage from '@/views/LabSubmissionPage.vue';
 
-interface MockRouter {
-  push: (to: Record<string, unknown>) => void;
-}
-
 vi.mock('vue-router', () => ({
-  useRouter: (): MockRouter => ({
+  useRouter: () => ({
     push: vi.fn(),
   }),
-  useRoute: (): { params: Record<string, string> } => ({
+  useRoute: () => ({
     params: { courseId: '1', labId: '3' },
+  }),
+}));
+
+vi.mock('@/api/labs/LabsApi.ts', () => ({
+  getLabSubmissionStub: vi.fn().mockResolvedValue({
+    id: 3,
+    status: 'not_submitted',
+    currentFile: { name: 'myau.py' },
+    history: []
   }),
 }));
 
@@ -19,6 +25,7 @@ describe('LabSubmissionPage.vue', (): void => {
   it('рендерит страницу сдачи лабораторной работы', async (): Promise<void> => {
     const wrapper = mount(LabSubmissionPage);
     await flushPromises();
+    await nextTick();
 
     expect(wrapper.text()).toContain('ФАЙЛЫ');
     expect(wrapper.text()).toContain('ИСТОРИЯ');
@@ -26,7 +33,9 @@ describe('LabSubmissionPage.vue', (): void => {
 
   it('удаляет файл при нажатии кнопки удалить', async (): Promise<void> => {
     const wrapper = mount(LabSubmissionPage);
+
     await flushPromises();
+    await nextTick();
 
     const deleteBtn = wrapper.find('.delete-file-btn');
     if (deleteBtn.exists()) {
