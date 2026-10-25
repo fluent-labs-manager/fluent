@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 
 import { RotateCw } from '@lucide/vue';
+import SelectButton from 'primevue/selectbutton';
 
 import CourseCard from '@/components/CourseCard.vue';
 import SemesterProgress from '@/components/SemesterProgress.vue';
@@ -86,24 +87,17 @@ function retry(): void {
           <RotateCw :size="16" />
         </button>
       </div>
-      <div
+      <!-- allow-empty: повторный клик по выбранному семестру не снимает выбор -->
+      <SelectButton
         v-else
+        v-model="filter"
         class="courses-page__filters"
-        role="group"
+        :options="filters"
+        option-label="label"
+        option-value="value"
+        :allow-empty="false"
         aria-label="Семестр"
-      >
-        <button
-          v-for="item in filters"
-          :key="item.value"
-          class="courses-page__filter"
-          :class="{ 'courses-page__filter--active': filter === item.value }"
-          type="button"
-          :aria-pressed="filter === item.value"
-          @click="filter = item.value"
-        >
-          {{ item.label }}
-        </button>
-      </div>
+      />
     </header>
 
     <template v-if="!isLoading && error === null && role !== null">
@@ -165,39 +159,7 @@ function retry(): void {
 }
 
 .courses-page__filters {
-  display: flex;
   align-self: flex-start;
-  gap: 0.25rem;
-  height: var(--nav-item-height);
-  padding: 0.25rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.75rem;
-  background-color: var(--color-accent-surface);
-}
-
-.courses-page__filter {
-  padding: 0 1.15em;
-  border: none;
-  border-radius: 0.57em;
-  background-color: transparent;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-md);
-  font-weight: 500;
-  cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
-}
-
-.courses-page__filter:hover {
-  color: var(--color-text);
-}
-
-.courses-page__filter--active {
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  font-weight: 700;
-  box-shadow: var(--shadow-raised);
 }
 
 .courses-page__status {
