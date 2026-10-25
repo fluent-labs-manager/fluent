@@ -20,7 +20,31 @@ describe('моки дисциплин', () => {
     },
   );
 
-  it('у каждой дисциплины есть лабораторные', () => {
-    expect(courses.filter((course) => course.totalLabs === 0)).toEqual([]);
+  it('у дисциплины без лабораторных — 0 из 0', () => {
+    const course = courses.find((item) => courseLabs[item.id] === undefined);
+
+    expect(course).toMatchObject({ completedLabs: 0, totalLabs: 0 });
+  });
+
+  it('средний балл семестра считается по оценкам его работ', () => {
+    const current = semesters.find((semester) => semester.isCurrent);
+    const grades = (current?.courses ?? [])
+      .flatMap((course) => courseLabs[course.id] ?? [])
+      .flatMap((lab) =>
+        lab.status === LabStatus.Submitted ? [lab.grade] : [],
+      );
+
+    expect(grades.length).toBeGreaterThan(0);
+    expect(current?.averageGrade).toBeCloseTo(
+      grades.reduce((sum, grade) => sum + grade, 0) / grades.length,
+    );
+  });
+
+  it('без оценок средний балл семестра — null', () => {
+    const withoutLabs = semesters.find((semester) =>
+      semester.courses.every((course) => courseLabs[course.id] === undefined),
+    );
+
+    expect(withoutLabs?.averageGrade).toBeNull();
   });
 });
