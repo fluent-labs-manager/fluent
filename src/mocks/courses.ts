@@ -17,13 +17,27 @@ function withLabCounts(
   };
 }
 
+// средний балл семестра — по оценкам всех оценённых работ его дисциплин,
+// null, пока оценок нет
+function withAverageGrade(semester: Omit<Semester, 'averageGrade'>): Semester {
+  const grades = semester.courses
+    .flatMap((course) => courseLabs[course.id] ?? [])
+    .flatMap((lab) => (lab.status === LabStatus.Submitted ? [lab.grade] : []));
+  return {
+    ...semester,
+    averageGrade:
+      grades.length === 0
+        ? null
+        : grades.reduce((sum, grade) => sum + grade, 0) / grades.length,
+  };
+}
+
 // данные для заглушек из src/api/
 export const semesters: Semester[] = [
-  {
+  withAverageGrade({
     id: 1,
     title: 'Осень 2026',
     isCurrent: true,
-    averageGrade: 4.82,
     courses: [
       withLabCounts({
         id: 1,
@@ -46,12 +60,11 @@ export const semesters: Semester[] = [
         teacher: 'Николаев Игорь',
       }),
     ],
-  },
-  {
+  }),
+  withAverageGrade({
     id: 2,
     title: 'Весна 2026',
     isCurrent: false,
-    averageGrade: 4.6,
     courses: [
       withLabCounts({
         id: 5,
@@ -59,5 +72,5 @@ export const semesters: Semester[] = [
         teacher: 'Смирнова Ольга',
       }),
     ],
-  },
+  }),
 ];
