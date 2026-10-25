@@ -17,6 +17,8 @@ import {
   Settings,
 } from '@lucide/vue';
 import Button from 'primevue/button';
+import Message from 'primevue/message';
+import ProgressSpinner from 'primevue/progressspinner';
 
 import { useAccountProfile } from '@/composables/useAccountProfile.ts';
 import { useSemesters } from '@/composables/useSemesters.ts';
@@ -278,18 +280,23 @@ function retryCourses(): void {
       <h1 class="account-page__title">Личный кабинет</h1>
     </header>
 
-    <p
+    <div
       v-if="isLoading"
       class="account-page__status"
       role="status"
     >
+      <ProgressSpinner
+        class="account-page__spinner"
+        stroke-width="6"
+        aria-hidden="true"
+      />
       Загрузка профиля…
-    </p>
+    </div>
 
-    <div
+    <Message
       v-else-if="error !== null"
-      class="account-page__status account-page__status--error"
-      role="alert"
+      class="account-page__error"
+      severity="error"
     >
       <span>Не удалось загрузить данные: {{ error }}</span>
       <Button
@@ -306,7 +313,7 @@ function retryCourses(): void {
           <RotateCw :size="16" />
         </template>
       </Button>
-    </div>
+    </Message>
 
     <div
       v-else-if="userStore.user !== null && profile !== null"
@@ -431,18 +438,23 @@ function retryCourses(): void {
           {{ isStudent ? 'Текущие дисциплины' : 'Мои дисциплины' }}
         </h2>
 
-        <p
+        <div
           v-if="areCoursesLoading"
           class="account-page__status"
           role="status"
         >
+          <ProgressSpinner
+            class="account-page__spinner"
+            stroke-width="6"
+            aria-hidden="true"
+          />
           Загрузка дисциплин…
-        </p>
+        </div>
 
-        <div
+        <Message
           v-else-if="coursesError !== null"
-          class="account-page__status account-page__status--error"
-          role="alert"
+          class="account-page__error"
+          severity="error"
         >
           <span>Не удалось загрузить дисциплины: {{ coursesError }}</span>
           <Button
@@ -459,7 +471,7 @@ function retryCourses(): void {
               <RotateCw :size="16" />
             </template>
           </Button>
-        </div>
+        </Message>
 
         <template v-else-if="isStudent">
           <p
@@ -612,8 +624,21 @@ function retryCourses(): void {
   font-size: var(--font-size-md);
 }
 
-.account-page__status--error {
-  color: var(--color-error);
+.account-page__spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+}
+
+/* текст ошибки и кнопка «Повторить» в одну строку */
+.account-page__error {
+  align-self: flex-start;
+}
+
+.account-page__error :deep(.p-message-text) {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .account-page__content {

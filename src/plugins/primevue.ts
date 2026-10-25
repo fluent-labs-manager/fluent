@@ -34,6 +34,19 @@ const FluentPreset = definePreset(Aura, {
         },
       },
     },
+    // по умолчанию спиннер переливается четырьмя цветами
+    progressspinner: {
+      colorScheme: {
+        light: {
+          root: {
+            colorOne: 'var(--color-accent)',
+            colorTwo: 'var(--color-accent)',
+            colorThree: 'var(--color-accent)',
+            colorFour: 'var(--color-accent)',
+          },
+        },
+      },
+    },
     togglebutton: {
       colorScheme: {
         light: {

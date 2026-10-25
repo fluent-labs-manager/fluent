@@ -4,6 +4,8 @@ import { RouterLink } from 'vue-router';
 
 import { RotateCw } from '@lucide/vue';
 import Button from 'primevue/button';
+import Message from 'primevue/message';
+import ProgressSpinner from 'primevue/progressspinner';
 import SelectButton from 'primevue/selectbutton';
 
 import CourseCard from '@/components/CourseCard.vue';
@@ -64,18 +66,23 @@ function retry(): void {
   <main class="courses-page">
     <header class="courses-page__header">
       <h1 class="courses-page__title">Дисциплины</h1>
-      <p
+      <div
         v-if="isLoading"
         class="courses-page__status"
         role="status"
       >
+        <ProgressSpinner
+          class="courses-page__spinner"
+          stroke-width="6"
+          aria-hidden="true"
+        />
         Загрузка дисциплин…
-      </p>
+      </div>
 
-      <div
+      <Message
         v-else-if="error !== null"
-        class="courses-page__status courses-page__status--error"
-        role="alert"
+        class="courses-page__error"
+        severity="error"
       >
         <span>Не удалось загрузить дисциплины: {{ error }}</span>
         <Button
@@ -92,7 +99,7 @@ function retry(): void {
             <RotateCw :size="16" />
           </template>
         </Button>
-      </div>
+      </Message>
       <!-- allow-empty: повторный клик по выбранному семестру не снимает выбор -->
       <SelectButton
         v-else
@@ -178,8 +185,21 @@ function retry(): void {
   font-size: var(--font-size-md);
 }
 
-.courses-page__status--error {
-  color: var(--color-error);
+.courses-page__spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+}
+
+/* текст ошибки и кнопка «Повторить» в одну строку */
+.courses-page__error {
+  align-self: flex-start;
+}
+
+.courses-page__error :deep(.p-message-text) {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .courses-page__empty {
