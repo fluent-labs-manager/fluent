@@ -37,7 +37,7 @@ const teacherNavItems: NavItem[] = [
   { label: 'ИИ-предфильтр', icon: Sparkles },
   { label: 'Очереди', icon: Users },
   { label: 'Конструктор баллов', icon: Calculator },
-  { label: 'Оценивание', icon: ClipboardCheck },
+  { label: 'Оценивание', icon: ClipboardCheck, to: { name: 'grading' } },
 ];
 
 // пока роль неизвестна, показываем только общий для обеих ролей пункт,

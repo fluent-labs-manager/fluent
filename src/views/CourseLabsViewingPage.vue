@@ -86,7 +86,11 @@ function openTask(lab?: Lab): void {
         <ArrowLeft :size="16" />
       </RouterLink>
 
-      <p v-if="isLoading" class="course-labs-page__status" role="status">
+      <p
+        v-if="isLoading"
+        class="course-labs-page__status"
+        role="status"
+      >
         Загрузка лабораторных работ…
       </p>
 
@@ -108,17 +112,26 @@ function openTask(lab?: Lab): void {
       </div>
 
       <template v-else-if="courseLabs !== null">
-        <h1 class="course-labs-page__title" :title="courseLabs.course.title">
+        <h1
+          class="course-labs-page__title"
+          :title="courseLabs.course.title"
+        >
           {{ courseLabs.course.title }}
         </h1>
-        <span v-if="labs.length > 0" class="course-labs-page__progress">
+        <span
+          v-if="labs.length > 0"
+          class="course-labs-page__progress"
+        >
           {{ completedLabs }} из {{ labs.length }} выполнено
         </span>
       </template>
     </header>
 
     <template v-if="!isLoading && error === null && courseLabs !== null">
-      <p v-if="labs.length === 0" class="course-labs-page__empty">
+      <p
+        v-if="labs.length === 0"
+        class="course-labs-page__empty"
+      >
         Лабораторных работ пока нет.
       </p>
 
@@ -131,10 +144,16 @@ function openTask(lab?: Lab): void {
           class="course-labs-page__section"
           aria-labelledby="active-lab-heading"
         >
-          <h2 id="active-lab-heading" class="course-labs-page__section-title">
+          <h2
+            id="active-lab-heading"
+            class="course-labs-page__section-title"
+          >
             {{ activeLabsTitle }}
           </h2>
-          <p v-if="activeLabs.length === 0" class="course-labs-page__empty">
+          <p
+            v-if="activeLabs.length === 0"
+            class="course-labs-page__empty"
+          >
             Активных работ нет.
           </p>
           <div
@@ -160,11 +179,17 @@ function openTask(lab?: Lab): void {
           class="course-labs-page__section"
           aria-labelledby="all-labs-heading"
         >
-          <h2 id="all-labs-heading" class="course-labs-page__section-title">
+          <h2
+            id="all-labs-heading"
+            class="course-labs-page__section-title"
+          >
             Все работы дисциплины
           </h2>
           <ul class="course-labs-page__list">
-            <li v-for="lab in labs" :key="lab.id">
+            <li
+              v-for="lab in labs"
+              :key="lab.id"
+            >
               <LabListItem
                 :lab="lab"
                 :previous-lab-number="getPreviousLabNumber(lab)"
