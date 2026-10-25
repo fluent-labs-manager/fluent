@@ -56,7 +56,6 @@ const percent = computed<string>(() => formatPercent(progress.value));
       <ProgressBar
         :value="progress"
         :show-value="false"
-        :aria-label="progressLabel"
       />
     </div>
   </article>

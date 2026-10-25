@@ -474,16 +474,7 @@ describe('AccountPage', () => {
       ]);
       expect(
         actions.every((action) => action.attributes('disabled') !== undefined),
-      ).toBe(true); // подсказку видно и скринридеру, а не только при наведении
-      expect(
-        actions.every(
-          (action) =>
-            action.attributes('aria-describedby') === 'account-soon-hint',
-        ),
       ).toBe(true);
-      expect(wrapper.find('#account-soon-hint').text()).toBe(
-        'Скоро будет доступно',
-      );
     });
 
     it('«Назад» возвращает на предыдущую страницу приложения', async () => {

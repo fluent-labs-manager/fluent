@@ -361,8 +361,7 @@ function retryCourses(): void {
           </ul>
 
           <!-- TODO: редактирование профиля и настройки — отдельные задачи -->
-          <!-- неактивная кнопка не ловит наведение, поэтому подсказка на обёртке;
-               скринридер прочитает её через aria-describedby -->
+          <!-- неактивная кнопка не ловит наведение, поэтому подсказка на обёртке -->
           <div class="account-page__actions">
             <span
               v-tooltip.top="'Скоро будет доступно'"
@@ -373,7 +372,6 @@ function retryCourses(): void {
                 label="Редактировать"
                 disabled
                 fluid
-                aria-describedby="account-soon-hint"
               >
                 <template #icon>
                   <Pencil :size="16" />
@@ -391,18 +389,12 @@ function retryCourses(): void {
                 variant="outlined"
                 disabled
                 fluid
-                aria-describedby="account-soon-hint"
               >
                 <template #icon>
                   <Settings :size="16" />
                 </template>
               </Button>
             </span>
-            <span
-              id="account-soon-hint"
-              hidden
-              >Скоро будет доступно</span
-            >
           </div>
         </article>
 
