@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { ChevronLeft, Code, FileText } from '@lucide/vue';
+import {
+  ChevronLeft,
+  Code,
+  FileText,
+  Trash2,
+} from '@lucide/vue';
 
 const router = useRouter();
 
@@ -16,34 +21,44 @@ const student = ref({
 const questions = ref<string[]>([
   'Объясните выбор каскадного удаления для таблицы OrderDetails.',
 ]);
+
 const feedbackComment = ref('');
 
 const grade = ref<number | ''>(0);
 const maxGrade = 10;
-const isSaved = ref(false);
+const gradeError = ref('');
 
 const handleGoBack = (): void => {
-  void router.push({ name: 'home' });
+  void router.push({ name: 'review-queue' });
 };
 
 const handleOpenReport = (): void => {
-  window.open('#', '_blank');
+  // Открытие отчета (например, превью или модалка)
+  alert('Открытие PDF-отчета студента Горелова Ульяна');
 };
 
 const handleOpenCode = (): void => {
-  window.open('#', '_blank');
+  // Открытие файла с кодом
+  alert('Просмотр исходного кода myau.py');
 };
 
 const handleAddQuestion = (): void => {
-  questions.value.push('Новый вопрос к защите...');
+  questions.value.push('');
+};
+
+const handleRemoveQuestion = (index: number): void => {
+  questions.value.splice(index, 1);
 };
 
 const handleSaveGrade = (): void => {
+  gradeError.value = '';
+
   if (grade.value === '' || grade.value < 0 || grade.value > maxGrade) {
+    gradeError.value = `Балл должен быть от 0 до ${maxGrade}`;
     return;
   }
-  isSaved.value = true;
-  void router.push({ name: 'home' });
+
+  void router.push({ name: 'review-queue' });
 };
 </script>
 
@@ -56,7 +71,7 @@ const handleSaveGrade = (): void => {
         @click="handleGoBack"
       >
         <ChevronLeft :size="16" />
-        Назад
+        Назад в очередь
       </button>
 
       <h1 class="page-title">Оценивание</h1>
@@ -69,18 +84,13 @@ const handleSaveGrade = (): void => {
             <span class="badge">
               {{ student.group }} • ВАРИАНТ {{ student.variant }}
             </span>
-            <span class="lab-number"
-              >Лабораторная №{{ student.labNumber }}</span
-            >
+            <span class="lab-number">Лабораторная №{{ student.labNumber }}</span>
           </div>
 
           <h2 class="student-name">{{ student.name }}</h2>
 
           <div class="file-chip">
-            <Code
-              :size="17"
-              class="file-icon"
-            />
+            <Code :size="17" class="file-icon" />
             <span class="file-name">{{ student.fileName }}</span>
           </div>
         </article>
@@ -113,8 +123,26 @@ const handleSaveGrade = (): void => {
             :key="index"
             class="question-block"
           >
-            <span class="question-label">ВОПРОС {{ index + 1 }}</span>
-            <p class="question-text">{{ question }}</p>
+            <div class="question-header">
+              <span class="question-label">ВОПРОС {{ index + 1 }}</span>
+              <button
+                v-if="questions.length > 1"
+                class="remove-question-btn"
+                type="button"
+                title="Удалить вопрос"
+                @click="handleRemoveQuestion(index)"
+              >
+                <Trash2 :size="14" />
+              </button>
+            </div>
+
+            <textarea
+              v-model="questions[index]"
+              class="question-input"
+              placeholder="Введите вопрос к защите..."
+              rows="2"
+            ></textarea>
+
             <div
               v-if="index < questions.length - 1"
               class="divider"
@@ -134,7 +162,7 @@ const handleSaveGrade = (): void => {
           <textarea
             v-model="feedbackComment"
             class="comment-textarea"
-            placeholder="Добавьте обратную связь..."
+            placeholder="Добавьте обратную связь по работе (замечания, комментарии)..."
           ></textarea>
         </div>
       </section>
@@ -155,6 +183,13 @@ const handleSaveGrade = (): void => {
             />
             <span class="grade-unit">/{{ maxGrade }}</span>
           </div>
+
+          <p
+            v-if="gradeError"
+            class="field-error"
+          >
+            {{ gradeError }}
+          </p>
 
           <button
             class="save-grade-btn"
@@ -334,6 +369,12 @@ const handleSaveGrade = (): void => {
   gap: 0.5rem;
 }
 
+.question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .question-label {
   color: var(--color-accent);
   font-size: 0.6875rem;
@@ -342,11 +383,33 @@ const handleSaveGrade = (): void => {
   text-transform: uppercase;
 }
 
-.question-text {
-  margin: 0;
+.remove-question-btn {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.remove-question-btn:hover {
+  color: var(--color-error);
+}
+
+.question-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  outline: none;
+  background-color: var(--color-surface);
   color: var(--color-text);
   font-size: 0.875rem;
   line-height: 1.5;
+  resize: vertical;
+}
+
+.question-input:focus {
+  border-color: var(--color-accent);
 }
 
 .divider {
@@ -374,7 +437,7 @@ const handleSaveGrade = (): void => {
 
 .comment-textarea {
   width: 100%;
-  height: 3.625rem;
+  height: 4.5rem;
   padding: 0.875rem 1rem;
   border: 1px solid var(--color-border);
   border-radius: 0.75rem;
@@ -389,6 +452,7 @@ const handleSaveGrade = (): void => {
   border-color: var(--color-accent);
 }
 
+/* 3. Колонка ввода оценки */
 .column-grade {
   width: 21.625rem;
 }
@@ -438,6 +502,12 @@ const handleSaveGrade = (): void => {
   color: var(--color-text-secondary);
   font-size: 0.75rem;
   font-weight: 700;
+}
+
+.field-error {
+  margin: 0;
+  color: var(--color-error);
+  font-size: var(--font-size-xs);
 }
 
 .save-grade-btn {
