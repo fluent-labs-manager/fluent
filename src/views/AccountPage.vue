@@ -16,6 +16,7 @@ import {
   RotateCw,
   Settings,
 } from '@lucide/vue';
+import Button from 'primevue/button';
 
 import { useAccountProfile } from '@/composables/useAccountProfile.ts';
 import { useSemesters } from '@/composables/useSemesters.ts';
@@ -348,25 +349,48 @@ function retryCourses(): void {
           </ul>
 
           <!-- TODO: редактирование профиля и настройки — отдельные задачи -->
+          <!-- неактивная кнопка не ловит наведение, поэтому подсказка на обёртке;
+               скринридер прочитает её через aria-describedby -->
           <div class="account-page__actions">
-            <button
-              class="account-page__action account-page__action--primary"
-              type="button"
-              disabled
-              title="Скоро будет доступно"
+            <span
+              v-tooltip.top="'Скоро будет доступно'"
+              class="account-page__action-wrap"
             >
-              <Pencil :size="16" />
-              Редактировать
-            </button>
-            <button
-              class="account-page__action"
-              type="button"
-              disabled
-              title="Скоро будет доступно"
+              <Button
+                class="account-page__action"
+                label="Редактировать"
+                disabled
+                fluid
+                aria-describedby="account-soon-hint"
+              >
+                <template #icon>
+                  <Pencil :size="16" />
+                </template>
+              </Button>
+            </span>
+            <span
+              v-tooltip.top="'Скоро будет доступно'"
+              class="account-page__action-wrap"
             >
-              <Settings :size="16" />
-              Настройки
-            </button>
+              <Button
+                class="account-page__action"
+                label="Настройки"
+                severity="secondary"
+                variant="outlined"
+                disabled
+                fluid
+                aria-describedby="account-soon-hint"
+              >
+                <template #icon>
+                  <Settings :size="16" />
+                </template>
+              </Button>
+            </span>
+            <span
+              id="account-soon-hint"
+              hidden
+              >Скоро будет доступно</span
+            >
           </div>
         </article>
 
@@ -711,32 +735,8 @@ function retryCourses(): void {
   gap: 0.5rem;
 }
 
-/* кнопка обрамляет одну строку текста — отступы в em */
-.account-page__action {
-  display: inline-flex;
+.account-page__action-wrap {
   flex: 1;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5em;
-  padding: 0.75em 1em;
-  border: 1px solid var(--color-border);
-  border-radius: 0.75em;
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  font-size: var(--font-size-md);
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.account-page__action--primary {
-  border-color: var(--color-accent);
-  background-color: var(--color-accent);
-  color: var(--color-surface);
-}
-
-.account-page__action:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .account-page__stats {
