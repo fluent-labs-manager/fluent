@@ -421,4 +421,12 @@ function retry(): void {
   border-color: var(--color-accent);
   color: var(--color-accent);
 }
+
+/* на узком экране меньше поля: области контента рядом с меню остаётся мало */
+@media (width <= 960px) {
+  .score-builder-page {
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+}
 </style>

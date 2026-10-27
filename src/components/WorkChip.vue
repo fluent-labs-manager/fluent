@@ -24,6 +24,8 @@ const root = ref<HTMLElement | null>(null);
 const handle = ref<HTMLElement | null>(null);
 const menu = ref<HTMLElement | null>(null);
 const isMenuOpen = ref<boolean>(false);
+// у правого края экрана меню раскрывается влево, чтобы не вылезать за него
+const isMenuAlignedRight = ref<boolean>(false);
 // вместо чипа — поле с баллами
 const isEditing = ref<boolean>(false);
 
@@ -82,7 +84,10 @@ function closeOnOutsideClick(event: MouseEvent): void {
 watch(isMenuOpen, async (isOpen) => {
   if (isOpen) {
     document.addEventListener('click', closeOnOutsideClick);
+    isMenuAlignedRight.value = false;
     await nextTick();
+    const menuRight = menu.value?.getBoundingClientRect().right ?? 0;
+    isMenuAlignedRight.value = menuRight > document.documentElement.clientWidth;
     menu.value?.querySelector('button')?.focus();
   } else {
     document.removeEventListener('click', closeOnOutsideClick);
@@ -139,6 +144,7 @@ function startDrag(event: DragEvent): void {
       v-if="isMenuOpen"
       ref="menu"
       class="work-chip__menu"
+      :class="{ 'work-chip__menu--right': isMenuAlignedRight }"
       role="menu"
       :aria-label="`Действия с «${work.title}»`"
     >
@@ -251,6 +257,11 @@ function startDrag(event: DragEvent): void {
   background-color: var(--color-surface);
   box-shadow: var(--shadow-raised);
   list-style: none;
+}
+
+.work-chip__menu--right {
+  right: 0;
+  left: auto;
 }
 
 .work-chip__target {

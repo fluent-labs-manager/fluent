@@ -276,3 +276,46 @@ test.describe('конструктор баллов: заглушки Google-та
     await expect(exportCard.getByText('Будет доступно позже')).toBeVisible();
   });
 });
+
+test.describe('конструктор баллов: узкий экран', () => {
+  test.beforeEach(async ({ page }) => {
+    // ширина, при которой рядом с боковым меню остаётся узкая колонка
+    await page.setViewportSize({ width: 760, height: 900 });
+    await page.goto('/score-builder?role=teacher');
+    await page
+      .getByLabel('Дисциплина', { exact: true })
+      .selectOption({ label: 'Разработка веб-приложений' });
+    await expect(
+      page.getByRole('region', { name: 'Предпросмотр ведомости' }),
+    ).toBeVisible();
+  });
+
+  test('у страницы нет горизонтальной прокрутки, таблица прокручивается в своём блоке', async ({
+    page,
+  }) => {
+    const hasPageScroll = await page.evaluate(
+      () => document.documentElement.scrollWidth > window.innerWidth,
+    );
+    expect(hasPageScroll).toBe(false);
+
+    const panel = page.getByRole('tabpanel');
+    const isPanelScrollable = await panel.evaluate(
+      (element) => element.scrollWidth > element.clientWidth,
+    );
+    expect(isPanelScrollable).toBe(true);
+  });
+
+  test('меню чипа не выводит страницу за край экрана', async ({ page }) => {
+    const pool = page.getByRole('region', { name: 'Работы курса' });
+
+    await pool
+      .getByRole('button', { name: 'Активность на занятиях, 10 баллов' })
+      .click();
+    await expect(page.getByRole('menu')).toBeVisible();
+
+    const hasPageScroll = await page.evaluate(
+      () => document.documentElement.scrollWidth > window.innerWidth,
+    );
+    expect(hasPageScroll).toBe(false);
+  });
+});

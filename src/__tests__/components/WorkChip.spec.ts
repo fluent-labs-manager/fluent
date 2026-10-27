@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { nextTick } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
@@ -204,5 +204,31 @@ describe('WorkChip', () => {
       expect(wrapper.emitted('remove')).toEqual([[]]);
       expect(wrapper.find('[role="menu"]').exists()).toBe(false);
     });
+  });
+
+  it('у правого края экрана раскрывает меню влево', async () => {
+    const rect = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockReturnValue(new DOMRect(0, 0, 20000, 100));
+    const wrapper = mountChip();
+
+    await wrapper.find('.work-chip__button').trigger('click');
+    await flushPromises();
+
+    expect(wrapper.find('[role="menu"]').classes()).toContain(
+      'work-chip__menu--right',
+    );
+    rect.mockRestore();
+  });
+
+  it('если места хватает, раскрывает меню вправо', async () => {
+    const wrapper = mountChip();
+
+    await wrapper.find('.work-chip__button').trigger('click');
+    await flushPromises();
+
+    expect(wrapper.find('[role="menu"]').classes()).not.toContain(
+      'work-chip__menu--right',
+    );
   });
 });
