@@ -3,7 +3,10 @@ import { computed, ref } from 'vue';
 
 import { RotateCw } from '@lucide/vue';
 
+import BarsSectionCard from '@/components/BarsSectionCard.vue';
 import GroupPicker from '@/components/GroupPicker.vue';
+import ScoreSummary from '@/components/ScoreSummary.vue';
+import WorkPool from '@/components/WorkPool.vue';
 import { useCourseGradebook } from '@/composables/useCourseGradebook.ts';
 import { useScoreBuilder } from '@/composables/useScoreBuilder.ts';
 import { useTaughtCourses } from '@/composables/useTaughtCourses.ts';
@@ -21,7 +24,24 @@ const courseId = ref<number | null>(null);
 
 const { gradebook, isLoading, error, reload } = useCourseGradebook(courseId);
 
-const { checkedGroups, setGroupChecked } = useScoreBuilder(gradebook);
+const {
+  poolWorks,
+  sections,
+  distributedScore,
+  maxScore,
+  isOverMaxScore,
+  checkedGroups,
+  admissionThreshold,
+  moveWork,
+  setGroupChecked,
+  setAdmissionThreshold,
+} = useScoreBuilder(gradebook);
+
+const hasAnyWorks = computed<boolean>(
+  () =>
+    poolWorks.value.length > 0 ||
+    sections.value.some((section) => section.works.length > 0),
+);
 
 const checkedGroupNames = computed<string[]>(() =>
   checkedGroups.value.map((group) => group.name),
@@ -154,6 +174,43 @@ function retry(): void {
         />
       </template>
     </section>
+
+    <template v-if="gradebook !== null">
+      <WorkPool
+        :works="poolWorks"
+        :has-any-works="hasAnyWorks"
+        @move="moveWork"
+      />
+
+      <section
+        class="score-builder-page__sections"
+        aria-labelledby="bars-heading"
+      >
+        <div class="score-builder-page__sections-header">
+          <h2
+            id="bars-heading"
+            class="score-builder-page__section-title"
+          >
+            Разделы БАРС
+          </h2>
+          <ScoreSummary
+            :distributed-score="distributedScore"
+            :max-score="maxScore"
+            :is-over-max-score="isOverMaxScore"
+            :admission-threshold="admissionThreshold"
+            @update:admission-threshold="setAdmissionThreshold"
+          />
+        </div>
+        <div class="score-builder-page__sections-grid">
+          <BarsSectionCard
+            v-for="summary in sections"
+            :key="summary.section"
+            :summary="summary"
+            @move="moveWork"
+          />
+        </div>
+      </section>
+    </template>
   </main>
 </template>
 
@@ -252,6 +309,34 @@ function retry(): void {
   transition:
     border-color 0.2s ease,
     color 0.2s ease;
+}
+
+.score-builder-page__sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.score-builder-page__sections-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+}
+
+.score-builder-page__section-title {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* разделов шесть: на широком экране в один-два ряда, на узком — по одному */
+.score-builder-page__sections-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
 }
 
 .score-builder-page__retry:hover {

@@ -29,3 +29,24 @@ export function courseCards(page: Page): Locator {
 export function userCard(page: Page): Locator {
   return page.getByRole('complementary').getByTitle('Личный кабинет');
 }
+
+/**
+ * Перетаскивание элемента в область. Имитация жеста мышью (dragTo или
+ * mouse.down/move/up) в Chromium и WebKit на Windows до страницы не доходит,
+ * поэтому события перетаскивания отправляются по порядку с настоящим
+ * DataTransfer — так проверяются обработчики страницы в движке каждого
+ * браузера. Сам жест даёт браузер по атрибуту draggable.
+ */
+export async function dragAndDrop(
+  page: Page,
+  source: Locator,
+  target: Locator,
+): Promise<void> {
+  const dataTransfer = await page.evaluateHandle(() => new DataTransfer());
+  await source.dispatchEvent('dragstart', { dataTransfer });
+  await target.dispatchEvent('dragenter', { dataTransfer });
+  await target.dispatchEvent('dragover', { dataTransfer });
+  await target.dispatchEvent('drop', { dataTransfer });
+  // dragend не нужен: после броска элемент уже в другом месте страницы
+  await dataTransfer.dispose();
+}

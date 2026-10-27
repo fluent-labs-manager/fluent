@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-import { menuLink } from './helpers.ts';
+import { dragAndDrop, menuLink } from './helpers.ts';
 
 test.describe('конструктор баллов', () => {
   test('преподаватель открывает конструктор из меню', async ({ page }) => {
@@ -63,5 +63,63 @@ test.describe('конструктор баллов: дисциплина и гр
     await expect(
       page.getByRole('checkbox', { name: /P3323/ }),
     ).not.toBeChecked();
+  });
+});
+
+test.describe('конструктор баллов: работы и разделы БАРС', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/score-builder?role=teacher');
+    await page
+      .getByLabel('Дисциплина', { exact: true })
+      .selectOption({ label: 'Разработка веб-приложений' });
+  });
+
+  test('работу переносят в раздел через список у чипа', async ({ page }) => {
+    const pool = page.getByRole('region', { name: 'Работы курса' });
+    const labs = page.getByRole('region', {
+      name: 'Лабораторные работы',
+      exact: true,
+    });
+    await expect(page.getByText('Распределено 40 из 100')).toBeVisible();
+    await expect(labs.getByText('40 из 50')).toBeVisible();
+
+    await pool.getByRole('button', { name: 'ЛР5, 10 баллов' }).click();
+    await page.getByRole('menuitem', { name: 'Лабораторные работы' }).click();
+
+    await expect(
+      labs.getByRole('button', { name: 'ЛР5, 10 баллов' }),
+    ).toBeVisible();
+    await expect(labs.getByText('50 из 50')).toBeVisible();
+    await expect(
+      pool.getByRole('button', { name: 'ЛР5, 10 баллов' }),
+    ).toHaveCount(0);
+    await expect(page.getByText('Распределено 50 из 100')).toBeVisible();
+  });
+
+  test('работу можно перетащить в раздел и обратно', async ({ page }) => {
+    const pool = page.getByRole('region', { name: 'Работы курса' });
+    const exam = page.getByRole('region', { name: 'Экзамен', exact: true });
+
+    await dragAndDrop(
+      page,
+      pool.getByRole('button', { name: 'Экзамен, 20 баллов' }),
+      exam,
+    );
+
+    await expect(
+      exam.getByRole('button', { name: 'Экзамен, 20 баллов' }),
+    ).toBeVisible();
+    await expect(exam.getByText('20 из 20')).toBeVisible();
+
+    await dragAndDrop(
+      page,
+      exam.getByRole('button', { name: 'Экзамен, 20 баллов' }),
+      pool,
+    );
+
+    await expect(
+      pool.getByRole('button', { name: 'Экзамен, 20 баллов' }),
+    ).toBeVisible();
+    await expect(exam.getByText('0 из 20')).toBeVisible();
   });
 });

@@ -133,7 +133,8 @@ export const courseLabsFixture: CourseLabs = {
   ],
 };
 
-// ведомость дисциплины «Курс А»: две группы, одна работа разложена, две — нет
+// ведомость дисциплины «Курс А»: две группы, одна работа разложена, две — нет.
+// Экзамен на 25 баллов нарочно больше лимита раздела — для проверок превышения
 export const courseGradebookFixture: CourseGradebook = {
   courseId: 11,
   courseTitle: 'Курс А',
@@ -154,14 +155,13 @@ export const courseGradebookFixture: CourseGradebook = {
   ],
   sectionLimits: [
     { section: BarsSection.ClassWork, limit: 20 },
-    { section: BarsSection.Practice, limit: 30 },
+    { section: BarsSection.Labs, limit: 30 },
     { section: BarsSection.Tests, limit: 20 },
     { section: BarsSection.Midterm, limit: 10 },
     { section: BarsSection.Exam, limit: 20 },
-    { section: BarsSection.Bonus, limit: 3 },
   ],
   works: [
-    { id: 1, title: 'Работа А', maxScore: 15, section: BarsSection.Practice },
+    { id: 1, title: 'Работа А', maxScore: 15, section: BarsSection.Labs },
     { id: 2, title: 'Работа Б', maxScore: 10, section: null },
     { id: 3, title: 'Экзамен', maxScore: 25, section: null },
   ],

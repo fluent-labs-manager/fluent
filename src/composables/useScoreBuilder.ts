@@ -9,7 +9,8 @@ import {
   BARS_SECTION_ORDER,
   DEFAULT_ADMISSION_THRESHOLD,
 } from '@/constants/barsSections.ts';
-import { BarsSection } from '@/types/BarsSection.ts';
+import type { BarsSection } from '@/types/BarsSection.ts';
+import type { SectionSummary } from '@/types/SectionSummary.ts';
 import {
   getNextWorkId,
   getSectionWorks,
@@ -24,23 +25,13 @@ interface ScoreBuilderDraft {
   admissionThreshold: number;
 }
 
-export interface SectionSummary {
-  section: BarsSection;
-  title: string;
-  limit: number;
-  // сумма баллов разложенных в раздел работ
-  score: number;
-  isOverLimit: boolean;
-  works: GradebookWork[];
-}
-
 interface UseScoreBuilderResult {
   // работы, ещё не разложенные по разделам
   poolWorks: ComputedRef<GradebookWork[]>;
   sections: ComputedRef<SectionSummary[]>;
   // сколько баллов разложено по всем разделам
   distributedScore: ComputedRef<number>;
-  // сколько можно разложить: сумма лимитов, 100 + 3 доп. балла
+  // сколько можно разложить: сумма лимитов разделов, 100
   maxScore: ComputedRef<number>;
   isOverMaxScore: ComputedRef<boolean>;
   checkedGroups: ComputedRef<StudentGroup[]>;

@@ -79,12 +79,26 @@ describe('моки ведомостей', () => {
     }
   });
 
-  it('у каждой дисциплины лимиты всех разделов и в сумме 103', () => {
+  it('у каждой дисциплины лимиты всех разделов и в сумме 100', () => {
     for (const gradebook of Object.values(courseGradebooks)) {
       const limits = gradebook?.sectionLimits ?? [];
 
       expect(limits.map((item) => item.section)).toEqual(BARS_SECTION_ORDER);
-      expect(limits.reduce((sum, item) => sum + item.limit, 0)).toBe(103);
+      expect(limits.reduce((sum, item) => sum + item.limit, 0)).toBe(100);
+    }
+  });
+
+  it('работы дисциплины в сумме дают 100, разложенные не превышают лимитов', () => {
+    for (const gradebook of Object.values(courseGradebooks)) {
+      const works = gradebook?.works ?? [];
+
+      expect(works.reduce((sum, work) => sum + work.maxScore, 0)).toBe(100);
+      for (const { section, limit } of gradebook?.sectionLimits ?? []) {
+        const placed = works
+          .filter((work) => work.section === section)
+          .reduce((sum, work) => sum + work.maxScore, 0);
+        expect(placed).toBeLessThanOrEqual(limit);
+      }
     }
   });
 

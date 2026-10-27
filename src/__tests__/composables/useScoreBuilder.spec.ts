@@ -42,24 +42,21 @@ describe('useScoreBuilder', () => {
     ]);
     expect(builder.sections.value.map((item) => item.title)).toEqual([
       'Работа на занятиях',
-      'Практика',
+      'Лабораторные работы',
       'Контрольные работы',
       'Рубежный контроль',
       'Экзамен',
-      'Доп. баллы',
     ]);
     expect(
-      builder.sections.value.find(
-        (item) => item.section === BarsSection.Practice,
-      ),
+      builder.sections.value.find((item) => item.section === BarsSection.Labs),
     ).toMatchObject({ limit: 30, score: 15, isOverLimit: false });
   });
 
-  it('считает разложенные баллы из 103', () => {
+  it('считает разложенные баллы из 100', () => {
     const builder = useScoreBuilder(createGradebook());
 
     expect(builder.distributedScore.value).toBe(15);
-    expect(builder.maxScore.value).toBe(103);
+    expect(builder.maxScore.value).toBe(100);
     expect(builder.isOverMaxScore.value).toBe(false);
   });
 
@@ -97,11 +94,11 @@ describe('useScoreBuilder', () => {
     ).toMatchObject({ limit: 20, score: 25, isOverLimit: true });
   });
 
-  it('отмечает превышение 103 баллов', () => {
+  it('отмечает превышение 100 баллов', () => {
     const builder = useScoreBuilder(createGradebook());
 
     builder.addWork('Большая работа', 90);
-    builder.moveWork(4, BarsSection.Practice);
+    builder.moveWork(4, BarsSection.Labs);
 
     expect(builder.distributedScore.value).toBe(105);
     expect(builder.isOverMaxScore.value).toBe(true);
@@ -124,10 +121,10 @@ describe('useScoreBuilder', () => {
     const builder = useScoreBuilder(createGradebook());
 
     builder.updateWorkScore(1, 20);
-    expect(sectionScore(builder, BarsSection.Practice)).toBe(20);
+    expect(sectionScore(builder, BarsSection.Labs)).toBe(20);
 
     builder.removeWork(1);
-    expect(sectionScore(builder, BarsSection.Practice)).toBe(0);
+    expect(sectionScore(builder, BarsSection.Labs)).toBe(0);
     expect(builder.distributedScore.value).toBe(0);
   });
 

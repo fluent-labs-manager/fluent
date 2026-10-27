@@ -199,4 +199,94 @@ describe('ScoreBuilderPage', () => {
       expect(checkedGroups(wrapper)).toEqual(['P0002']);
     });
   });
+
+  describe('работы и разделы БАРС', () => {
+    function poolTitles(wrapper: ReturnType<typeof mount>): string[] {
+      return wrapper
+        .find('.work-pool')
+        .findAll('.work-chip__title')
+        .map((title) => title.text());
+    }
+
+    function sectionScore(
+      wrapper: ReturnType<typeof mount>,
+      title: string,
+    ): string | undefined {
+      return wrapper
+        .findAll('.bars-section-card')
+        .find((card) => card.find('h3').text() === title)
+        ?.find('.bars-section-card__score')
+        .text();
+    }
+
+    function totalText(wrapper: ReturnType<typeof mount>): string {
+      return wrapper.find('.score-summary__total').text().replace(/\s+/g, ' ');
+    }
+
+    // переносит работу из «Работ курса» через список у чипа
+    async function moveFromPool(
+      wrapper: ReturnType<typeof mount>,
+      workTitle: string,
+      target: string,
+    ): Promise<void> {
+      const chip = wrapper
+        .find('.work-pool')
+        .findAll('.work-chip')
+        .find((item) => item.find('.work-chip__title').text() === workTitle);
+      await chip?.find('.work-chip__button').trigger('click');
+      await chip
+        ?.findAll('[role="menuitem"]')
+        .find((item) => item.text() === target)
+        ?.trigger('click');
+    }
+
+    it('до выбора дисциплины работ и разделов нет', async () => {
+      const wrapper = await mountPage();
+
+      expect(wrapper.find('.work-pool').exists()).toBe(false);
+      expect(wrapper.find('.bars-section-card').exists()).toBe(false);
+    });
+
+    it('после выбора показывает работы курса, пять разделов и итог', async () => {
+      const wrapper = await mountPage();
+      await chooseCourse(wrapper, 31);
+
+      expect(poolTitles(wrapper)).toEqual(['Работа Б', 'Экзамен']);
+      expect(wrapper.findAll('.bars-section-card')).toHaveLength(5);
+      expect(sectionScore(wrapper, 'Лабораторные работы')).toBe('15 из 30');
+      expect(totalText(wrapper)).toBe('Распределено 15 из 100');
+      expect(
+        (wrapper.find('.score-summary__input').element as HTMLInputElement)
+          .value,
+      ).toBe('60');
+    });
+
+    it('перенос работы меняет суммы раздела и итог', async () => {
+      const wrapper = await mountPage();
+      await chooseCourse(wrapper, 31);
+
+      await moveFromPool(wrapper, 'Экзамен', 'Экзамен');
+
+      expect(poolTitles(wrapper)).toEqual(['Работа Б']);
+      expect(sectionScore(wrapper, 'Экзамен')).toBe('25 из 20');
+      expect(totalText(wrapper)).toBe('Распределено 40 из 100');
+    });
+
+    it('при возврате к дисциплине помнит раскладку и порог', async () => {
+      const wrapper = await mountPage();
+      await chooseCourse(wrapper, 31);
+      await moveFromPool(wrapper, 'Работа Б', 'Работа на занятиях');
+      await wrapper.find('.score-summary__input').setValue('55');
+
+      await chooseCourse(wrapper, 32);
+      expect(sectionScore(wrapper, 'Работа на занятиях')).toBe('0 из 20');
+
+      await chooseCourse(wrapper, 31);
+      expect(sectionScore(wrapper, 'Работа на занятиях')).toBe('10 из 20');
+      expect(
+        (wrapper.find('.score-summary__input').element as HTMLInputElement)
+          .value,
+      ).toBe('55');
+    });
+  });
 });
