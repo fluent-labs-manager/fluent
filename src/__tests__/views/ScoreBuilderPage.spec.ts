@@ -1,12 +1,202 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import ScoreBuilderPage from '@/views/ScoreBuilderPage.vue';
+import { getCourseGradebookStub } from '@/api/gradebook/GradebookApi.ts';
+import { getTaughtCoursesStub } from '@/api/teaching/TeachingApi.ts';
+import { ApiRequestError } from '@/utils/ApiResolver.ts';
+import { courseGradebookFixture, taughtCoursesFixture } from '../fixtures.ts';
+
+vi.mock('@/api/teaching/TeachingApi.ts', () => ({
+  getTaughtCoursesStub: vi.fn(),
+}));
+vi.mock('@/api/gradebook/GradebookApi.ts', () => ({
+  getCourseGradebookStub: vi.fn(),
+}));
+
+const mockedGetCourses = vi.mocked(getTaughtCoursesStub);
+const mockedGetGradebook = vi.mocked(getCourseGradebookStub);
+
+async function mountPage(): Promise<ReturnType<typeof mount>> {
+  const wrapper = mount(ScoreBuilderPage);
+  await flushPromises();
+  return wrapper;
+}
+
+async function chooseCourse(
+  wrapper: ReturnType<typeof mount>,
+  courseId: number,
+): Promise<void> {
+  await wrapper.find('select').setValue(courseId);
+  await flushPromises();
+}
+
+function checkedGroups(wrapper: ReturnType<typeof mount>): string[] {
+  return wrapper
+    .findAll('.group-picker__option')
+    .filter(
+      (option) => (option.find('input').element as HTMLInputElement).checked,
+    )
+    .map((option) => option.find('.group-picker__name').text());
+}
 
 describe('ScoreBuilderPage', () => {
-  it('показывает заголовок страницы', () => {
-    const wrapper = mount(ScoreBuilderPage);
+  beforeEach(() => {
+    mockedGetCourses.mockReset();
+    mockedGetGradebook.mockReset();
+    mockedGetCourses.mockResolvedValue(structuredClone(taughtCoursesFixture));
+    // у ведомости id и название выбранной дисциплины
+    mockedGetGradebook.mockImplementation((courseId) =>
+      Promise.resolve({
+        ...structuredClone(courseGradebookFixture),
+        courseId,
+        courseTitle: `Дисциплина ${String(courseId)}`,
+      }),
+    );
+  });
+
+  it('показывает заголовок страницы', async () => {
+    const wrapper = await mountPage();
 
     expect(wrapper.find('h1').text()).toBe('Конструктор баллов');
+  });
+
+  describe('список дисциплин', () => {
+    it('пока дисциплины загружаются, показывает статус', () => {
+      mockedGetCourses.mockReturnValue(new Promise(() => undefined));
+      const wrapper = mount(ScoreBuilderPage);
+
+      expect(wrapper.find('[role="status"]').text()).toBe(
+        'Загрузка дисциплин…',
+      );
+      expect(wrapper.find('select').exists()).toBe(false);
+    });
+
+    it('при ошибке показывает её, а «Повторить» загружает снова', async () => {
+      mockedGetCourses.mockRejectedValueOnce(
+        new ApiRequestError(503, 'Сервис временно недоступен'),
+      );
+      const wrapper = await mountPage();
+
+      expect(wrapper.find('[role="alert"]').text()).toContain(
+        'Не удалось загрузить дисциплины: Сервис временно недоступен',
+      );
+
+      await wrapper.find('button[aria-label="Повторить"]').trigger('click');
+      await flushPromises();
+
+      expect(mockedGetCourses).toHaveBeenCalledTimes(2);
+      expect(wrapper.find('select').exists()).toBe(true);
+    });
+
+    it('без дисциплин пишет, что их пока нет', async () => {
+      mockedGetCourses.mockResolvedValue([]);
+      const wrapper = await mountPage();
+
+      expect(wrapper.text()).toContain('У вас пока нет дисциплин.');
+      expect(wrapper.find('select').exists()).toBe(false);
+    });
+  });
+
+  describe('выбор дисциплины', () => {
+    it('дисциплина по умолчанию не выбрана и ничего не загружено', async () => {
+      const wrapper = await mountPage();
+      const select = wrapper.find('select').element as HTMLSelectElement;
+
+      expect(select.selectedOptions[0]?.text).toBe('Выберите дисциплину');
+      expect(wrapper.text()).toContain(
+        'Выберите дисциплину — после этого появятся её группы и работы.',
+      );
+      expect(mockedGetGradebook).not.toHaveBeenCalled();
+      expect(wrapper.find('.group-picker').exists()).toBe(false);
+    });
+
+    it('у списка подпись «Дисциплина» без текста пунктов', async () => {
+      const wrapper = await mountPage();
+      const select = wrapper.find('select');
+      const label = wrapper.find(
+        `label[for="${select.attributes('id') ?? ''}"]`,
+      );
+
+      expect(label.text()).toBe('Дисциплина');
+      expect(label.find('select').exists()).toBe(false);
+    });
+
+    it('в списке — дисциплины преподавателя, подсказку выбрать нельзя', async () => {
+      const wrapper = await mountPage();
+      const options = wrapper.findAll('option');
+
+      expect(options.map((option) => option.text())).toEqual([
+        'Выберите дисциплину',
+        'Дисциплина Г',
+        'Дисциплина Д',
+      ]);
+      expect(options[0]?.attributes('disabled')).toBeDefined();
+    });
+
+    it('после выбора загружает дисциплину и отмечает все её группы', async () => {
+      const wrapper = await mountPage();
+
+      await chooseCourse(wrapper, 31);
+
+      expect(mockedGetGradebook).toHaveBeenCalledWith(31);
+      expect(checkedGroups(wrapper)).toEqual(['P0001', 'P0002']);
+    });
+
+    it('пока дисциплина загружается, показывает статус', async () => {
+      mockedGetGradebook.mockReturnValue(new Promise(() => undefined));
+      const wrapper = await mountPage();
+
+      await chooseCourse(wrapper, 31);
+
+      expect(wrapper.find('[role="status"]').text()).toBe(
+        'Загрузка дисциплины…',
+      );
+    });
+
+    it('при ошибке загрузки дисциплины даёт повторить', async () => {
+      mockedGetGradebook.mockRejectedValueOnce(
+        new ApiRequestError(404, 'Дисциплина не найдена'),
+      );
+      const wrapper = await mountPage();
+      await chooseCourse(wrapper, 31);
+
+      expect(wrapper.find('[role="alert"]').text()).toContain(
+        'Не удалось загрузить дисциплину: Дисциплина не найдена',
+      );
+
+      await wrapper.find('button[aria-label="Повторить"]').trigger('click');
+      await flushPromises();
+
+      expect(mockedGetGradebook).toHaveBeenCalledTimes(2);
+      expect(checkedGroups(wrapper)).toEqual(['P0001', 'P0002']);
+    });
+  });
+
+  describe('выбор групп', () => {
+    it('снятую группу запоминает, без групп подсказывает отметить', async () => {
+      const wrapper = await mountPage();
+      await chooseCourse(wrapper, 31);
+      const checkboxes = wrapper.findAll('.group-picker__checkbox');
+
+      await checkboxes[0]?.setValue(false);
+      expect(checkedGroups(wrapper)).toEqual(['P0002']);
+
+      await checkboxes[1]?.setValue(false);
+      expect(checkedGroups(wrapper)).toEqual([]);
+      expect(wrapper.find('.group-picker__hint').exists()).toBe(true);
+    });
+
+    it('при возврате к дисциплине помнит её отметки', async () => {
+      const wrapper = await mountPage();
+      await chooseCourse(wrapper, 31);
+      await wrapper.findAll('.group-picker__checkbox')[0]?.setValue(false);
+
+      await chooseCourse(wrapper, 32);
+      expect(checkedGroups(wrapper)).toEqual(['P0001', 'P0002']);
+
+      await chooseCourse(wrapper, 31);
+      expect(checkedGroups(wrapper)).toEqual(['P0002']);
+    });
   });
 });
