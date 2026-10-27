@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { effectScope } from 'vue';
 import type { EffectScope } from 'vue';
@@ -23,6 +23,7 @@ describe('useStrayFileDropGuard', () => {
     scope?.stop();
     scope = null;
     document.body.innerHTML = '';
+    vi.restoreAllMocks();
   });
 
   function startGuard(): void {
@@ -54,6 +55,53 @@ describe('useStrayFileDropGuard', () => {
     const { dataTransfer } = dispatchDrag(zone, 'dragover');
 
     expect(dataTransfer.dropEffect).toBe('copy');
+  });
+
+  // какие обработчики dragover сейчас висят на window
+  function trackDragOverListeners(): Set<unknown> {
+    const active = new Set<unknown>();
+    const add = window.addEventListener.bind(window);
+    const remove = window.removeEventListener.bind(window);
+    vi.spyOn(window, 'addEventListener').mockImplementation(
+      (type, listener, options) => {
+        if (type === 'dragover') {
+          active.add(listener);
+        }
+        add(type, listener, options);
+      },
+    );
+    vi.spyOn(window, 'removeEventListener').mockImplementation(
+      (type, listener, options) => {
+        if (type === 'dragover') {
+          active.delete(listener);
+        }
+        remove(type, listener, options);
+      },
+    );
+    return active;
+  }
+
+  it('при повторных заходах на страницу обработчики не накапливаются', () => {
+    const active = trackDragOverListeners();
+
+    for (let visit = 1; visit <= 3; visit += 1) {
+      startGuard();
+      expect(active.size).toBe(1);
+      scope?.stop();
+      expect(active.size).toBe(0);
+    }
+  });
+
+  it('повторный вызов передаёт браузеру тот же обработчик', () => {
+    const active = trackDragOverListeners();
+
+    startGuard();
+    const first = scope;
+    startGuard();
+
+    // браузер не добавляет одну и ту же функцию дважды
+    expect(active.size).toBe(1);
+    first?.stop();
   });
 
   it('после ухода со страницы перестаёт перехватывать события', () => {

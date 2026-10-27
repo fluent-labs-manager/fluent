@@ -30,6 +30,16 @@ describe('validateSubmissionFile', () => {
     expect(validateSubmissionFile(createFile('Makefile'))).not.toBeNull();
   });
 
+  it('пустой файл не принимает', () => {
+    expect(validateSubmissionFile(createFile('a.pdf', 0))).toBe('Файл пустой');
+  });
+
+  it('у пустого файла другого типа сначала говорит про тип', () => {
+    expect(validateSubmissionFile(createFile('a.exe', 0))).toBe(
+      'Этот тип файла не принимается. Можно: PDF, ZIP, IPYNB, PY, JAVA',
+    );
+  });
+
   it('файл ровно 20 МБ принимает, а больше — нет', () => {
     expect(
       validateSubmissionFile(createFile('a.zip', MAX_FILE_SIZE_BYTES)),

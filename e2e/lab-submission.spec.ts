@@ -166,6 +166,21 @@ test.describe('ошибки при сдаче', () => {
     await expect(page.getByRole('alert')).toHaveText('Файл больше 20 МБ');
   });
 
+  test('пустой файл не принимается', async ({ page }) => {
+    await page.goto('/courses/1/labs/102');
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: 'otchet.pdf',
+      mimeType: 'application/pdf',
+      buffer: Buffer.alloc(0),
+    });
+
+    await expect(page.getByRole('alert')).toHaveText('Файл пустой');
+    await expect(
+      page.getByRole('button', { name: 'Отправить работу на проверку' }),
+    ).toBeDisabled();
+  });
+
   test('после сбоя загрузки повтор отправляет работу', async ({ page }) => {
     await page.goto('/courses/1/labs/102?mock=upload-error');
 

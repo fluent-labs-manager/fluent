@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { nextTick, ref } from 'vue';
+import { effectScope, nextTick, ref } from 'vue';
 
 import { submitLabAttemptStub } from '@/api/labs/LabsApi.ts';
 import type { LabSubmission } from '@/api/labs/LabSubmission.dto.ts';
@@ -39,6 +39,7 @@ describe('useLabAttemptSubmit', () => {
       file,
       'Комментарий',
       expect.any(Function),
+      expect.any(AbortSignal),
     );
     expect(isSubmitting.value).toBe(true);
     expect(progress.value).toBe(60);
@@ -140,5 +141,87 @@ describe('useLabAttemptSubmit', () => {
     await result;
 
     expect(error.value).toBeNull();
+  });
+
+  describe('отмена загрузки', () => {
+    // отправка, которая завершается только отменой: как обрыв на долгой загрузке
+    function mockAbortableSubmit(): { signal: () => AbortSignal | undefined } {
+      let lastSignal: AbortSignal | undefined;
+      mockedSubmit.mockImplementation(
+        (_courseId, _labId, _file, _comment, _onProgress, signal) => {
+          lastSignal = signal;
+          return new Promise<LabSubmission>((_resolve, reject) => {
+            signal?.addEventListener('abort', () => {
+              reject(new DOMException('Загрузка отменена', 'AbortError'));
+            });
+          });
+        },
+      );
+      return { signal: () => lastSignal };
+    }
+
+    it('прерывает загрузку и возвращает форму без ошибки', async () => {
+      const request = mockAbortableSubmit();
+      const { progress, isSubmitting, error, submit, cancel } =
+        useLabAttemptSubmit(11, 2);
+
+      const result = submit(file, null);
+      progress.value = 60;
+      cancel();
+
+      expect(request.signal()?.aborted).toBe(true);
+      expect(isSubmitting.value).toBe(false);
+      expect(progress.value).toBe(0);
+      expect(await result).toBeNull();
+      expect(error.value).toBeNull();
+    });
+
+    it('после отмены работу можно отправить снова', async () => {
+      mockAbortableSubmit();
+      const { submit, cancel } = useLabAttemptSubmit(11, 2);
+      const cancelled = submit(file, null);
+      cancel();
+      await cancelled;
+
+      mockedSubmit.mockResolvedValueOnce(labSubmissionFixture);
+
+      expect(await submit(file, null)).toEqual(labSubmissionFixture);
+      expect(mockedSubmit).toHaveBeenCalledTimes(2);
+    });
+
+    it('без идущей загрузки ничего не делает', () => {
+      const { error, cancel } = useLabAttemptSubmit(11, 2);
+      error.value = 'Сбой';
+
+      cancel();
+
+      expect(error.value).toBe('Сбой');
+    });
+
+    it('при смене работы прерывает загрузку прошлой', async () => {
+      const request = mockAbortableSubmit();
+      const labId = ref(2);
+      const { submit } = useLabAttemptSubmit(11, labId);
+
+      const result = submit(file, null);
+      labId.value = 4;
+      await nextTick();
+
+      expect(request.signal()?.aborted).toBe(true);
+      expect(await result).toBeNull();
+    });
+
+    it('при уходе со страницы прерывает загрузку', async () => {
+      const request = mockAbortableSubmit();
+      const scope = effectScope();
+      const submitting = scope.run(() =>
+        useLabAttemptSubmit(11, 2).submit(file, null),
+      );
+
+      scope.stop();
+
+      expect(request.signal()?.aborted).toBe(true);
+      await submitting;
+    });
   });
 });

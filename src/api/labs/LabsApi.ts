@@ -77,7 +77,9 @@ let hasUploadFailed = false;
 /**
  * временная заглушка: отправка работы на проверку. Имитирует загрузку файла
  * и сообщает её ход в onProgress (от 0 до 100). Попытка и новый статус
- * сохраняются в моках, поэтому до перезагрузки вкладки их видно на всех страницах
+ * сохраняются в моках, поэтому до перезагрузки вкладки их видно на всех страницах.
+ * Через signal загрузку можно отменить: тогда бросается AbortError, а попытка
+ * не создаётся
  * TODO: заменить на запрос через ApiResolver, когда появится контракт API
  */
 export async function submitLabAttemptStub(
@@ -86,6 +88,7 @@ export async function submitLabAttemptStub(
   file: File,
   comment: string | null,
   onProgress: (percent: number) => void = () => undefined,
+  signal?: AbortSignal,
 ): Promise<LabSubmission> {
   if (getMockMode() === 'error') {
     await mockDelay();
@@ -115,6 +118,8 @@ export async function submitLabAttemptStub(
 
   for (let step = 1; step <= UPLOAD_STEPS; step += 1) {
     await mockDelay(MOCK_DELAY_MS / UPLOAD_STEPS);
+    // как fetch с отменённым signal: прерванная загрузка ничего не создаёт
+    signal?.throwIfAborted();
     if (step === failsAtStep) {
       hasUploadFailed = true;
       throw new ApiRequestError(500, 'Загрузка файла прервалась');

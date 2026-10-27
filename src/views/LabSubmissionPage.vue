@@ -31,6 +31,7 @@ const {
   isSubmitting,
   error: submitError,
   submit,
+  cancel,
 } = useLabAttemptSubmit(
   () => props.courseId,
   () => props.labId,
@@ -215,9 +216,20 @@ function retry(): void {
               class="lab-submission-page__upload"
               role="status"
             >
-              <span class="lab-submission-page__upload-label">
-                Загрузка файла… {{ progress }}%
-              </span>
+              <div class="lab-submission-page__upload-header">
+                <span class="lab-submission-page__upload-label">
+                  Загрузка файла… {{ progress }}%
+                </span>
+                <!-- при плохой связи загрузка может тянуться долго: её можно
+                     прервать, файл и комментарий останутся -->
+                <button
+                  class="lab-submission-page__cancel"
+                  type="button"
+                  @click="cancel"
+                >
+                  Отменить загрузку
+                </button>
+              </div>
               <ProgressBar
                 :value="progress"
                 :max="100"
@@ -495,6 +507,28 @@ function retry(): void {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.lab-submission-page__upload-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.lab-submission-page__cancel {
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.lab-submission-page__cancel:hover {
+  text-decoration: underline;
 }
 
 .lab-submission-page__upload-label {

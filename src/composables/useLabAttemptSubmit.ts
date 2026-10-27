@@ -1,4 +1,4 @@
-import { ref, toValue, watch } from 'vue';
+import { getCurrentScope, onScopeDispose, ref, toValue, watch } from 'vue';
 import type { MaybeRefOrGetter, Ref } from 'vue';
 
 import { submitLabAttemptStub } from '@/api/labs/LabsApi.ts';
@@ -10,9 +10,11 @@ interface UseLabAttemptSubmitResult {
   progress: Ref<number>;
   isSubmitting: Ref<boolean>;
   error: Ref<string | null>;
-  // вернёт работу с новой попыткой или null, если отправить не удалось
-  // или пока файл грузился, открыли другую работу
+  // вернёт работу с новой попыткой или null, если отправить не удалось,
+  // загрузку отменили или, пока файл грузился, открыли другую работу
   submit: (file: File, comment: string | null) => Promise<LabSubmission | null>;
+  // прервать загрузку: попытка не создаётся, форму можно отправить снова
+  cancel: () => void;
 }
 
 export function useLabAttemptSubmit(
@@ -26,18 +28,34 @@ export function useLabAttemptSubmit(
   // номер последней отправки: прогресс, ошибка и ответ устаревшей отправки
   // не попадут на другую работу
   let lastRequestId = 0;
+  let controller: AbortController | null = null;
+
+  // прерывает текущую загрузку и возвращает форму в исходное состояние
+  function reset(): void {
+    controller?.abort();
+    controller = null;
+    lastRequestId += 1;
+    progress.value = 0;
+    isSubmitting.value = false;
+    error.value = null;
+  }
+
+  function cancel(): void {
+    if (isSubmitting.value) {
+      reset();
+    }
+  }
 
   // страница не пересоздаётся при переходе между работами, поэтому
-  // состояние отправки прошлой работы сбрасывается
-  watch(
-    () => [toValue(courseId), toValue(labId)],
-    () => {
-      lastRequestId += 1;
-      progress.value = 0;
-      isSubmitting.value = false;
-      error.value = null;
-    },
-  );
+  // загрузка прошлой работы прерывается
+  watch(() => [toValue(courseId), toValue(labId)], reset);
+
+  // ушли со страницы — загрузка больше никому не нужна
+  if (getCurrentScope() !== undefined) {
+    onScopeDispose(() => {
+      controller?.abort();
+    });
+  }
 
   async function submit(
     file: File,
@@ -50,6 +68,7 @@ export function useLabAttemptSubmit(
     lastRequestId += 1;
     const requestId = lastRequestId;
     const isCurrent = (): boolean => requestId === lastRequestId;
+    controller = new AbortController();
     isSubmitting.value = true;
     progress.value = 0;
     error.value = null;
@@ -65,6 +84,7 @@ export function useLabAttemptSubmit(
             progress.value = percent;
           }
         },
+        controller.signal,
       );
       return isCurrent() ? result : null;
     } catch (submitError: unknown) {
@@ -79,9 +99,10 @@ export function useLabAttemptSubmit(
     } finally {
       if (isCurrent()) {
         isSubmitting.value = false;
+        controller = null;
       }
     }
   }
 
-  return { progress, isSubmitting, error, submit };
+  return { progress, isSubmitting, error, submit, cancel };
 }

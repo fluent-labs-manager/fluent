@@ -375,6 +375,18 @@ describe('LabSubmissionPage', () => {
       expect(wrapper.find('.submitted-file-card').exists()).toBe(false);
     });
 
+    it('пустой файл не принимает', async () => {
+      const wrapper = mountPage();
+      await flushPromises();
+
+      await chooseFile(wrapper, new File([], 'otchet.pdf'));
+
+      expect(wrapper.find('.lab-submission-page__file-error').text()).toBe(
+        'Файл пустой',
+      );
+      expect(wrapper.find('.submitted-file-card').exists()).toBe(false);
+    });
+
     it('после подходящего файла ошибка пропадает', async () => {
       const wrapper = mountPage();
       await flushPromises();
@@ -405,6 +417,7 @@ describe('LabSubmissionPage', () => {
         selectedFile,
         'Исправил формы.',
         expect.any(Function),
+        expect.any(AbortSignal),
       );
     });
 
@@ -426,7 +439,7 @@ describe('LabSubmissionPage', () => {
       pending.progress(40);
       await flushPromises();
 
-      expect(wrapper.find('.lab-submission-page__upload').text()).toBe(
+      expect(wrapper.find('.lab-submission-page__upload-label').text()).toBe(
         'Загрузка файла… 40%',
       );
       expect(
@@ -441,6 +454,38 @@ describe('LabSubmissionPage', () => {
         .findAll('button')
         .find((button) => button.text() === 'Сохранить черновик');
       expect(draft?.attributes('disabled')).toBeDefined();
+    });
+
+    it('«Отменить загрузку» прерывает отправку, а файл и комментарий остаются', async () => {
+      const pending = createPendingSubmit();
+      const wrapper = await mountWithFile();
+      await wrapper.find('textarea').setValue('Исправил формы.');
+      await wrapper.find('form').trigger('submit');
+      pending.progress(40);
+      await flushPromises();
+
+      const cancelButton = wrapper
+        .findAll('button')
+        .find((button) => button.text() === 'Отменить загрузку');
+      await cancelButton?.trigger('click');
+      await flushPromises();
+
+      const signal = mockedSubmit.mock.calls[0]?.[5];
+      expect(signal?.aborted).toBe(true);
+      expect(wrapper.find('.lab-submission-page__upload').exists()).toBe(false);
+      expect(wrapper.find('.submitted-file-card').text()).toContain(
+        'otchet_v3.pdf',
+      );
+      expect(
+        (wrapper.find('textarea').element as HTMLTextAreaElement).value,
+      ).toBe('Исправил формы.');
+      expect(
+        wrapper.find('button[type="submit"]').attributes('disabled'),
+      ).toBeUndefined();
+      expect(wrapper.find('.lab-submission-page__submit-error').exists()).toBe(
+        false,
+      );
+      expect(wrapper.find('.lab-status-bar').text()).toBe('Не сдано');
     });
 
     it('пока файл загружается, второй раз работу не отправить', async () => {

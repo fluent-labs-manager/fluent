@@ -189,6 +189,41 @@ describe('submitLabAttemptStub', () => {
     expect(await submit(1, 102)).toBeInstanceOf(SubmitError);
   });
 
+  it('отменённая загрузка обрывается и ничего не создаёт', async () => {
+    const controller = new AbortController();
+    const progress: number[] = [];
+    const settled = api
+      .submitLabAttemptStub(
+        1,
+        102,
+        file,
+        null,
+        (percent) => {
+          progress.push(percent);
+          if (percent === 40) {
+            controller.abort();
+          }
+        },
+        controller.signal,
+      )
+      .then(
+        (value) => value,
+        (error: unknown) => error,
+      );
+    await vi.advanceTimersByTimeAsync(MOCK_DELAY_MS);
+    const error = await settled;
+
+    // отменённый запрос отличают по имени ошибки, как у fetch
+    expect((error as Error).name).toBe('AbortError');
+    expect(progress).toEqual([20, 40]);
+
+    const submissionPromise = api.getLabSubmissionStub(1, 102);
+    await vi.advanceTimersByTimeAsync(MOCK_DELAY_MS);
+    const submission = await submissionPromise;
+    expect(submission.lab.status).toBe(LabStatus.NotSubmitted);
+    expect(submission.attempts).toHaveLength(2);
+  });
+
   it('с ?mock=upload-error первая загрузка обрывается, а повтор проходит', async () => {
     window.history.replaceState(
       null,

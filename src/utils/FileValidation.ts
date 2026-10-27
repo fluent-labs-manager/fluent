@@ -14,6 +14,9 @@ export function validateSubmissionFile(file: File): string | null {
   if (!allowedTypes.includes(getFileType(file.name))) {
     return `Этот тип файла не принимается. Можно: ${allowedTypes.join(', ')}`;
   }
+  if (file.size === 0) {
+    return 'Файл пустой';
+  }
   if (file.size > MAX_FILE_SIZE_BYTES) {
     return `Файл больше ${formatFileSize(MAX_FILE_SIZE_BYTES)}`;
   }
