@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { nextTick, ref } from 'vue';
+import { nextTick, ref, useId } from 'vue';
 
 import { Plus } from '@lucide/vue';
+import Button from 'primevue/button';
 
 import AddWorkForm from '@/components/AddWorkForm.vue';
 import WorkChip from '@/components/WorkChip.vue';
@@ -29,13 +30,20 @@ const emit = defineEmits<{
 
 const root = ref<HTMLElement | null>(null);
 const heading = ref<HTMLElement | null>(null);
-const addButton = ref<HTMLButtonElement | null>(null);
+const addButtonId = useId();
 const isAdding = ref<boolean>(false);
+
+// у Button нет метода focus, поэтому кнопку ищем по id
+function focusAddButton(): boolean {
+  const button = document.getElementById(addButtonId);
+  button?.focus();
+  return button !== null;
+}
 
 async function closeForm(): Promise<void> {
   isAdding.value = false;
   await nextTick();
-  addButton.value?.focus();
+  focusAddButton();
 }
 
 async function add(title: string, maxScore: number): Promise<void> {
@@ -53,7 +61,9 @@ async function remove(workId: number): Promise<void> {
   if (neighbour !== undefined && focusWorkChip(root.value, neighbour.id)) {
     return;
   }
-  (addButton.value ?? heading.value)?.focus();
+  if (!focusAddButton()) {
+    heading.value?.focus();
+  }
 }
 
 const targets = getMoveTargets(null);
@@ -81,19 +91,20 @@ const { isDragOver, dropHandlers } = useWorkDropTarget((workId) => {
       >
         Работы курса
       </h2>
-      <button
+      <Button
         v-if="!isAdding"
-        ref="addButton"
+        :id="addButtonId"
         class="work-pool__add"
-        type="button"
+        label="Добавить работу"
+        severity="secondary"
+        variant="outlined"
+        size="small"
         @click="isAdding = true"
       >
-        <Plus
-          :size="16"
-          aria-hidden="true"
-        />
-        Добавить работу
-      </button>
+        <template #icon>
+          <Plus :size="16" />
+        </template>
+      </Button>
     </div>
     <ul
       v-if="works.length > 0"
@@ -154,27 +165,6 @@ const { isDragOver, dropHandlers } = useWorkDropTarget((workId) => {
   justify-content: space-between;
   align-items: center;
   gap: 0.5rem 1rem;
-}
-
-.work-pool__add {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  height: 2rem;
-  padding: 0 0.875em;
-  border: 1px solid var(--color-accent);
-  border-radius: 0.7em;
-  background-color: var(--color-surface);
-  color: var(--color-accent);
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.work-pool__add:hover {
-  background-color: var(--color-accent-surface);
 }
 
 .work-pool__title {

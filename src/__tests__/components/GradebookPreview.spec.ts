@@ -73,6 +73,14 @@ describe('GradebookPreview', () => {
     // в ряд вкладок попадают по Tab только на выбранную, дальше — стрелками
     expect(tabs.map((tab) => tab.attributes('tabindex'))).toEqual(['0', '-1']);
     expect(wrapper.find('caption').text()).toBe('Группа P0001 · 2 студента');
+    // строится только таблица открытой группы
+    expect(wrapper.findAll('table')).toHaveLength(1);
+  });
+
+  it('у ряда вкладок есть подпись «Группы»', () => {
+    expect(
+      mountPreview().find('[role="tablist"]').attributes('aria-label'),
+    ).toBe('Группы');
   });
 
   it('панель связана с выбранной вкладкой', () => {
@@ -148,7 +156,10 @@ describe('GradebookPreview', () => {
       const wrapper = mountPreview();
       await wrapper.findAll('[role="tab"]')[from]?.trigger('click');
 
-      await wrapper.findAll('[role="tab"]')[from]?.trigger('keydown', { key });
+      // PrimeVue смотрит на code клавиши, а не на key
+      await wrapper
+        .findAll('[role="tab"]')
+        [from]?.trigger('keydown', { key, code: key });
       await flushPromises();
 
       const active = wrapper.find('[aria-selected="true"]');

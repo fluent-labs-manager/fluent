@@ -2,6 +2,8 @@
 import { onMounted, ref, useId } from 'vue';
 
 import { Check, X } from '@lucide/vue';
+import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
 
 import { MAX_WORK_SCORE } from '@/constants/gradebookWork.ts';
 import { parseWorkScore } from '@/utils/WorkValidation.ts';
@@ -18,18 +20,26 @@ const emit = defineEmits<{
 }>();
 
 const inputId = useId();
-const input = ref<HTMLInputElement | null>(null);
+
+// кнопки-значки не выше поля, чтобы плашка не раздувалась. Размер задаём
+// токеном PrimeVue: обычный CSS перебивают более точные селекторы темы
+const actionTokens = { sm: { iconOnlyWidth: '1.75rem' } };
+// InputText отдаёт значение строкой даже у type="number": пустое или дробное
+// значение не превратится молча в число
 const value = ref<string>(String(props.score));
 const error = ref<string | null>(null);
 
+// у InputText нет метода focus, поэтому поле ищем по id
 onMounted(() => {
-  input.value?.focus();
-  input.value?.select();
+  const input = document.getElementById(inputId);
+  if (input instanceof HTMLInputElement) {
+    input.focus();
+    input.select();
+  }
 });
 
-// поле читаем строкой: v-model у type="number" сам превращает ввод в число
-function onInput(event: Event): void {
-  value.value = (event.target as HTMLInputElement).value;
+function onInput(newValue: string | undefined): void {
+  value.value = newValue ?? '';
   error.value = null;
 }
 
@@ -54,36 +64,47 @@ function save(): void {
     >
       {{ title }}
     </label>
-    <input
+    <InputText
       :id="inputId"
-      ref="input"
-      :value="value"
+      :model-value="value"
       class="work-score-form__input"
       type="number"
       inputmode="numeric"
       min="1"
       :max="MAX_WORK_SCORE"
       step="1"
-      :aria-invalid="error !== null"
-      @input="onInput"
+      size="small"
+      :invalid="error !== null"
+      @update:model-value="onInput"
     />
-    <button
-      class="work-score-form__action"
+    <Button
       type="submit"
+      severity="secondary"
+      variant="text"
+      rounded
+      size="small"
+      :dt="actionTokens"
       aria-label="Сохранить баллы"
       title="Сохранить баллы"
     >
-      <Check :size="16" />
-    </button>
-    <button
-      class="work-score-form__action"
-      type="button"
+      <template #icon>
+        <Check :size="16" />
+      </template>
+    </Button>
+    <Button
+      severity="secondary"
+      variant="text"
+      rounded
+      size="small"
+      :dt="actionTokens"
       aria-label="Отменить"
       title="Отменить"
       @click="emit('cancel')"
     >
-      <X :size="16" />
-    </button>
+      <template #icon>
+        <X :size="16" />
+      </template>
+    </Button>
     <p
       v-if="error !== null"
       class="work-score-form__error"
@@ -116,42 +137,7 @@ function save(): void {
 
 .work-score-form__input {
   width: 3.5rem;
-  padding: 0.125rem 0.375rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  font: inherit;
-  font-size: var(--font-size-sm);
   text-align: center;
-}
-
-.work-score-form__input:focus {
-  border-color: var(--color-accent);
-  outline: none;
-}
-
-.work-score-form__input[aria-invalid='true'] {
-  border-color: var(--color-error);
-}
-
-.work-score-form__action {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: none;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-}
-
-.work-score-form__action:hover {
-  background-color: var(--color-accent-surface);
-  color: var(--color-accent);
 }
 
 .work-score-form__error {

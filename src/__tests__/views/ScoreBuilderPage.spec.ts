@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { flushPromises, mount } from '@vue/test-utils';
+import Select from 'primevue/select';
 import ScoreBuilderPage from '@/views/ScoreBuilderPage.vue';
 import { getCourseGradebookStub } from '@/api/gradebook/GradebookApi.ts';
 import { getTaughtCoursesStub } from '@/api/teaching/TeachingApi.ts';
@@ -27,8 +28,13 @@ async function chooseCourse(
   wrapper: ReturnType<typeof mount>,
   courseId: number,
 ): Promise<void> {
-  await wrapper.find('select').setValue(courseId);
+  await wrapper.findComponent(Select).setValue(courseId);
   await flushPromises();
+}
+
+// список Select открывается поверх страницы, в конце body
+function openedOptions(): HTMLElement[] {
+  return [...document.body.querySelectorAll<HTMLElement>('[role="option"]')];
 }
 
 function checkedGroups(wrapper: ReturnType<typeof mount>): string[] {
@@ -69,7 +75,7 @@ describe('ScoreBuilderPage', () => {
       expect(wrapper.find('[role="status"]').text()).toBe(
         'Загрузка дисциплин…',
       );
-      expect(wrapper.find('select').exists()).toBe(false);
+      expect(wrapper.findComponent(Select).exists()).toBe(false);
     });
 
     it('при ошибке показывает её, а «Повторить» загружает снова', async () => {
@@ -86,7 +92,7 @@ describe('ScoreBuilderPage', () => {
       await flushPromises();
 
       expect(mockedGetCourses).toHaveBeenCalledTimes(2);
-      expect(wrapper.find('select').exists()).toBe(true);
+      expect(wrapper.findComponent(Select).exists()).toBe(true);
     });
 
     it('без дисциплин пишет, что их пока нет', async () => {
@@ -94,16 +100,21 @@ describe('ScoreBuilderPage', () => {
       const wrapper = await mountPage();
 
       expect(wrapper.text()).toContain('У вас пока нет дисциплин.');
-      expect(wrapper.find('select').exists()).toBe(false);
+      expect(wrapper.findComponent(Select).exists()).toBe(false);
     });
   });
 
   describe('выбор дисциплины', () => {
+    // раскрытый список Select остаётся в body и мешал бы следующим тестам
+    afterEach(() => {
+      document.body.innerHTML = '';
+    });
+
     it('дисциплина по умолчанию не выбрана и ничего не загружено', async () => {
       const wrapper = await mountPage();
-      const select = wrapper.find('select').element as HTMLSelectElement;
-
-      expect(select.selectedOptions[0]?.text).toBe('Выберите дисциплину');
+      expect(wrapper.find('[role="combobox"]').text()).toBe(
+        'Выберите дисциплину',
+      );
       expect(wrapper.text()).toContain(
         'Выберите дисциплину — после этого появятся её группы и работы.',
       );
@@ -113,25 +124,34 @@ describe('ScoreBuilderPage', () => {
 
     it('у списка подпись «Дисциплина» без текста пунктов', async () => {
       const wrapper = await mountPage();
-      const select = wrapper.find('select');
+      const combobox = wrapper.find('[role="combobox"]');
       const label = wrapper.find(
-        `label[for="${select.attributes('id') ?? ''}"]`,
+        `#${combobox.attributes('aria-labelledby') ?? ''}`,
       );
 
       expect(label.text()).toBe('Дисциплина');
-      expect(label.find('select').exists()).toBe(false);
+      expect(label.find('[role="combobox"]').exists()).toBe(false);
     });
 
-    it('в списке — дисциплины преподавателя, подсказку выбрать нельзя', async () => {
-      const wrapper = await mountPage();
-      const options = wrapper.findAll('option');
+    it('в списке — дисциплины преподавателя, выбор загружает дисциплину', async () => {
+      const wrapper = mount(ScoreBuilderPage, { attachTo: document.body });
+      await flushPromises();
 
-      expect(options.map((option) => option.text())).toEqual([
-        'Выберите дисциплину',
+      await wrapper.find('.p-select').trigger('click');
+      await flushPromises();
+      const options = openedOptions();
+      expect(options.map((option) => option.textContent.trim())).toEqual([
         'Дисциплина Г',
         'Дисциплина Д',
       ]);
-      expect(options[0]?.attributes('disabled')).toBeDefined();
+
+      // пункт Select выбирается по нажатию кнопки мыши, а не по click
+      options[1]?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+      await flushPromises();
+
+      expect(mockedGetGradebook).toHaveBeenCalledWith(32);
+      expect(wrapper.find('[role="combobox"]').text()).toBe('Дисциплина Д');
+      wrapper.unmount();
     });
 
     it('после выбора загружает дисциплину и отмечает все её группы', async () => {
@@ -177,7 +197,7 @@ describe('ScoreBuilderPage', () => {
     it('снятую группу запоминает, без групп подсказывает отметить', async () => {
       const wrapper = await mountPage();
       await chooseCourse(wrapper, 31);
-      const checkboxes = wrapper.findAll('.group-picker__checkbox');
+      const checkboxes = wrapper.findAll('.group-picker__checkbox input');
 
       await checkboxes[0]?.setValue(false);
       expect(checkedGroups(wrapper)).toEqual(['P0002']);
@@ -190,7 +210,9 @@ describe('ScoreBuilderPage', () => {
     it('при возврате к дисциплине помнит её отметки', async () => {
       const wrapper = await mountPage();
       await chooseCourse(wrapper, 31);
-      await wrapper.findAll('.group-picker__checkbox')[0]?.setValue(false);
+      await wrapper
+        .findAll('.group-picker__checkbox input')[0]
+        ?.setValue(false);
 
       await chooseCourse(wrapper, 32);
       expect(checkedGroups(wrapper)).toEqual(['P0001', 'P0002']);
@@ -416,7 +438,9 @@ describe('ScoreBuilderPage', () => {
       const wrapper = await mountPage();
       await chooseCourse(wrapper, 31);
 
-      await wrapper.findAll('.group-picker__checkbox')[0]?.setValue(false);
+      await wrapper
+        .findAll('.group-picker__checkbox input')[0]
+        ?.setValue(false);
 
       expect(wrapper.findAll('[role="tab"]').map((tab) => tab.text())).toEqual([
         'P0002',
@@ -478,16 +502,15 @@ describe('ScoreBuilderPage', () => {
 
   it('пока дисциплина не выбрана, список показывает подсказку серым', async () => {
     const wrapper = await mountPage();
-    const select = wrapper.find('select');
 
-    expect(select.classes()).toContain(
-      'score-builder-page__select--placeholder',
+    expect(wrapper.find('[role="combobox"]').classes()).toContain(
+      'p-placeholder',
     );
 
     await chooseCourse(wrapper, 31);
 
-    expect(select.classes()).not.toContain(
-      'score-builder-page__select--placeholder',
+    expect(wrapper.find('[role="combobox"]').classes()).not.toContain(
+      'p-placeholder',
     );
   });
 

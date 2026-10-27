@@ -1,10 +1,41 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { mount } from '@vue/test-utils';
 import SpreadsheetPlaceholder from '@/components/SpreadsheetPlaceholder.vue';
 
 describe('SpreadsheetPlaceholder', () => {
-  it('поле и кнопка неактивны и связаны с подписью «Будет доступно позже»', () => {
+  // подсказка PrimeVue добавляется в конец body
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  it('при наведении на кнопку подсказывает «Скоро будет доступно»', async () => {
+    const wrapper = mount(SpreadsheetPlaceholder, {
+      props: {
+        title: 'Экспорт Google-таблицы',
+        actionLabel: 'Экспортировать таблицу',
+        secondaryActionLabel: 'Создать вкладки по группам',
+      },
+      attachTo: document.body,
+    });
+
+    // неактивная кнопка наведение не ловит, поэтому подсказка — на обёртке
+    for (const button of wrapper.findAll('button')) {
+      button.element.parentElement?.dispatchEvent(new MouseEvent('mouseenter'));
+      await vi.waitFor(() => {
+        expect(
+          document.body.querySelector('.p-tooltip-text')?.textContent,
+        ).toBe('Скоро будет доступно');
+      });
+      button.element.parentElement?.dispatchEvent(new MouseEvent('mouseleave'));
+      await vi.waitFor(() => {
+        expect(document.body.querySelector('.p-tooltip')).toBeNull();
+      });
+    }
+    wrapper.unmount();
+  });
+
+  it('поле и кнопка неактивны и связаны с подписью «Скоро будет доступно»', () => {
     const wrapper = mount(SpreadsheetPlaceholder, {
       props: {
         title: 'Импорт Google-таблицы',
@@ -15,7 +46,7 @@ describe('SpreadsheetPlaceholder', () => {
     const controls = [wrapper.find('input'), ...wrapper.findAll('button')];
 
     expect(wrapper.find('h2').text()).toBe('Импорт Google-таблицы');
-    expect(hint.text()).toBe('Будет доступно позже');
+    expect(hint.text()).toBe('Скоро будет доступно');
     expect(wrapper.findAll('button').map((button) => button.text())).toEqual([
       'Импортировать таблицу',
     ]);

@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { useId } from 'vue';
 
+import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
+
 // карточка работы с Google-таблицей. В макете это заглушка: поле и кнопки
 // неактивны, а подпись рядом объясняет почему. TODO: подключить, когда
 // появится интеграция с Google Sheets
@@ -30,7 +33,7 @@ const hintId = useId();
       {{ title }}
     </h2>
     <div class="spreadsheet-placeholder__row">
-      <input
+      <InputText
         class="spreadsheet-placeholder__input"
         type="url"
         placeholder="https://docs.google.com/spreadsheets/d/…"
@@ -38,31 +41,35 @@ const hintId = useId();
         :aria-describedby="hintId"
         disabled
       />
-      <button
-        class="spreadsheet-placeholder__button spreadsheet-placeholder__button--primary"
-        type="button"
-        :aria-describedby="hintId"
-        disabled
-      >
-        {{ actionLabel }}
-      </button>
-      <button
+      <!-- неактивная кнопка не ловит наведение, поэтому подсказка
+           висит на обёртке, как на странице аккаунта -->
+      <span v-tooltip.top="'Скоро будет доступно'">
+        <Button
+          :label="actionLabel"
+          :aria-describedby="hintId"
+          disabled
+        />
+      </span>
+      <span
         v-if="secondaryActionLabel !== null"
-        class="spreadsheet-placeholder__button spreadsheet-placeholder__button--secondary"
-        type="button"
-        :aria-describedby="hintId"
-        disabled
+        v-tooltip.top="'Скоро будет доступно'"
       >
-        {{ secondaryActionLabel }}
-      </button>
+        <Button
+          :label="secondaryActionLabel"
+          severity="secondary"
+          variant="outlined"
+          :aria-describedby="hintId"
+          disabled
+        />
+      </span>
     </div>
-    <!-- подпись видна сразу: всплывающую подсказку у неактивной кнопки
-         показывают не все браузеры -->
+    <!-- подпись видна сразу: до всплывающей подсказки не добраться
+         с клавиатуры и на сенсорном экране -->
     <p
       :id="hintId"
       class="spreadsheet-placeholder__hint"
     >
-      Будет доступно позже
+      Скоро будет доступно
     </p>
   </section>
 </template>
@@ -94,31 +101,6 @@ const hintId = useId();
 .spreadsheet-placeholder__input {
   flex: 1 1 16rem;
   min-width: 0;
-  height: 2.75rem;
-  padding: 0 0.875rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.75rem;
-  background-color: var(--color-muted-surface);
-  color: var(--color-text-secondary);
-  font: inherit;
-  font-size: var(--font-size-md);
-  cursor: not-allowed;
-}
-
-.spreadsheet-placeholder__button {
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  height: 2.75rem;
-  padding: 0 1.15em;
-  border: 1px solid var(--color-border);
-  border-radius: 0.7em;
-  background-color: var(--color-muted-surface);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-md);
-  font-weight: 700;
-  white-space: nowrap;
-  cursor: not-allowed;
 }
 
 .spreadsheet-placeholder__hint {

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import Checkbox from 'primevue/checkbox';
+
 import type { StudentGroup } from '@/api/gradebook/StudentGroup.dto.ts';
 import { pluralize } from '@/utils/Plural.ts';
 
@@ -16,8 +18,8 @@ function studentCount(group: StudentGroup): string {
   return pluralize(group.students.length, ['студент', 'студента', 'студентов']);
 }
 
-function onChange(groupName: string, event: Event): void {
-  emit('change', groupName, (event.target as HTMLInputElement).checked);
+function onChange(groupName: string, isChecked: boolean): void {
+  emit('change', groupName, isChecked);
 }
 </script>
 
@@ -33,11 +35,11 @@ function onChange(groupName: string, event: Event): void {
           'group-picker__option--checked': checkedNames.includes(group.name),
         }"
       >
-        <input
+        <Checkbox
           class="group-picker__checkbox"
-          type="checkbox"
-          :checked="checkedNames.includes(group.name)"
-          @change="onChange(group.name, $event)"
+          :model-value="checkedNames.includes(group.name)"
+          binary
+          @update:model-value="onChange(group.name, $event)"
         />
         <span class="group-picker__name">{{ group.name }}</span>
         <!-- Vue убирает пробелы между тегами на разных строках, а экранному
@@ -101,11 +103,6 @@ function onChange(groupName: string, event: Event): void {
 .group-picker__option--checked {
   border-color: var(--color-accent);
   background-color: var(--color-accent-surface);
-}
-
-.group-picker__checkbox {
-  margin: 0;
-  accent-color: var(--color-accent);
 }
 
 .group-picker__name {

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, useId, watch } from 'vue';
 
+import InputText from 'primevue/inputtext';
+
 import { MAX_ADMISSION_THRESHOLD } from '@/constants/barsSections.ts';
 
 const props = defineProps<{
@@ -30,10 +32,10 @@ watch(
   },
 );
 
-// поле читаем строкой: v-model у type="number" сам превращает ввод в число,
-// и пустое или дробное значение было бы не отличить от верного
-function updateThreshold(event: Event): void {
-  thresholdInput.value = (event.target as HTMLInputElement).value;
+// InputText отдаёт значение строкой даже у type="number": пустое или дробное
+// значение не превратится молча в число и его можно отличить от верного
+function updateThreshold(value: string | undefined): void {
+  thresholdInput.value = value ?? '';
   const threshold = Number(thresholdInput.value);
   const isValid =
     thresholdInput.value.trim() !== '' &&
@@ -67,19 +69,19 @@ function updateThreshold(event: Event): void {
       >
         Допуск от
       </label>
-      <input
+      <InputText
         :id="inputId"
-        :value="thresholdInput"
+        :model-value="thresholdInput"
         class="score-summary__input"
-        :class="{ 'score-summary__input--error': thresholdError !== null }"
         type="number"
         inputmode="numeric"
         min="0"
         :max="MAX_ADMISSION_THRESHOLD"
         step="1"
-        :aria-invalid="thresholdError !== null"
+        size="small"
+        :invalid="thresholdError !== null"
         :aria-describedby="hintId"
-        @input="updateThreshold"
+        @update:model-value="updateThreshold"
       />
       <span
         :id="hintId"
@@ -134,22 +136,7 @@ function updateThreshold(event: Event): void {
 
 .score-summary__input {
   width: 4.5rem;
-  padding: 0.375rem 0.5rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  font: inherit;
   text-align: center;
-}
-
-.score-summary__input:focus {
-  border-color: var(--color-accent);
-  outline: none;
-}
-
-.score-summary__input--error {
-  border-color: var(--color-error);
 }
 
 .score-summary__hint {

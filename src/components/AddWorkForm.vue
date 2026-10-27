@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref, useId } from 'vue';
 
+import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
+
 import {
   MAX_WORK_SCORE,
   MAX_WORK_TITLE_LENGTH,
@@ -19,25 +22,29 @@ const emit = defineEmits<{
 
 const titleId = useId();
 const scoreId = useId();
-const titleInput = ref<HTMLInputElement | null>(null);
-const scoreInput = ref<HTMLInputElement | null>(null);
 const title = ref<string>('');
+// InputText отдаёт значение строкой даже у type="number": пустое или дробное
+// значение не превратится молча в число
 const score = ref<string>('');
 const titleError = ref<string | null>(null);
 const scoreError = ref<string | null>(null);
 
+// у InputText нет метода focus, поэтому поле ищем по id
+function focusField(id: string): void {
+  document.getElementById(id)?.focus();
+}
+
 onMounted(() => {
-  titleInput.value?.focus();
+  focusField(titleId);
 });
 
-function onTitleInput(event: Event): void {
-  title.value = (event.target as HTMLInputElement).value;
+function onTitleInput(value: string | undefined): void {
+  title.value = value ?? '';
   titleError.value = null;
 }
 
-// поле читаем строкой: v-model у type="number" сам превращает ввод в число
-function onScoreInput(event: Event): void {
-  score.value = (event.target as HTMLInputElement).value;
+function onScoreInput(value: string | undefined): void {
+  score.value = value ?? '';
   scoreError.value = null;
 }
 
@@ -50,7 +57,7 @@ function submit(): void {
     return;
   }
   // фокус на первое поле с ошибкой: так её сразу видно и слышно
-  (titleError.value !== null ? titleInput : scoreInput).value?.focus();
+  focusField(titleError.value !== null ? titleId : scoreId);
 }
 </script>
 
@@ -68,17 +75,15 @@ function submit(): void {
       >
         Название
       </label>
-      <input
+      <InputText
         :id="titleId"
-        ref="titleInput"
-        :value="title"
+        :model-value="title"
         class="add-work-form__input"
-        type="text"
         :maxlength="MAX_WORK_TITLE_LENGTH"
         placeholder="Например, ЛР6"
-        :aria-invalid="titleError !== null"
+        :invalid="titleError !== null"
         :aria-describedby="titleError !== null ? `${titleId}-error` : undefined"
-        @input="onTitleInput"
+        @update:model-value="onTitleInput"
       />
       <p
         v-if="titleError !== null"
@@ -95,19 +100,18 @@ function submit(): void {
       >
         Баллы
       </label>
-      <input
+      <InputText
         :id="scoreId"
-        ref="scoreInput"
-        :value="score"
+        :model-value="score"
         class="add-work-form__input"
         type="number"
         inputmode="numeric"
         min="1"
         :max="MAX_WORK_SCORE"
         step="1"
-        :aria-invalid="scoreError !== null"
+        :invalid="scoreError !== null"
         :aria-describedby="scoreError !== null ? `${scoreId}-error` : undefined"
-        @input="onScoreInput"
+        @update:model-value="onScoreInput"
       />
       <p
         v-if="scoreError !== null"
@@ -118,19 +122,16 @@ function submit(): void {
       </p>
     </div>
     <div class="add-work-form__actions">
-      <button
-        class="add-work-form__button add-work-form__button--primary"
+      <Button
         type="submit"
-      >
-        Добавить
-      </button>
-      <button
-        class="add-work-form__button add-work-form__button--secondary"
-        type="button"
+        label="Добавить"
+      />
+      <Button
+        label="Отмена"
+        severity="secondary"
+        variant="outlined"
         @click="emit('cancel')"
-      >
-        Отмена
-      </button>
+      />
     </div>
   </form>
 </template>
@@ -164,23 +165,7 @@ function submit(): void {
 }
 
 .add-work-form__input {
-  height: 2.5rem;
-  padding: 0 0.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.75rem;
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  font: inherit;
-  font-size: var(--font-size-md);
-}
-
-.add-work-form__input:focus {
-  border-color: var(--color-accent);
-  outline: none;
-}
-
-.add-work-form__input[aria-invalid='true'] {
-  border-color: var(--color-error);
+  width: 100%;
 }
 
 .add-work-form__error {
@@ -194,39 +179,5 @@ function submit(): void {
   display: flex;
   gap: 0.5rem;
   padding-top: 1.5rem;
-}
-
-.add-work-form__button {
-  display: inline-flex;
-  align-items: center;
-  height: 2.5rem;
-  padding: 0 1.15em;
-  border: 1px solid var(--color-accent);
-  border-radius: 0.7em;
-  font-size: var(--font-size-md);
-  font-weight: 700;
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease;
-}
-
-.add-work-form__button--primary {
-  background-color: var(--color-accent);
-  color: var(--color-surface);
-}
-
-.add-work-form__button--primary:hover {
-  background-color: var(--color-text-secondary);
-}
-
-.add-work-form__button--secondary {
-  background-color: var(--color-surface);
-  color: var(--color-accent);
-}
-
-.add-work-form__button--secondary:hover {
-  background-color: var(--color-accent-surface);
 }
 </style>

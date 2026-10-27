@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { flushPromises, mount } from '@vue/test-utils';
 import WorkPool from '@/components/WorkPool.vue';
@@ -13,6 +13,12 @@ const works = [
 ];
 
 describe('WorkPool', () => {
+  // useId в каждом mount начинает заново: поля прошлых тестов мешали бы
+  // искать по id
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
   it('показывает неразложенные работы', () => {
     const wrapper = mount(WorkPool, {
       props: { works, hasAnyWorks: true, existingTitles },

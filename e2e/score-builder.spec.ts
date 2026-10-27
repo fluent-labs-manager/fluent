@@ -1,6 +1,12 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 import { dragAndDrop, menuLink } from './helpers.ts';
+
+// список дисциплин — Select из PrimeVue: открываем его и выбираем пункт
+async function chooseCourse(page: Page, title: string): Promise<void> {
+  await page.getByRole('combobox', { name: 'Дисциплина' }).click();
+  await page.getByRole('option', { name: title }).click();
+}
 
 test.describe('конструктор баллов', () => {
   test('преподаватель открывает конструктор из меню', async ({ page }) => {
@@ -34,7 +40,6 @@ test.describe('конструктор баллов: дисциплина и гр
   test('сначала нужно выбрать дисциплину, после выбора отмечены все её группы', async ({
     page,
   }) => {
-    const course = page.getByLabel('Дисциплина', { exact: true });
     await expect(
       page.getByText(
         'Выберите дисциплину — после этого появятся её группы и работы.',
@@ -42,7 +47,7 @@ test.describe('конструктор баллов: дисциплина и гр
     ).toBeVisible();
     await expect(page.getByRole('checkbox')).toHaveCount(0);
 
-    await course.selectOption({ label: 'Разработка веб-приложений' });
+    await chooseCourse(page, 'Разработка веб-приложений');
 
     await expect(page.getByRole('checkbox', { name: /P3322/ })).toBeChecked();
     await expect(page.getByRole('checkbox', { name: /P3323/ })).toBeChecked();
@@ -51,14 +56,13 @@ test.describe('конструктор баллов: дисциплина и гр
   test('отметки групп сохраняются при возврате к дисциплине', async ({
     page,
   }) => {
-    const course = page.getByLabel('Дисциплина', { exact: true });
-    await course.selectOption({ label: 'Разработка веб-приложений' });
+    await chooseCourse(page, 'Разработка веб-приложений');
     await page.getByRole('checkbox', { name: /P3323/ }).uncheck();
 
-    await course.selectOption({ label: 'Технологии программирования' });
+    await chooseCourse(page, 'Технологии программирования');
     await expect(page.getByRole('checkbox')).toHaveCount(3);
 
-    await course.selectOption({ label: 'Разработка веб-приложений' });
+    await chooseCourse(page, 'Разработка веб-приложений');
     await expect(page.getByRole('checkbox', { name: /P3322/ })).toBeChecked();
     await expect(
       page.getByRole('checkbox', { name: /P3323/ }),
@@ -69,9 +73,7 @@ test.describe('конструктор баллов: дисциплина и гр
 test.describe('конструктор баллов: работы и разделы БАРС', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/score-builder?role=teacher');
-    await page
-      .getByLabel('Дисциплина', { exact: true })
-      .selectOption({ label: 'Разработка веб-приложений' });
+    await chooseCourse(page, 'Разработка веб-приложений');
   });
 
   test('работу переносят в раздел через список у чипа', async ({ page }) => {
@@ -127,9 +129,7 @@ test.describe('конструктор баллов: работы и раздел
 test.describe('конструктор баллов: редактирование работ', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/score-builder?role=teacher');
-    await page
-      .getByLabel('Дисциплина', { exact: true })
-      .selectOption({ label: 'Разработка веб-приложений' });
+    await chooseCourse(page, 'Разработка веб-приложений');
   });
 
   test('преподаватель добавляет работу в «Работы курса»', async ({ page }) => {
@@ -186,9 +186,7 @@ test.describe('конструктор баллов: редактирование
 test.describe('конструктор баллов: предпросмотр ведомости', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/score-builder?role=teacher');
-    await page
-      .getByLabel('Дисциплина', { exact: true })
-      .selectOption({ label: 'Разработка веб-приложений' });
+    await chooseCourse(page, 'Разработка веб-приложений');
   });
 
   test('по вкладке на группу, в таблице студенты и разложенные работы', async ({
@@ -249,9 +247,7 @@ test.describe('конструктор баллов: заглушки Google-та
     page,
   }) => {
     await page.goto('/score-builder?role=teacher');
-    await page
-      .getByLabel('Дисциплина', { exact: true })
-      .selectOption({ label: 'Разработка веб-приложений' });
+    await chooseCourse(page, 'Разработка веб-приложений');
 
     const importCard = page.getByRole('region', {
       name: 'Импорт Google-таблицы',
@@ -272,8 +268,8 @@ test.describe('конструктор баллов: заглушки Google-та
     await expect(
       exportCard.getByRole('button', { name: 'Создать вкладки по группам' }),
     ).toBeDisabled();
-    await expect(importCard.getByText('Будет доступно позже')).toBeVisible();
-    await expect(exportCard.getByText('Будет доступно позже')).toBeVisible();
+    await expect(importCard.getByText('Скоро будет доступно')).toBeVisible();
+    await expect(exportCard.getByText('Скоро будет доступно')).toBeVisible();
   });
 });
 
@@ -282,9 +278,7 @@ test.describe('конструктор баллов: узкий экран', () =
     // ширина, при которой рядом с боковым меню остаётся узкая колонка
     await page.setViewportSize({ width: 760, height: 900 });
     await page.goto('/score-builder?role=teacher');
-    await page
-      .getByLabel('Дисциплина', { exact: true })
-      .selectOption({ label: 'Разработка веб-приложений' });
+    await chooseCourse(page, 'Разработка веб-приложений');
     await expect(
       page.getByRole('region', { name: 'Предпросмотр ведомости' }),
     ).toBeVisible();

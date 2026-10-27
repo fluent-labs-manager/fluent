@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { mount } from '@vue/test-utils';
 import AddWorkForm from '@/components/AddWorkForm.vue';
@@ -21,6 +21,12 @@ async function fill(
 }
 
 describe('AddWorkForm', () => {
+  // useId в каждом mount начинает заново: поля прошлых тестов мешали бы
+  // искать по id
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
   it('у полей видимые подписи', () => {
     const wrapper = mountForm();
     const labels = wrapper.findAll('label');
