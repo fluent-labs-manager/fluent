@@ -30,13 +30,17 @@ const studentNavItems: NavItem[] = [
 ];
 
 // у преподавателя свои разделы и нет страницы «Дисциплины».
-// Страниц разделов ещё нет — пункты неактивны, как «События» у студента
+// Пункты без страниц неактивны, как «События» у студента
 const teacherNavItems: NavItem[] = [
   { label: 'Главная', icon: LayoutGrid, to: { name: 'home' } },
   { label: 'Варианты', icon: Shuffle },
   { label: 'ИИ-предфильтр', icon: Sparkles },
   { label: 'Очереди', icon: Users },
-  { label: 'Конструктор баллов', icon: Calculator },
+  {
+    label: 'Конструктор баллов',
+    icon: Calculator,
+    to: { name: 'score-builder' },
+  },
   { label: 'Оценивание', icon: ClipboardCheck },
 ];
 

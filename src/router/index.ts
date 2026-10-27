@@ -45,6 +45,12 @@ const routes: RouteRecordRaw[] = [
         meta: { roles: [UserRole.Student] },
       },
       {
+        path: 'score-builder',
+        name: 'score-builder',
+        component: () => import('@/views/ScoreBuilderPage.vue'),
+        meta: { roles: [UserRole.Teacher] },
+      },
+      {
         path: 'account',
         name: 'account',
         component: () => import('@/views/AccountPage.vue'),
