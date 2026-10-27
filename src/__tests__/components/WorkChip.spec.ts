@@ -231,4 +231,82 @@ describe('WorkChip', () => {
       'work-chip__menu--right',
     );
   });
+
+  describe('меню с клавиатуры', () => {
+    async function openMenu(): Promise<ReturnType<typeof mount>> {
+      const wrapper = mountChip();
+      await wrapper.find('.work-chip__button').trigger('click');
+      await flushPromises();
+      return wrapper;
+    }
+
+    function focusedItem(): string | undefined {
+      return document.activeElement?.textContent.trim();
+    }
+
+    it('пункты не в порядке Tab: по ним ходят стрелками', async () => {
+      const wrapper = await openMenu();
+
+      for (const item of wrapper.findAll('[role="menuitem"]')) {
+        expect(item.attributes('tabindex')).toBe('-1');
+      }
+    });
+
+    it('стрелки ходят по пунктам по кругу, Home и End — к краям', async () => {
+      const wrapper = await openMenu();
+      const menu = wrapper.find('[role="menu"]');
+      expect(focusedItem()).toBe('Работа на занятиях');
+
+      await menu.trigger('keydown', { key: 'ArrowDown' });
+      expect(focusedItem()).toBe('Контрольные работы');
+
+      await menu.trigger('keydown', { key: 'ArrowUp' });
+      await menu.trigger('keydown', { key: 'ArrowUp' });
+      expect(focusedItem()).toBe('Удалить работу');
+
+      await menu.trigger('keydown', { key: 'Home' });
+      expect(focusedItem()).toBe('Работа на занятиях');
+
+      await menu.trigger('keydown', { key: 'End' });
+      expect(focusedItem()).toBe('Удалить работу');
+    });
+
+    it('Tab закрывает меню и возвращает фокус на чип', async () => {
+      const wrapper = await openMenu();
+
+      await wrapper.find('[role="menu"]').trigger('keydown', { key: 'Tab' });
+
+      expect(wrapper.find('[role="menu"]').exists()).toBe(false);
+      expect(document.activeElement).toBe(
+        wrapper.find('.work-chip__button').element,
+      );
+    });
+  });
+
+  it('клик мимо закрывает правку баллов без сохранения и не трогает фокус', async () => {
+    const wrapper = mountChip();
+    const outside = document.createElement('button');
+    document.body.append(outside);
+    await wrapper.find('.work-chip__button').trigger('click');
+    await wrapper
+      .findAll('[role="menuitem"]')
+      .find((item) => item.text() === 'Изменить баллы')
+      ?.trigger('click');
+    await flushPromises();
+    expect(wrapper.find('.work-score-form').exists()).toBe(true);
+
+    outside.focus();
+    outside.click();
+    await flushPromises();
+
+    expect(wrapper.find('.work-score-form').exists()).toBe(false);
+    expect(wrapper.emitted('updateScore')).toBeUndefined();
+    expect(document.activeElement).toBe(outside);
+  });
+
+  it('у чипа метка с id работы — по ней возвращают фокус', () => {
+    expect(
+      mountChip().find('.work-chip__button').attributes('data-work-id'),
+    ).toBe('5');
+  });
 });

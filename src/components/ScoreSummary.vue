@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, useId, watch } from 'vue';
 
 import { MAX_ADMISSION_THRESHOLD } from '@/constants/barsSections.ts';
 
@@ -14,6 +14,9 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:admissionThreshold': [threshold: number];
 }>();
+
+const inputId = useId();
+const hintId = useId();
 
 // то, что введено в поле: неверное значение не уходит наружу
 const thresholdInput = ref<string>(String(props.admissionThreshold));
@@ -60,12 +63,12 @@ function updateThreshold(event: Event): void {
     <div class="score-summary__admission">
       <label
         class="score-summary__label"
-        for="score-summary-admission"
+        :for="inputId"
       >
         Допуск от
       </label>
       <input
-        id="score-summary-admission"
+        :id="inputId"
         :value="thresholdInput"
         class="score-summary__input"
         :class="{ 'score-summary__input--error': thresholdError !== null }"
@@ -75,11 +78,11 @@ function updateThreshold(event: Event): void {
         :max="MAX_ADMISSION_THRESHOLD"
         step="1"
         :aria-invalid="thresholdError !== null"
-        aria-describedby="score-summary-admission-hint"
+        :aria-describedby="hintId"
         @input="updateThreshold"
       />
       <span
-        id="score-summary-admission-hint"
+        :id="hintId"
         class="score-summary__hint"
       >
         баллов

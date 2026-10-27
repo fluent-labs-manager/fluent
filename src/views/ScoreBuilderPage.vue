@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, nextTick, ref, useId } from 'vue';
 
 import { ChevronDown, RotateCw } from '@lucide/vue';
 
@@ -12,6 +12,8 @@ import WorkPool from '@/components/WorkPool.vue';
 import { useCourseGradebook } from '@/composables/useCourseGradebook.ts';
 import { useScoreBuilder } from '@/composables/useScoreBuilder.ts';
 import { useTaughtCourses } from '@/composables/useTaughtCourses.ts';
+import type { BarsSection } from '@/types/BarsSection.ts';
+import { focusWorkChip } from '@/utils/WorkChipFocus.ts';
 
 const {
   courses,
@@ -23,6 +25,7 @@ const {
 // дисциплину выбирают явно: по умолчанию её нет, чтобы не настроить
 // ведомость не той дисциплины
 const courseId = ref<number | null>(null);
+const courseSelectId = useId();
 
 const { gradebook, isLoading, error, reload } = useCourseGradebook(courseId);
 
@@ -58,6 +61,17 @@ const hasAnyWorks = computed<boolean>(
 const checkedGroupNames = computed<string[]>(() =>
   checkedGroups.value.map((group) => group.name),
 );
+
+// перенесённый чип рисуется заново в другом месте, и фокус пропал бы
+// вместе со старым: ставим его на чип в новом месте
+async function moveAndKeepFocus(
+  workId: number,
+  section: BarsSection | null,
+): Promise<void> {
+  moveWork(workId, section);
+  await nextTick();
+  focusWorkChip(document, workId);
+}
 
 function retryCourses(): void {
   void reloadCourses();
@@ -121,14 +135,14 @@ function retry(): void {
         <div class="score-builder-page__field">
           <label
             class="score-builder-page__label"
-            for="score-builder-course"
+            :for="courseSelectId"
           >
             Дисциплина
           </label>
           <!-- стрелка своя: браузерную убирает appearance: none -->
           <div class="score-builder-page__select-wrap">
             <select
-              id="score-builder-course"
+              :id="courseSelectId"
               v-model="courseId"
               class="score-builder-page__select"
               :class="{
@@ -200,7 +214,7 @@ function retry(): void {
 
     <template v-if="gradebook !== null">
       <SpreadsheetPlaceholder
-        title="Импорт Google Таблицы"
+        title="Импорт Google-таблицы"
         action-label="Импортировать таблицу"
       />
 
@@ -208,7 +222,7 @@ function retry(): void {
         :works="poolWorks"
         :has-any-works="hasAnyWorks"
         :existing-titles="workTitles"
-        @move="moveWork"
+        @move="moveAndKeepFocus"
         @add="addWork"
         @update-score="updateWorkScore"
         @remove="removeWork"
@@ -238,7 +252,7 @@ function retry(): void {
             v-for="summary in sections"
             :key="summary.section"
             :summary="summary"
-            @move="moveWork"
+            @move="moveAndKeepFocus"
             @update-score="updateWorkScore"
             @remove="removeWork"
           />
@@ -252,7 +266,7 @@ function retry(): void {
       />
 
       <SpreadsheetPlaceholder
-        title="Экспорт Google Таблицы"
+        title="Экспорт Google-таблицы"
         action-label="Экспортировать таблицу"
         secondary-action-label="Создать вкладки по группам"
       />

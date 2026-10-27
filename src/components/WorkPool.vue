@@ -9,8 +9,9 @@ import type { GradebookWork } from '@/api/gradebook/GradebookWork.dto.ts';
 import { useWorkDropTarget } from '@/composables/useWorkDropTarget.ts';
 import type { BarsSection } from '@/types/BarsSection.ts';
 import { getMoveTargets } from '@/utils/ScoreBuilder.ts';
+import { focusWorkChip } from '@/utils/WorkChipFocus.ts';
 
-defineProps<{
+const props = defineProps<{
   // работы, ещё не разложенные по разделам
   works: GradebookWork[];
   // есть ли у дисциплины работы вообще
@@ -26,6 +27,8 @@ const emit = defineEmits<{
   add: [title: string, maxScore: number];
 }>();
 
+const root = ref<HTMLElement | null>(null);
+const heading = ref<HTMLElement | null>(null);
 const addButton = ref<HTMLButtonElement | null>(null);
 const isAdding = ref<boolean>(false);
 
@@ -40,6 +43,19 @@ async function add(title: string, maxScore: number): Promise<void> {
   await closeForm();
 }
 
+// удалённый чип исчезает вместе с фокусом: переводим его на соседнюю
+// работу, а если работ не осталось — на кнопку «Добавить работу»
+async function remove(workId: number): Promise<void> {
+  const index = props.works.findIndex((work) => work.id === workId);
+  const neighbour = props.works[index + 1] ?? props.works[index - 1];
+  emit('remove', workId);
+  await nextTick();
+  if (neighbour !== undefined && focusWorkChip(root.value, neighbour.id)) {
+    return;
+  }
+  (addButton.value ?? heading.value)?.focus();
+}
+
 const targets = getMoveTargets(null);
 
 // работу из раздела можно перетащить обратно сюда
@@ -50,6 +66,7 @@ const { isDragOver, dropHandlers } = useWorkDropTarget((workId) => {
 
 <template>
   <section
+    ref="root"
     class="work-pool"
     :class="{ 'work-pool--drag-over': isDragOver }"
     aria-labelledby="work-pool-heading"
@@ -58,7 +75,9 @@ const { isDragOver, dropHandlers } = useWorkDropTarget((workId) => {
     <div class="work-pool__header">
       <h2
         id="work-pool-heading"
+        ref="heading"
         class="work-pool__title"
+        tabindex="-1"
       >
         Работы курса
       </h2>
@@ -89,7 +108,7 @@ const { isDragOver, dropHandlers } = useWorkDropTarget((workId) => {
           :targets="targets"
           @move="(section) => emit('move', work.id, section)"
           @update-score="(maxScore) => emit('updateScore', work.id, maxScore)"
-          @remove="emit('remove', work.id)"
+          @remove="remove(work.id)"
         />
       </li>
     </ul>
@@ -183,5 +202,11 @@ const { isDragOver, dropHandlers } = useWorkDropTarget((workId) => {
   margin: 0;
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
+}
+
+.work-pool__title:focus-visible {
+  border-radius: 0.25rem;
+  outline: 2px solid var(--color-accent);
+  outline-offset: 0.125rem;
 }
 </style>

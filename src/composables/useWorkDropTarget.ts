@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { getCurrentScope, onScopeDispose, ref } from 'vue';
 import type { Ref } from 'vue';
 
 import { WORK_DRAG_TYPE } from '@/constants/barsSections.ts';
@@ -29,6 +29,13 @@ export function useWorkDropTarget(
   // dragenter и dragleave приходят и от вложенных элементов: считаем
   // вложенность, чтобы подсветка не мигала при движении над чипами
   let depth = 0;
+
+  // перетаскивание отменили (Esc, бросили мимо): последний dragleave
+  // браузеры присылают не всегда, а dragend приходит всегда
+  function reset(): void {
+    depth = 0;
+    isDragOver.value = false;
+  }
 
   function dragenter(event: DragEvent): void {
     if (!carriesWork(event)) {
@@ -64,12 +71,20 @@ export function useWorkDropTarget(
       return;
     }
     event.preventDefault();
-    depth = 0;
-    isDragOver.value = false;
+    reset();
     const workId = Number(event.dataTransfer?.getData(WORK_DRAG_TYPE));
     if (Number.isInteger(workId)) {
       onDrop(workId);
     }
+  }
+
+  window.addEventListener('dragend', reset);
+  window.addEventListener('drop', reset);
+  if (getCurrentScope() !== undefined) {
+    onScopeDispose(() => {
+      window.removeEventListener('dragend', reset);
+      window.removeEventListener('drop', reset);
+    });
   }
 
   return {

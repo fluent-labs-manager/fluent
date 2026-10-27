@@ -254,10 +254,10 @@ test.describe('конструктор баллов: заглушки Google-та
       .selectOption({ label: 'Разработка веб-приложений' });
 
     const importCard = page.getByRole('region', {
-      name: 'Импорт Google Таблицы',
+      name: 'Импорт Google-таблицы',
     });
     const exportCard = page.getByRole('region', {
-      name: 'Экспорт Google Таблицы',
+      name: 'Экспорт Google-таблицы',
     });
 
     await expect(

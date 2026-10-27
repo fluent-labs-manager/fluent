@@ -13,7 +13,6 @@ const props = defineProps<{
 }>();
 
 const idPrefix = useId();
-const tabs = ref<HTMLButtonElement[]>([]);
 const selectedName = ref<string | null>(null);
 
 // если открытую группу сняли с ведомости, открыта первая из оставшихся
@@ -46,7 +45,8 @@ async function selectTab(index: number): Promise<void> {
   }
   selectedName.value = group.name;
   await nextTick();
-  tabs.value[index]?.focus();
+  // по id, а не через ref в v-for: порядок такого массива Vue не обещает
+  document.getElementById(tabId(index))?.focus();
 }
 
 // клавиши, как у вкладок по ARIA: стрелки по кругу, Home и End — к краям
@@ -113,7 +113,6 @@ const caption = computed<string>(() => {
           v-for="(group, index) in groups"
           :id="tabId(index)"
           :key="group.name"
-          ref="tabs"
           class="gradebook-preview__tab"
           :class="{
             'gradebook-preview__tab--active': index === activeIndex,
@@ -147,7 +146,7 @@ const caption = computed<string>(() => {
           <thead>
             <tr>
               <th
-                class="gradebook-preview__head"
+                class="gradebook-preview__head gradebook-preview__head--name"
                 scope="col"
                 rowspan="2"
               >
@@ -381,7 +380,18 @@ const caption = computed<string>(() => {
 }
 
 .gradebook-preview__cell--name {
+  background-color: var(--color-surface);
   font-weight: 400;
+}
+
+/* ФИО остаётся на месте, когда таблицу прокручивают вправо к работам.
+   Граница — тенью: при border-collapse обычная рамка уезжает вместе с ячейками */
+.gradebook-preview__head--name,
+.gradebook-preview__cell--name {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  box-shadow: inset -1px 0 0 var(--color-border);
 }
 
 /* пустые ячейки для баллов, как в только что созданной таблице */

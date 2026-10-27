@@ -208,4 +208,15 @@ describe('GradebookPreview', () => {
     );
     expect(wrapper.find('table').exists()).toBe(false);
   });
+
+  it('колонка ФИО закреплена при прокрутке таблицы', () => {
+    const wrapper = mountPreview();
+
+    expect(wrapper.find('thead th').classes()).toContain(
+      'gradebook-preview__head--name',
+    );
+    for (const cell of wrapper.findAll('tbody th')) {
+      expect(cell.classes()).toContain('gradebook-preview__cell--name');
+    }
+  });
 });

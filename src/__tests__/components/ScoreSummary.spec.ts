@@ -87,4 +87,16 @@ describe('ScoreSummary', () => {
     );
     expect(wrapper.find('[role="alert"]').exists()).toBe(false);
   });
+
+  it('поле порога подписано и связано с подсказкой «баллов»', () => {
+    const wrapper = mountSummary();
+    const input = wrapper.find('input');
+
+    expect(
+      wrapper.find(`label[for="${input.attributes('id') ?? ''}"]`).text(),
+    ).toBe('Допуск от');
+    expect(
+      wrapper.find(`#${input.attributes('aria-describedby') ?? ''}`).text(),
+    ).toBe('баллов');
+  });
 });

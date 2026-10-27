@@ -7,14 +7,14 @@ describe('SpreadsheetPlaceholder', () => {
   it('поле и кнопка неактивны и связаны с подписью «Будет доступно позже»', () => {
     const wrapper = mount(SpreadsheetPlaceholder, {
       props: {
-        title: 'Импорт Google Таблицы',
+        title: 'Импорт Google-таблицы',
         actionLabel: 'Импортировать таблицу',
       },
     });
     const hint = wrapper.find('.spreadsheet-placeholder__hint');
     const controls = [wrapper.find('input'), ...wrapper.findAll('button')];
 
-    expect(wrapper.find('h2').text()).toBe('Импорт Google Таблицы');
+    expect(wrapper.find('h2').text()).toBe('Импорт Google-таблицы');
     expect(hint.text()).toBe('Будет доступно позже');
     expect(wrapper.findAll('button').map((button) => button.text())).toEqual([
       'Импортировать таблицу',
@@ -33,7 +33,7 @@ describe('SpreadsheetPlaceholder', () => {
   it('может показать второе действие', () => {
     const wrapper = mount(SpreadsheetPlaceholder, {
       props: {
-        title: 'Экспорт Google Таблицы',
+        title: 'Экспорт Google-таблицы',
         actionLabel: 'Экспортировать таблицу',
         secondaryActionLabel: 'Создать вкладки по группам',
       },
@@ -47,7 +47,7 @@ describe('SpreadsheetPlaceholder', () => {
 
   it('карточка — область с именем из заголовка', () => {
     const wrapper = mount(SpreadsheetPlaceholder, {
-      props: { title: 'Импорт Google Таблицы', actionLabel: 'Импорт' },
+      props: { title: 'Импорт Google-таблицы', actionLabel: 'Импорт' },
     });
 
     expect(wrapper.attributes('aria-labelledby')).toBe(

@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { effectScope } from 'vue';
+
 import { useWorkDropTarget } from '@/composables/useWorkDropTarget.ts';
 import {
   createDataTransfer,
@@ -81,5 +83,28 @@ describe('useWorkDropTarget', () => {
     dispatchDrag(zone, 'drop', workDragData(Number.NaN));
 
     expect(onDrop).not.toHaveBeenCalled();
+  });
+
+  it('если перетаскивание отменили, подсветка гаснет', () => {
+    const { zone, isDragOver } = createZone(vi.fn());
+    dispatchDrag(zone, 'dragenter', workDragData(1));
+
+    window.dispatchEvent(new Event('dragend'));
+
+    expect(isDragOver()).toBe(false);
+  });
+
+  it('после ухода со страницы окно не слушает', () => {
+    const scope = effectScope();
+    const remove = vi.spyOn(window, 'removeEventListener');
+
+    scope.run(() => useWorkDropTarget(vi.fn()));
+    scope.stop();
+
+    expect(remove.mock.calls.map(([type]) => type)).toEqual([
+      'dragend',
+      'drop',
+    ]);
+    remove.mockRestore();
   });
 });

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 
 import WorkChip from '@/components/WorkChip.vue';
 import { useWorkDropTarget } from '@/composables/useWorkDropTarget.ts';
@@ -7,6 +7,7 @@ import type { BarsSection } from '@/types/BarsSection.ts';
 import type { SectionSummary } from '@/types/SectionSummary.ts';
 import type { WorkMoveTarget } from '@/types/WorkMoveTarget.ts';
 import { getMoveTargets } from '@/utils/ScoreBuilder.ts';
+import { focusWorkChip } from '@/utils/WorkChipFocus.ts';
 
 const props = defineProps<{
   summary: SectionSummary;
@@ -26,6 +27,22 @@ const headingId = computed<string>(
   () => `bars-section-${props.summary.section}`,
 );
 
+const root = ref<HTMLElement | null>(null);
+const heading = ref<HTMLElement | null>(null);
+
+// удалённый чип исчезает вместе с фокусом: переводим его на соседнюю
+// работу раздела, а если раздел опустел — на его заголовок
+async function remove(workId: number): Promise<void> {
+  const works = props.summary.works;
+  const index = works.findIndex((work) => work.id === workId);
+  const neighbour = works[index + 1] ?? works[index - 1];
+  emit('remove', workId);
+  await nextTick();
+  if (neighbour === undefined || !focusWorkChip(root.value, neighbour.id)) {
+    heading.value?.focus();
+  }
+}
+
 const { isDragOver, dropHandlers } = useWorkDropTarget((workId) => {
   emit('move', workId, props.summary.section);
 });
@@ -33,6 +50,7 @@ const { isDragOver, dropHandlers } = useWorkDropTarget((workId) => {
 
 <template>
   <section
+    ref="root"
     class="bars-section-card"
     :class="{ 'bars-section-card--drag-over': isDragOver }"
     :aria-labelledby="headingId"
@@ -41,7 +59,9 @@ const { isDragOver, dropHandlers } = useWorkDropTarget((workId) => {
     <header class="bars-section-card__header">
       <h3
         :id="headingId"
+        ref="heading"
         class="bars-section-card__title"
+        tabindex="-1"
       >
         {{ summary.title }}
       </h3>
@@ -65,7 +85,7 @@ const { isDragOver, dropHandlers } = useWorkDropTarget((workId) => {
           :targets="targets"
           @move="(section) => emit('move', work.id, section)"
           @update-score="(maxScore) => emit('updateScore', work.id, maxScore)"
-          @remove="emit('remove', work.id)"
+          @remove="remove(work.id)"
         />
       </li>
     </ul>
@@ -140,5 +160,11 @@ const { isDragOver, dropHandlers } = useWorkDropTarget((workId) => {
   margin: 0;
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
+}
+
+.bars-section-card__title:focus-visible {
+  border-radius: 0.25rem;
+  outline: 2px solid var(--color-accent);
+  outline-offset: 0.125rem;
 }
 </style>

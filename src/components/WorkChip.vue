@@ -49,10 +49,14 @@ function choose(section: BarsSection | null): void {
   emit('move', section);
 }
 
-async function stopEditing(): Promise<void> {
+// focusChip — вернуть фокус на чип; после клика мимо фокус остаётся там,
+// куда щёлкнули
+async function stopEditing(focusChip = true): Promise<void> {
   isEditing.value = false;
   await nextTick();
-  handle.value?.focus();
+  if (focusChip) {
+    handle.value?.focus();
+  }
 }
 
 function startEditing(): void {
@@ -75,9 +79,51 @@ function closeWithKeyboard(): void {
   handle.value?.focus();
 }
 
+// путь события, а не event.target: пункт меню, по которому щёлкнули, к этому
+// моменту уже убран из страницы, и contains его бы не нашёл
+function isOutside(event: MouseEvent): boolean {
+  return root.value !== null && !event.composedPath().includes(root.value);
+}
+
 function closeOnOutsideClick(event: MouseEvent): void {
-  if (!(root.value?.contains(event.target as Node) ?? false)) {
+  if (isOutside(event)) {
     closeMenu();
+  }
+}
+
+function cancelEditingOnOutsideClick(event: MouseEvent): void {
+  if (isOutside(event)) {
+    void stopEditing(false);
+  }
+}
+
+function menuItems(): HTMLElement[] {
+  return Array.from(
+    menu.value?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [],
+  );
+}
+
+// клавиши, как у меню по ARIA: стрелки по кругу, Home и End — к краям,
+// Tab закрывает меню и возвращает фокус на чип
+function onMenuKeydown(event: KeyboardEvent): void {
+  const items = menuItems();
+  const current = items.indexOf(document.activeElement as HTMLElement);
+  const last = items.length - 1;
+  const targets: Partial<Record<string, number>> = {
+    ArrowDown: current >= last ? 0 : current + 1,
+    ArrowUp: current <= 0 ? last : current - 1,
+    Home: 0,
+    End: last,
+  };
+  if (event.key === 'Tab') {
+    event.preventDefault();
+    closeWithKeyboard();
+    return;
+  }
+  const target = targets[event.key];
+  if (target !== undefined) {
+    event.preventDefault();
+    items[target]?.focus();
   }
 }
 
@@ -88,14 +134,24 @@ watch(isMenuOpen, async (isOpen) => {
     await nextTick();
     const menuRight = menu.value?.getBoundingClientRect().right ?? 0;
     isMenuAlignedRight.value = menuRight > document.documentElement.clientWidth;
-    menu.value?.querySelector('button')?.focus();
+    menuItems()[0]?.focus();
   } else {
     document.removeEventListener('click', closeOnOutsideClick);
   }
 });
 
+// поле с баллами закрывается кликом мимо без сохранения, как меню
+watch(isEditing, (isOn) => {
+  if (isOn) {
+    document.addEventListener('click', cancelEditingOnOutsideClick);
+  } else {
+    document.removeEventListener('click', cancelEditingOnOutsideClick);
+  }
+});
+
 onBeforeUnmount(() => {
   document.removeEventListener('click', closeOnOutsideClick);
+  document.removeEventListener('click', cancelEditingOnOutsideClick);
 });
 
 function startDrag(event: DragEvent): void {
@@ -126,6 +182,7 @@ function startDrag(event: DragEvent): void {
       v-else
       ref="handle"
       class="work-chip__button"
+      :data-work-id="work.id"
       role="button"
       tabindex="0"
       draggable="true"
@@ -147,6 +204,7 @@ function startDrag(event: DragEvent): void {
       :class="{ 'work-chip__menu--right': isMenuAlignedRight }"
       role="menu"
       :aria-label="`Действия с «${work.title}»`"
+      @keydown="onMenuKeydown"
     >
       <li
         v-for="target in targets"
@@ -157,6 +215,7 @@ function startDrag(event: DragEvent): void {
           class="work-chip__target"
           type="button"
           role="menuitem"
+          tabindex="-1"
           @click="choose(target.section)"
         >
           {{ target.title }}
@@ -171,6 +230,7 @@ function startDrag(event: DragEvent): void {
           class="work-chip__target"
           type="button"
           role="menuitem"
+          tabindex="-1"
           @click="startEditing"
         >
           Изменить баллы
@@ -181,6 +241,7 @@ function startDrag(event: DragEvent): void {
           class="work-chip__target work-chip__target--danger"
           type="button"
           role="menuitem"
+          tabindex="-1"
           @click="remove"
         >
           Удалить работу

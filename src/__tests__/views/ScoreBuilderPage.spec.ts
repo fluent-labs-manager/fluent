@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { flushPromises, mount } from '@vue/test-utils';
 import ScoreBuilderPage from '@/views/ScoreBuilderPage.vue';
@@ -448,8 +448,8 @@ describe('ScoreBuilderPage', () => {
       const cards = wrapper.findAll('.spreadsheet-placeholder');
 
       expect(cards.map((card) => card.find('h2').text())).toEqual([
-        'Импорт Google Таблицы',
-        'Экспорт Google Таблицы',
+        'Импорт Google-таблицы',
+        'Экспорт Google-таблицы',
       ]);
       // импорт — над работами курса, экспорт — после предпросмотра
       const blocks = wrapper
@@ -489,5 +489,85 @@ describe('ScoreBuilderPage', () => {
     expect(select.classes()).not.toContain(
       'score-builder-page__select--placeholder',
     );
+  });
+
+  describe('фокус после переноса и удаления', () => {
+    async function mountAttached(): Promise<ReturnType<typeof mount>> {
+      const wrapper = mount(ScoreBuilderPage, { attachTo: document.body });
+      await flushPromises();
+      await chooseCourse(wrapper, 31);
+      return wrapper;
+    }
+
+    async function chooseAction(
+      wrapper: ReturnType<typeof mount>,
+      workTitle: string,
+      action: string,
+    ): Promise<void> {
+      const chip = wrapper
+        .findAll('.work-chip')
+        .find((item) => item.find('.work-chip__title').text() === workTitle);
+      await chip?.find('.work-chip__button').trigger('click');
+      await chip
+        ?.findAll('[role="menuitem"]')
+        .find((item) => item.text() === action)
+        ?.trigger('click');
+      await flushPromises();
+    }
+
+    function focusedText(): string | undefined {
+      return document.activeElement?.textContent.replace(/\s+/g, ' ').trim();
+    }
+
+    afterEach(() => {
+      document.body.innerHTML = '';
+    });
+
+    it('после переноса фокус — на чипе в новом разделе', async () => {
+      const wrapper = await mountAttached();
+
+      await chooseAction(wrapper, 'Экзамен', 'Экзамен');
+
+      const exam = wrapper
+        .findAll('.bars-section-card')
+        .find((card) => card.find('h3').text() === 'Экзамен');
+      expect(document.activeElement).toBe(
+        exam?.find('.work-chip__button').element,
+      );
+      wrapper.unmount();
+    });
+
+    it('после удаления фокус — на соседней работе', async () => {
+      const wrapper = await mountAttached();
+
+      await chooseAction(wrapper, 'Работа Б', 'Удалить работу');
+
+      expect(document.activeElement?.getAttribute('aria-label')).toBe(
+        'Экзамен, 25 баллов',
+      );
+      wrapper.unmount();
+    });
+
+    it('если раздел опустел, фокус — на его заголовке', async () => {
+      const wrapper = await mountAttached();
+
+      await chooseAction(wrapper, 'Работа А', 'Удалить работу');
+
+      expect(document.activeElement?.tagName).toBe('H3');
+      expect(focusedText()).toBe('Лабораторные работы');
+      wrapper.unmount();
+    });
+
+    it('если «Работы курса» опустели, фокус — на «Добавить работу»', async () => {
+      const wrapper = await mountAttached();
+
+      await chooseAction(wrapper, 'Работа Б', 'Удалить работу');
+      await chooseAction(wrapper, 'Экзамен', 'Удалить работу');
+
+      expect(document.activeElement).toBe(
+        wrapper.find('.work-pool__add').element,
+      );
+      wrapper.unmount();
+    });
   });
 });
