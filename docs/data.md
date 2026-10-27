@@ -8,13 +8,15 @@
 src/mocks/*.ts            моковые данные
         ↓
 src/api/<раздел>/*Api.ts  функции получения данных (сейчас заглушки *Stub)
-src/api/<раздел>/*.dto.ts типы данных: User, AccountProfile, Course, Semester, TaughtCourse, Lab, CourseLabs
+src/api/<раздел>/*.dto.ts типы данных: User, AccountProfile, Course, Semester, TaughtCourse, Lab, CourseLabs, CourseGradebook
         ↓
 src/stores/user.ts        текущий пользователь (Pinia) — нужен меню и страницам
 src/composables/*.ts      данные страницы: useSemesters() → semesters, isLoading, error, reload
                           useCourseLabs(courseId) → courseLabs, isLoading, error, reload
                           useAccountProfile() → profile, isLoading, error, reload
                           useTaughtCourses(enabled) → courses, isLoading, error, reload
+                          useCourseGradebook(courseId) → gradebook, isLoading, error, reload
+                          useScoreBuilder(gradebook) → раскладка работ по разделам БАРС
                           useNow() → текущее время, обновляется раз в минуту
         ↓
 src/views/*.vue           страницы: состояния загрузки, ошибки и пустого списка
