@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 
-import { RotateCw } from '@lucide/vue';
+import { ChevronDown, RotateCw } from '@lucide/vue';
 
 import BarsSectionCard from '@/components/BarsSectionCard.vue';
 import GradebookPreview from '@/components/GradebookPreview.vue';
 import GroupPicker from '@/components/GroupPicker.vue';
 import ScoreSummary from '@/components/ScoreSummary.vue';
+import SpreadsheetPlaceholder from '@/components/SpreadsheetPlaceholder.vue';
 import WorkPool from '@/components/WorkPool.vue';
 import { useCourseGradebook } from '@/composables/useCourseGradebook.ts';
 import { useScoreBuilder } from '@/composables/useScoreBuilder.ts';
@@ -124,25 +125,36 @@ function retry(): void {
           >
             Дисциплина
           </label>
-          <select
-            id="score-builder-course"
-            v-model="courseId"
-            class="score-builder-page__select"
-          >
-            <option
-              :value="null"
-              disabled
+          <!-- стрелка своя: браузерную убирает appearance: none -->
+          <div class="score-builder-page__select-wrap">
+            <select
+              id="score-builder-course"
+              v-model="courseId"
+              class="score-builder-page__select"
+              :class="{
+                'score-builder-page__select--placeholder': courseId === null,
+              }"
             >
-              Выберите дисциплину
-            </option>
-            <option
-              v-for="course in courses"
-              :key="course.id"
-              :value="course.id"
-            >
-              {{ course.title }}
-            </option>
-          </select>
+              <option
+                :value="null"
+                disabled
+              >
+                Выберите дисциплину
+              </option>
+              <option
+                v-for="course in courses"
+                :key="course.id"
+                :value="course.id"
+              >
+                {{ course.title }}
+              </option>
+            </select>
+            <ChevronDown
+              class="score-builder-page__select-icon"
+              :size="18"
+              aria-hidden="true"
+            />
+          </div>
         </div>
 
         <p
@@ -187,6 +199,11 @@ function retry(): void {
     </section>
 
     <template v-if="gradebook !== null">
+      <SpreadsheetPlaceholder
+        title="Импорт Google Таблицы"
+        action-label="Импортировать таблицу"
+      />
+
       <WorkPool
         :works="poolWorks"
         :has-any-works="hasAnyWorks"
@@ -232,6 +249,12 @@ function retry(): void {
         :groups="checkedGroups"
         :sections="sections"
         :admission-threshold="admissionThreshold"
+      />
+
+      <SpreadsheetPlaceholder
+        title="Экспорт Google Таблицы"
+        action-label="Экспортировать таблицу"
+        secondary-action-label="Создать вкладки по группам"
       />
     </template>
   </main>
@@ -281,20 +304,52 @@ function retry(): void {
   font-weight: 500;
 }
 
+.score-builder-page__select-wrap {
+  position: relative;
+}
+
 .score-builder-page__select {
-  padding: 0.75rem 0.875rem;
+  width: 100%;
+  height: 2.75rem;
+  padding: 0 2.5rem 0 0.875rem;
   border: 1px solid var(--color-border);
   border-radius: 0.75rem;
   background-color: var(--color-surface);
   color: var(--color-text);
   font: inherit;
   font-size: var(--font-size-md);
+  text-overflow: ellipsis;
   cursor: pointer;
+  transition: border-color 0.2s ease;
+  appearance: none;
 }
 
-.score-builder-page__select:focus {
+.score-builder-page__select:hover {
   border-color: var(--color-accent);
-  outline: none;
+}
+
+.score-builder-page__select:focus-visible {
+  border-color: var(--color-accent);
+  outline: 2px solid var(--color-accent-surface);
+}
+
+/* пока дисциплина не выбрана, в поле подсказка, а не значение */
+.score-builder-page__select--placeholder {
+  color: var(--color-text-secondary);
+}
+
+/* у пунктов свой цвет: иначе они унаследуют серый цвет подсказки */
+.score-builder-page__select option {
+  color: var(--color-text);
+}
+
+.score-builder-page__select-icon {
+  position: absolute;
+  top: 50%;
+  right: 0.875rem;
+  color: var(--color-text-secondary);
+  pointer-events: none;
+  transform: translateY(-50%);
 }
 
 .score-builder-page__hint {

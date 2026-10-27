@@ -434,4 +434,60 @@ describe('ScoreBuilderPage', () => {
       );
     });
   });
+
+  describe('заглушки Google-таблицы', () => {
+    it('до выбора дисциплины их нет', async () => {
+      const wrapper = await mountPage();
+
+      expect(wrapper.find('.spreadsheet-placeholder').exists()).toBe(false);
+    });
+
+    it('импорт сверху, экспорт и создание вкладок снизу — всё неактивно', async () => {
+      const wrapper = await mountPage();
+      await chooseCourse(wrapper, 31);
+      const cards = wrapper.findAll('.spreadsheet-placeholder');
+
+      expect(cards.map((card) => card.find('h2').text())).toEqual([
+        'Импорт Google Таблицы',
+        'Экспорт Google Таблицы',
+      ]);
+      // импорт — над работами курса, экспорт — после предпросмотра
+      const blocks = wrapper
+        .findAll('main > *')
+        .map((block) => block.classes()[0]);
+      expect(blocks.indexOf('spreadsheet-placeholder')).toBeLessThan(
+        blocks.indexOf('work-pool'),
+      );
+      expect(blocks.lastIndexOf('spreadsheet-placeholder')).toBeGreaterThan(
+        blocks.indexOf('gradebook-preview'),
+      );
+      const buttons = cards.flatMap((card) => card.findAll('button'));
+      expect(buttons.map((button) => button.text())).toEqual([
+        'Импортировать таблицу',
+        'Экспортировать таблицу',
+        'Создать вкладки по группам',
+      ]);
+      for (const control of [
+        ...buttons,
+        ...cards.map((card) => card.find('input')),
+      ]) {
+        expect(control.attributes('disabled')).toBeDefined();
+      }
+    });
+  });
+
+  it('пока дисциплина не выбрана, список показывает подсказку серым', async () => {
+    const wrapper = await mountPage();
+    const select = wrapper.find('select');
+
+    expect(select.classes()).toContain(
+      'score-builder-page__select--placeholder',
+    );
+
+    await chooseCourse(wrapper, 31);
+
+    expect(select.classes()).not.toContain(
+      'score-builder-page__select--placeholder',
+    );
+  });
 });

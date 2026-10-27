@@ -91,6 +91,10 @@ const caption = computed<string>(() => {
     >
       Предпросмотр ведомости
     </h2>
+    <p class="gradebook-preview__hint">
+      Так будет выглядеть Google-таблица после создания. Баллы ставятся в самой
+      таблице, туда же можно добавлять свои столбцы.
+    </p>
 
     <p
       v-if="activeGroup === null"
@@ -249,9 +253,6 @@ const caption = computed<string>(() => {
         class="gradebook-preview__hint"
       >
         Разложите работы по разделам — они станут колонками ведомости.
-      </p>
-      <p class="gradebook-preview__hint">
-        После создания в таблицу можно добавлять свои столбцы.
       </p>
     </template>
   </section>

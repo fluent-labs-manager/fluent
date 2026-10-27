@@ -243,3 +243,36 @@ test.describe('конструктор баллов: предпросмотр в�
     ).toHaveText(['P3323']);
   });
 });
+
+test.describe('конструктор баллов: заглушки Google-таблицы', () => {
+  test('импорт, экспорт и создание вкладок неактивны и подписаны', async ({
+    page,
+  }) => {
+    await page.goto('/score-builder?role=teacher');
+    await page
+      .getByLabel('Дисциплина', { exact: true })
+      .selectOption({ label: 'Разработка веб-приложений' });
+
+    const importCard = page.getByRole('region', {
+      name: 'Импорт Google Таблицы',
+    });
+    const exportCard = page.getByRole('region', {
+      name: 'Экспорт Google Таблицы',
+    });
+
+    await expect(
+      importCard.getByRole('button', { name: 'Импортировать таблицу' }),
+    ).toBeDisabled();
+    await expect(
+      importCard.getByRole('textbox', { name: 'Ссылка на Google-таблицу' }),
+    ).toBeDisabled();
+    await expect(
+      exportCard.getByRole('button', { name: 'Экспортировать таблицу' }),
+    ).toBeDisabled();
+    await expect(
+      exportCard.getByRole('button', { name: 'Создать вкладки по группам' }),
+    ).toBeDisabled();
+    await expect(importCard.getByText('Будет доступно позже')).toBeVisible();
+    await expect(exportCard.getByText('Будет доступно позже')).toBeVisible();
+  });
+});
