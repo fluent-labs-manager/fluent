@@ -33,6 +33,11 @@ describe('CourseCard', () => {
     expect(wrapper.find('.course-card__value').text()).toBe('2 из 3 (66,7%)');
   });
 
+  it('показывает полосу прогресса с процентом', () => {
+    const bar = mountCard().find('[role="progressbar"]');
+    expect(Number(bar.attributes('aria-valuenow'))).toBeCloseTo(66.7, 1);
+  });
+
   it('подписывает прогресс в зависимости от роли', () => {
     expect(mountCard(UserRole.Student).text()).toContain(
       'Выполнено лабораторных',
