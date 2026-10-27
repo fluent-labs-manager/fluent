@@ -182,3 +182,64 @@ test.describe('конструктор баллов: редактирование
     await expect(page.getByText('Распределено 35 из 100')).toBeVisible();
   });
 });
+
+test.describe('конструктор баллов: предпросмотр ведомости', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/score-builder?role=teacher');
+    await page
+      .getByLabel('Дисциплина', { exact: true })
+      .selectOption({ label: 'Разработка веб-приложений' });
+  });
+
+  test('по вкладке на группу, в таблице студенты и разложенные работы', async ({
+    page,
+  }) => {
+    const preview = page.getByRole('region', {
+      name: 'Предпросмотр ведомости',
+    });
+    const table = preview.getByRole('table');
+
+    await expect(preview.getByRole('tab')).toHaveText(['P3322', 'P3323']);
+    await expect(table).toContainText('Группа P3322 · 6 студентов');
+    await expect(
+      table.getByRole('columnheader', { name: 'Лабораторные работы' }),
+    ).toBeVisible();
+    await expect(table.getByRole('rowheader')).toHaveCount(6);
+
+    await preview.getByRole('tab', { name: 'P3323' }).click();
+
+    await expect(table).toContainText('Группа P3323 · 5 студентов');
+    await expect(table.getByRole('rowheader')).toHaveCount(5);
+  });
+
+  test('работа, перенесённая в раздел, становится колонкой', async ({
+    page,
+  }) => {
+    const table = page
+      .getByRole('region', { name: 'Предпросмотр ведомости' })
+      .getByRole('table');
+    await expect(
+      table.getByRole('columnheader', { name: /^Экзамен/ }),
+    ).toHaveCount(0);
+
+    await page
+      .getByRole('region', { name: 'Работы курса' })
+      .getByRole('button', { name: 'Экзамен, 20 баллов' })
+      .click();
+    await page.getByRole('menuitem', { name: 'Экзамен' }).click();
+
+    await expect(
+      table.getByRole('columnheader', { name: 'Экзамен из 20' }),
+    ).toBeVisible();
+  });
+
+  test('снятая группа пропадает из вкладок', async ({ page }) => {
+    await page.getByRole('checkbox', { name: /P3322/ }).uncheck();
+
+    await expect(
+      page
+        .getByRole('region', { name: 'Предпросмотр ведомости' })
+        .getByRole('tab'),
+    ).toHaveText(['P3323']);
+  });
+});

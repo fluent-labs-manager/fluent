@@ -376,4 +376,62 @@ describe('ScoreBuilderPage', () => {
       expect(totalText(wrapper)).toBe('Распределено 0 из 100');
     });
   });
+
+  describe('предпросмотр ведомости', () => {
+    function workHeaders(wrapper: ReturnType<typeof mount>): string[] {
+      return wrapper
+        .findAll('.gradebook-preview__head--work')
+        .map((cell) => cell.text().replace(/\s+/g, ' '));
+    }
+
+    it('показывает вкладки отмеченных групп и разложенные работы', async () => {
+      const wrapper = await mountPage();
+      await chooseCourse(wrapper, 31);
+
+      expect(wrapper.findAll('[role="tab"]').map((tab) => tab.text())).toEqual([
+        'P0001',
+        'P0002',
+      ]);
+      expect(workHeaders(wrapper)).toEqual(['Работа А из 15']);
+    });
+
+    it('перенесённая в раздел работа становится колонкой', async () => {
+      const wrapper = await mountPage();
+      await chooseCourse(wrapper, 31);
+
+      const chip = wrapper
+        .find('.work-pool')
+        .findAll('.work-chip')
+        .find((item) => item.find('.work-chip__title').text() === 'Экзамен');
+      await chip?.find('.work-chip__button').trigger('click');
+      await chip
+        ?.findAll('[role="menuitem"]')
+        .find((item) => item.text() === 'Экзамен')
+        ?.trigger('click');
+
+      expect(workHeaders(wrapper)).toEqual(['Работа А из 15', 'Экзамен из 25']);
+    });
+
+    it('снятая группа пропадает из вкладок', async () => {
+      const wrapper = await mountPage();
+      await chooseCourse(wrapper, 31);
+
+      await wrapper.findAll('.group-picker__checkbox')[0]?.setValue(false);
+
+      expect(wrapper.findAll('[role="tab"]').map((tab) => tab.text())).toEqual([
+        'P0002',
+      ]);
+    });
+
+    it('порог допуска из поля попадает в шапку', async () => {
+      const wrapper = await mountPage();
+      await chooseCourse(wrapper, 31);
+
+      await wrapper.find('.score-summary__input').setValue('55');
+
+      expect(wrapper.find('.gradebook-preview thead').text()).toContain(
+        'от 55 баллов',
+      );
+    });
+  });
 });

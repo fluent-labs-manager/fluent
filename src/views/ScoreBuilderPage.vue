@@ -4,6 +4,7 @@ import { computed, ref } from 'vue';
 import { RotateCw } from '@lucide/vue';
 
 import BarsSectionCard from '@/components/BarsSectionCard.vue';
+import GradebookPreview from '@/components/GradebookPreview.vue';
 import GroupPicker from '@/components/GroupPicker.vue';
 import ScoreSummary from '@/components/ScoreSummary.vue';
 import WorkPool from '@/components/WorkPool.vue';
@@ -226,6 +227,12 @@ function retry(): void {
           />
         </div>
       </section>
+
+      <GradebookPreview
+        :groups="checkedGroups"
+        :sections="sections"
+        :admission-threshold="admissionThreshold"
+      />
     </template>
   </main>
 </template>

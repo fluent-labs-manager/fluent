@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { flushPromises } from '@vue/test-utils';
-
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import WorkPool from '@/components/WorkPool.vue';
 import { BarsSection } from '@/types/BarsSection.ts';
 import { dispatchDrag, workDragData } from '../dragEvents.ts';
