@@ -289,4 +289,91 @@ describe('ScoreBuilderPage', () => {
       ).toBe('55');
     });
   });
+
+  describe('редактирование работ', () => {
+    function poolTitles(wrapper: ReturnType<typeof mount>): string[] {
+      return wrapper
+        .find('.work-pool')
+        .findAll('.work-chip__title')
+        .map((title) => title.text());
+    }
+
+    function totalText(wrapper: ReturnType<typeof mount>): string {
+      return wrapper.find('.score-summary__total').text().replace(/\s+/g, ' ');
+    }
+
+    async function chooseAction(
+      wrapper: ReturnType<typeof mount>,
+      workTitle: string,
+      action: string,
+    ): Promise<void> {
+      const chip = wrapper
+        .findAll('.work-chip')
+        .find((item) => item.find('.work-chip__title').text() === workTitle);
+      await chip?.find('.work-chip__button').trigger('click');
+      await chip
+        ?.findAll('[role="menuitem"]')
+        .find((item) => item.text() === action)
+        ?.trigger('click');
+      await flushPromises();
+    }
+
+    async function addWork(
+      wrapper: ReturnType<typeof mount>,
+      title: string,
+      score: string,
+    ): Promise<void> {
+      await wrapper.find('.work-pool__add').trigger('click');
+      await wrapper.find('.add-work-form input[type="text"]').setValue(title);
+      await wrapper.find('.add-work-form input[type="number"]').setValue(score);
+      await wrapper.find('.add-work-form').trigger('submit');
+      await flushPromises();
+    }
+
+    it('новая работа появляется в «Работах курса»', async () => {
+      const wrapper = await mountPage();
+      await chooseCourse(wrapper, 31);
+
+      await addWork(wrapper, 'ЛР6', '10');
+
+      expect(poolTitles(wrapper)).toEqual(['Работа Б', 'Экзамен', 'ЛР6']);
+    });
+
+    it('работу с уже занятым названием не добавляет', async () => {
+      const wrapper = await mountPage();
+      await chooseCourse(wrapper, 31);
+
+      // «Работа А» лежит в разделе, а не в «Работах курса»
+      await addWork(wrapper, 'работа а', '10');
+
+      expect(wrapper.find('.add-work-form__error').text()).toBe(
+        'Работа с таким названием уже есть',
+      );
+      expect(poolTitles(wrapper)).toEqual(['Работа Б', 'Экзамен']);
+    });
+
+    it('новые баллы работы меняют итог', async () => {
+      const wrapper = await mountPage();
+      await chooseCourse(wrapper, 31);
+
+      await chooseAction(wrapper, 'Работа А', 'Изменить баллы');
+      await wrapper.find('.work-score-form__input').setValue('20');
+      await wrapper.find('.work-score-form').trigger('submit');
+      await flushPromises();
+
+      expect(totalText(wrapper)).toBe('Распределено 20 из 100');
+    });
+
+    it('удалённая работа пропадает из раздела и итога', async () => {
+      const wrapper = await mountPage();
+      await chooseCourse(wrapper, 31);
+
+      await chooseAction(wrapper, 'Работа А', 'Удалить работу');
+
+      expect(
+        wrapper.findAll('.work-chip__title').map((title) => title.text()),
+      ).not.toContain('Работа А');
+      expect(totalText(wrapper)).toBe('Распределено 0 из 100');
+    });
+  });
 });

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { nextTick } from 'vue';
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import WorkChip from '@/components/WorkChip.vue';
 import { WORK_DRAG_TYPE } from '@/constants/barsSections.ts';
 import { BarsSection } from '@/types/BarsSection.ts';
@@ -52,6 +52,8 @@ describe('WorkChip', () => {
       'Рубежный контроль',
       'Экзамен',
       'Вернуть в работы курса',
+      'Изменить баллы',
+      'Удалить работу',
     ]);
   });
 
@@ -88,7 +90,10 @@ describe('WorkChip', () => {
     const wrapper = mountChip();
     await wrapper.find('.work-chip__button').trigger('click');
 
-    await wrapper.findAll('[role="menuitem"]').at(-1)?.trigger('click');
+    await wrapper
+      .findAll('[role="menuitem"]')
+      .find((item) => item.text() === 'Вернуть в работы курса')
+      ?.trigger('click');
 
     expect(wrapper.emitted('move')).toEqual([[null]]);
   });
@@ -138,5 +143,66 @@ describe('WorkChip', () => {
     expect(data.getData(WORK_DRAG_TYPE)).toBe('5');
     expect(data.effectAllowed).toBe('move');
     expect(wrapper.find('[role="menu"]').exists()).toBe(false);
+  });
+
+  describe('правка и удаление', () => {
+    async function chooseAction(
+      wrapper: ReturnType<typeof mount>,
+      action: string,
+    ): Promise<void> {
+      await wrapper.find('.work-chip__button').trigger('click');
+      await wrapper
+        .findAll('[role="menuitem"]')
+        .find((item) => item.text() === action)
+        ?.trigger('click');
+      await flushPromises();
+    }
+
+    it('«Изменить баллы» превращает чип в поле с баллами', async () => {
+      const wrapper = mountChip();
+
+      await chooseAction(wrapper, 'Изменить баллы');
+
+      expect(wrapper.find('.work-chip__button').exists()).toBe(false);
+      const input = wrapper.find('.work-score-form__input');
+      expect((input.element as HTMLInputElement).value).toBe('10');
+      expect(document.activeElement).toBe(input.element);
+    });
+
+    it('новые баллы сообщает и возвращает чип с фокусом', async () => {
+      const wrapper = mountChip();
+      await chooseAction(wrapper, 'Изменить баллы');
+
+      await wrapper.find('.work-score-form__input').setValue('15');
+      await wrapper.find('.work-score-form').trigger('submit');
+      await flushPromises();
+
+      expect(wrapper.emitted('updateScore')).toEqual([[15]]);
+      expect(document.activeElement).toBe(
+        wrapper.find('.work-chip__button').element,
+      );
+    });
+
+    it('Escape отменяет правку баллов', async () => {
+      const wrapper = mountChip();
+      await chooseAction(wrapper, 'Изменить баллы');
+
+      await wrapper
+        .find('.work-score-form')
+        .trigger('keydown', { key: 'Escape' });
+      await flushPromises();
+
+      expect(wrapper.emitted('updateScore')).toBeUndefined();
+      expect(wrapper.find('.work-chip__button').exists()).toBe(true);
+    });
+
+    it('«Удалить работу» сообщает об удалении', async () => {
+      const wrapper = mountChip();
+
+      await chooseAction(wrapper, 'Удалить работу');
+
+      expect(wrapper.emitted('remove')).toEqual([[]]);
+      expect(wrapper.find('[role="menu"]').exists()).toBe(false);
+    });
   });
 });

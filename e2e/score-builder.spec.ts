@@ -123,3 +123,62 @@ test.describe('конструктор баллов: работы и раздел
     await expect(exam.getByText('0 из 20')).toBeVisible();
   });
 });
+
+test.describe('конструктор баллов: редактирование работ', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/score-builder?role=teacher');
+    await page
+      .getByLabel('Дисциплина', { exact: true })
+      .selectOption({ label: 'Разработка веб-приложений' });
+  });
+
+  test('преподаватель добавляет работу в «Работы курса»', async ({ page }) => {
+    const pool = page.getByRole('region', { name: 'Работы курса' });
+
+    await pool.getByRole('button', { name: 'Добавить работу' }).click();
+    await pool.getByLabel('Название', { exact: true }).fill('ЛР6');
+    await pool.getByLabel('Баллы', { exact: true }).fill('10');
+    await pool.getByRole('button', { name: 'Добавить', exact: true }).click();
+
+    await expect(
+      pool.getByRole('button', { name: 'ЛР6, 10 баллов' }),
+    ).toBeVisible();
+  });
+
+  test('занятое название не принимается', async ({ page }) => {
+    const pool = page.getByRole('region', { name: 'Работы курса' });
+
+    await pool.getByRole('button', { name: 'Добавить работу' }).click();
+    await pool.getByLabel('Название', { exact: true }).fill('ЛР1');
+    await pool.getByLabel('Баллы', { exact: true }).fill('10');
+    await pool.getByRole('button', { name: 'Добавить', exact: true }).click();
+
+    await expect(
+      pool.getByText('Работа с таким названием уже есть'),
+    ).toBeVisible();
+  });
+
+  test('баллы работы можно изменить, а работу — удалить', async ({ page }) => {
+    const labs = page.getByRole('region', {
+      name: 'Лабораторные работы',
+      exact: true,
+    });
+
+    await labs.getByRole('button', { name: 'ЛР1, 10 баллов' }).click();
+    await page.getByRole('menuitem', { name: 'Изменить баллы' }).click();
+    await labs.getByLabel('ЛР1', { exact: true }).fill('15');
+    await labs.getByRole('button', { name: 'Сохранить баллы' }).click();
+
+    await expect(
+      labs.getByRole('button', { name: 'ЛР1, 15 баллов' }),
+    ).toBeVisible();
+    await expect(labs.getByText('45 из 50')).toBeVisible();
+
+    await labs.getByRole('button', { name: 'ЛР2, 10 баллов' }).click();
+    await page.getByRole('menuitem', { name: 'Удалить работу' }).click();
+
+    await expect(labs.getByRole('button', { name: /ЛР2/ })).toHaveCount(0);
+    await expect(labs.getByText('35 из 50')).toBeVisible();
+    await expect(page.getByText('Распределено 35 из 100')).toBeVisible();
+  });
+});

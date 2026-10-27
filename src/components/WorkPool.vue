@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import { nextTick, ref } from 'vue';
+
+import { Plus } from '@lucide/vue';
+
+import AddWorkForm from '@/components/AddWorkForm.vue';
 import WorkChip from '@/components/WorkChip.vue';
 import type { GradebookWork } from '@/api/gradebook/GradebookWork.dto.ts';
 import { useWorkDropTarget } from '@/composables/useWorkDropTarget.ts';
@@ -10,11 +15,30 @@ defineProps<{
   works: GradebookWork[];
   // есть ли у дисциплины работы вообще
   hasAnyWorks: boolean;
+  // названия всех работ дисциплины: новая не должна с ними совпадать
+  existingTitles: string[];
 }>();
 
 const emit = defineEmits<{
   move: [workId: number, section: BarsSection | null];
+  updateScore: [workId: number, maxScore: number];
+  remove: [workId: number];
+  add: [title: string, maxScore: number];
 }>();
+
+const addButton = ref<HTMLButtonElement | null>(null);
+const isAdding = ref<boolean>(false);
+
+async function closeForm(): Promise<void> {
+  isAdding.value = false;
+  await nextTick();
+  addButton.value?.focus();
+}
+
+async function add(title: string, maxScore: number): Promise<void> {
+  emit('add', title, maxScore);
+  await closeForm();
+}
 
 const targets = getMoveTargets(null);
 
@@ -31,12 +55,27 @@ const { isDragOver, dropHandlers } = useWorkDropTarget((workId) => {
     aria-labelledby="work-pool-heading"
     v-on="dropHandlers"
   >
-    <h2
-      id="work-pool-heading"
-      class="work-pool__title"
-    >
-      Работы курса
-    </h2>
+    <div class="work-pool__header">
+      <h2
+        id="work-pool-heading"
+        class="work-pool__title"
+      >
+        Работы курса
+      </h2>
+      <button
+        v-if="!isAdding"
+        ref="addButton"
+        class="work-pool__add"
+        type="button"
+        @click="isAdding = true"
+      >
+        <Plus
+          :size="16"
+          aria-hidden="true"
+        />
+        Добавить работу
+      </button>
+    </div>
     <ul
       v-if="works.length > 0"
       class="work-pool__list"
@@ -49,6 +88,8 @@ const { isDragOver, dropHandlers } = useWorkDropTarget((workId) => {
           :work="work"
           :targets="targets"
           @move="(section) => emit('move', work.id, section)"
+          @update-score="(maxScore) => emit('updateScore', work.id, maxScore)"
+          @remove="emit('remove', work.id)"
         />
       </li>
     </ul>
@@ -62,6 +103,12 @@ const { isDragOver, dropHandlers } = useWorkDropTarget((workId) => {
           : 'У дисциплины пока нет работ.'
       }}
     </p>
+    <AddWorkForm
+      v-if="isAdding"
+      :existing-titles="existingTitles"
+      @add="add"
+      @cancel="closeForm"
+    />
   </section>
 </template>
 
@@ -80,6 +127,35 @@ const { isDragOver, dropHandlers } = useWorkDropTarget((workId) => {
 
 .work-pool--drag-over {
   border-color: var(--color-accent);
+}
+
+.work-pool__header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.work-pool__add {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 2rem;
+  padding: 0 0.875em;
+  border: 1px solid var(--color-accent);
+  border-radius: 0.7em;
+  background-color: var(--color-surface);
+  color: var(--color-accent);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.work-pool__add:hover {
+  background-color: var(--color-accent-surface);
 }
 
 .work-pool__title {

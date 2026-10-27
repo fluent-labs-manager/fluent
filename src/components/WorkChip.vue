@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
+import WorkScoreForm from '@/components/WorkScoreForm.vue';
 import type { GradebookWork } from '@/api/gradebook/GradebookWork.dto.ts';
 import { WORK_DRAG_TYPE } from '@/constants/barsSections.ts';
 import type { BarsSection } from '@/types/BarsSection.ts';
@@ -15,12 +16,16 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   move: [section: BarsSection | null];
+  updateScore: [maxScore: number];
+  remove: [];
 }>();
 
 const root = ref<HTMLElement | null>(null);
 const handle = ref<HTMLElement | null>(null);
 const menu = ref<HTMLElement | null>(null);
 const isMenuOpen = ref<boolean>(false);
+// вместо чипа — поле с баллами
+const isEditing = ref<boolean>(false);
 
 const label = computed<string>(
   () =>
@@ -40,6 +45,27 @@ function toggleMenu(): void {
 function choose(section: BarsSection | null): void {
   closeMenu();
   emit('move', section);
+}
+
+async function stopEditing(): Promise<void> {
+  isEditing.value = false;
+  await nextTick();
+  handle.value?.focus();
+}
+
+function startEditing(): void {
+  closeMenu();
+  isEditing.value = true;
+}
+
+async function saveScore(maxScore: number): Promise<void> {
+  emit('updateScore', maxScore);
+  await stopEditing();
+}
+
+function remove(): void {
+  closeMenu();
+  emit('remove');
 }
 
 function closeWithKeyboard(): void {
@@ -84,7 +110,15 @@ function startDrag(event: DragEvent): void {
   >
     <!-- не <button>: Safari не начинает перетаскивание с кнопки. Поэтому
          элемент с ролью кнопки, а Enter и пробел открывают список, как у неё -->
+    <WorkScoreForm
+      v-if="isEditing"
+      :title="work.title"
+      :score="work.maxScore"
+      @save="saveScore"
+      @cancel="stopEditing"
+    />
     <div
+      v-else
       ref="handle"
       class="work-chip__button"
       role="button"
@@ -106,7 +140,7 @@ function startDrag(event: DragEvent): void {
       ref="menu"
       class="work-chip__menu"
       role="menu"
-      :aria-label="`Куда перенести «${work.title}»`"
+      :aria-label="`Действия с «${work.title}»`"
     >
       <li
         v-for="target in targets"
@@ -120,6 +154,30 @@ function startDrag(event: DragEvent): void {
           @click="choose(target.section)"
         >
           {{ target.title }}
+        </button>
+      </li>
+      <li
+        class="work-chip__separator"
+        role="separator"
+      ></li>
+      <li role="none">
+        <button
+          class="work-chip__target"
+          type="button"
+          role="menuitem"
+          @click="startEditing"
+        >
+          Изменить баллы
+        </button>
+      </li>
+      <li role="none">
+        <button
+          class="work-chip__target work-chip__target--danger"
+          type="button"
+          role="menuitem"
+          @click="remove"
+        >
+          Удалить работу
         </button>
       </li>
     </ul>
@@ -211,5 +269,20 @@ function startDrag(event: DragEvent): void {
 .work-chip__target:focus-visible {
   outline: none;
   background-color: var(--color-accent-surface);
+}
+
+.work-chip__target--danger {
+  color: var(--color-error);
+}
+
+.work-chip__target--danger:hover,
+.work-chip__target--danger:focus-visible {
+  background-color: var(--color-error-surface);
+}
+
+.work-chip__separator {
+  height: 1px;
+  margin: 0.25rem 0;
+  background-color: var(--color-border);
 }
 </style>

@@ -82,4 +82,18 @@ describe('BarsSectionCard', () => {
     expect(wrapper.emitted('move')).toEqual([[8, BarsSection.Labs]]);
     expect(wrapper.classes()).not.toContain('bars-section-card--drag-over');
   });
+
+  it('удаление работы из раздела сообщает с её id', async () => {
+    const wrapper = mount(BarsSectionCard, {
+      props: { summary: createSummary() },
+    });
+
+    await wrapper.find('.work-chip__button').trigger('click');
+    await wrapper
+      .findAll('[role="menuitem"]')
+      .find((item) => item.text() === 'Удалить работу')
+      ?.trigger('click');
+
+    expect(wrapper.emitted('remove')).toEqual([[3]]);
+  });
 });

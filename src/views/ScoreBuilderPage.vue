@@ -33,9 +33,19 @@ const {
   checkedGroups,
   admissionThreshold,
   moveWork,
+  addWork,
+  updateWorkScore,
+  removeWork,
   setGroupChecked,
   setAdmissionThreshold,
 } = useScoreBuilder(gradebook);
+
+const workTitles = computed<string[]>(() =>
+  [
+    ...poolWorks.value,
+    ...sections.value.flatMap((section) => section.works),
+  ].map((work) => work.title),
+);
 
 const hasAnyWorks = computed<boolean>(
   () =>
@@ -179,7 +189,11 @@ function retry(): void {
       <WorkPool
         :works="poolWorks"
         :has-any-works="hasAnyWorks"
+        :existing-titles="workTitles"
         @move="moveWork"
+        @add="addWork"
+        @update-score="updateWorkScore"
+        @remove="removeWork"
       />
 
       <section
@@ -207,6 +221,8 @@ function retry(): void {
             :key="summary.section"
             :summary="summary"
             @move="moveWork"
+            @update-score="updateWorkScore"
+            @remove="removeWork"
           />
         </div>
       </section>

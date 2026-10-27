@@ -14,6 +14,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   move: [workId: number, section: BarsSection | null];
+  updateScore: [workId: number, maxScore: number];
+  remove: [workId: number];
 }>();
 
 const targets = computed<WorkMoveTarget[]>(() =>
@@ -62,6 +64,8 @@ const { isDragOver, dropHandlers } = useWorkDropTarget((workId) => {
           :work="work"
           :targets="targets"
           @move="(section) => emit('move', work.id, section)"
+          @update-score="(maxScore) => emit('updateScore', work.id, maxScore)"
+          @remove="emit('remove', work.id)"
         />
       </li>
     </ul>
