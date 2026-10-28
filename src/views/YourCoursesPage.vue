@@ -3,6 +3,10 @@ import { computed, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 
 import { RotateCw } from '@lucide/vue';
+import Button from 'primevue/button';
+import Message from 'primevue/message';
+import ProgressSpinner from 'primevue/progressspinner';
+import SelectButton from 'primevue/selectbutton';
 
 import CourseCard from '@/components/CourseCard.vue';
 import SemesterProgress from '@/components/SemesterProgress.vue';
@@ -62,48 +66,51 @@ function retry(): void {
   <main class="courses-page">
     <header class="courses-page__header">
       <h1 class="courses-page__title">Дисциплины</h1>
-      <p
+      <div
         v-if="isLoading"
         class="courses-page__status"
         role="status"
       >
+        <ProgressSpinner
+          class="courses-page__spinner"
+          stroke-width="6"
+          aria-hidden="true"
+        />
         Загрузка дисциплин…
-      </p>
+      </div>
 
-      <div
+      <Message
         v-else-if="error !== null"
-        class="courses-page__status courses-page__status--error"
-        role="alert"
+        class="courses-page__error"
+        severity="error"
       >
         <span>Не удалось загрузить дисциплины: {{ error }}</span>
-        <button
+        <Button
           class="courses-page__retry"
-          type="button"
+          severity="secondary"
+          variant="outlined"
+          rounded
+          size="small"
           aria-label="Повторить"
           title="Повторить"
           @click="retry"
         >
-          <RotateCw :size="16" />
-        </button>
-      </div>
-      <div
+          <template #icon>
+            <RotateCw :size="16" />
+          </template>
+        </Button>
+      </Message>
+      <!-- allow-empty: повторный клик по выбранному семестру не снимает выбор -->
+      <SelectButton
         v-else
+        v-model="filter"
         class="courses-page__filters"
-        role="group"
+        :options="filters"
+        option-label="label"
+        option-value="value"
+        :allow-empty="false"
         aria-label="Семестр"
-      >
-        <button
-          v-for="item in filters"
-          :key="item.value"
-          class="courses-page__filter"
-          :class="{ 'courses-page__filter--active': filter === item.value }"
-          type="button"
-          :aria-pressed="filter === item.value"
-          @click="filter = item.value"
-        >
-          {{ item.label }}
-        </button>
-      </div>
+      />
     </header>
 
     <template v-if="!isLoading && error === null && role !== null">
@@ -165,39 +172,7 @@ function retry(): void {
 }
 
 .courses-page__filters {
-  display: flex;
   align-self: flex-start;
-  gap: 0.25rem;
-  height: var(--nav-item-height);
-  padding: 0.25rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.75rem;
-  background-color: var(--color-accent-surface);
-}
-
-.courses-page__filter {
-  padding: 0 1.15em;
-  border: none;
-  border-radius: 0.57em;
-  background-color: transparent;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-md);
-  font-weight: 500;
-  cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
-}
-
-.courses-page__filter:hover {
-  color: var(--color-text);
-}
-
-.courses-page__filter--active {
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  font-weight: 700;
-  box-shadow: var(--shadow-raised);
 }
 
 .courses-page__status {
@@ -210,30 +185,21 @@ function retry(): void {
   font-size: var(--font-size-md);
 }
 
-.courses-page__status--error {
-  color: var(--color-error);
+.courses-page__spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
 }
 
-.courses-page__retry {
+/* текст ошибки и кнопка «Повторить» в одну строку */
+.courses-page__error {
+  align-self: flex-start;
+}
+
+.courses-page__error :deep(.p-message-text) {
   display: flex;
-  justify-content: center;
   align-items: center;
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
-  border: 1px solid var(--color-border);
-  border-radius: 50%;
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    color 0.2s ease;
-}
-
-.courses-page__retry:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
+  gap: 0.75rem;
 }
 
 .courses-page__empty {

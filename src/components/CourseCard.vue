@@ -2,8 +2,8 @@
 import { computed } from 'vue';
 
 import { ChevronRight } from '@lucide/vue';
+import ProgressBar from 'primevue/progressbar';
 
-import ProgressBar from '@/components/ProgressBar.vue';
 import type { Course } from '@/api/courses/Course.dto.ts';
 import { UserRole } from '@/types/UserRole.ts';
 import { formatPercent, getPercent } from '@/utils/ProgressPercentage.ts';
@@ -19,9 +19,11 @@ const progressLabel = computed<string>(() =>
     : 'Выполнено лабораторных',
 );
 
-const percent = computed<string>(() =>
-  formatPercent(getPercent(props.course.completedLabs, props.course.totalLabs)),
+const progress = computed<number>(() =>
+  getPercent(props.course.completedLabs, props.course.totalLabs),
 );
+
+const percent = computed<string>(() => formatPercent(progress.value));
 </script>
 
 <template>
@@ -52,8 +54,8 @@ const percent = computed<string>(() =>
       </div>
 
       <ProgressBar
-        :value="course.completedLabs"
-        :max="course.totalLabs"
+        :value="progress"
+        :show-value="false"
       />
     </div>
   </article>
