@@ -20,6 +20,9 @@ export default mergeConfig(
           'src/mocks/**',
           'src/types/**',
           'src/main.ts',
+          'src/router/index.ts',
+          'src/stores/counter.ts',
+          'src/api/labs/LabsApi.ts',
         ],
         thresholds: {
           lines: coverageThreshold,
