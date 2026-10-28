@@ -4,12 +4,14 @@ import { effectScope } from 'vue';
 import type { EffectScope } from 'vue';
 import { useStrayFileDropGuard } from '@/composables/useStrayFileDropGuard.ts';
 
-// в jsdom нет DragEvent: обычное отменяемое событие с dataTransfer
+// в jsdom нет DragEvent: обычное отменяемое событие с dataTransfer.
+// По умолчанию перетаскивают файл
 function dispatchDrag(
   target: EventTarget,
   type: 'dragover' | 'drop',
+  types: string[] = ['Files'],
 ): { event: Event; dataTransfer: { dropEffect: string } } {
-  const dataTransfer = { dropEffect: 'copy' };
+  const dataTransfer = { dropEffect: 'copy', types };
   const event = new Event(type, { bubbles: true, cancelable: true });
   Object.defineProperty(event, 'dataTransfer', { value: dataTransfer });
   target.dispatchEvent(event);
@@ -42,6 +44,17 @@ describe('useStrayFileDropGuard', () => {
     expect(dragOver.event.defaultPrevented).toBe(true);
     expect(dragOver.dataTransfer.dropEffect).toBe('none');
     expect(drop.event.defaultPrevented).toBe(true);
+  });
+
+  it('перенос текста, например в поле комментария, не трогает', () => {
+    startGuard();
+
+    const dragOver = dispatchDrag(document.body, 'dragover', ['text/plain']);
+    const drop = dispatchDrag(document.body, 'drop', ['text/plain']);
+
+    expect(dragOver.event.defaultPrevented).toBe(false);
+    expect(dragOver.dataTransfer.dropEffect).toBe('copy');
+    expect(drop.event.defaultPrevented).toBe(false);
   });
 
   it('событие, которое обработала область загрузки, не трогает', () => {
@@ -92,16 +105,22 @@ describe('useStrayFileDropGuard', () => {
     }
   });
 
-  it('повторный вызов передаёт браузеру тот же обработчик', () => {
+  it('пока активен второй вызов, первый не снимает защиту', () => {
     const active = trackDragOverListeners();
 
     startGuard();
     const first = scope;
     startGuard();
-
-    // браузер не добавляет одну и ту же функцию дважды
     expect(active.size).toBe(1);
+
     first?.stop();
+    expect(active.size).toBe(1);
+    expect(dispatchDrag(document.body, 'drop').event.defaultPrevented).toBe(
+      true,
+    );
+
+    scope?.stop();
+    expect(active.size).toBe(0);
   });
 
   it('после ухода со страницы перестаёт перехватывать события', () => {
