@@ -16,6 +16,9 @@ import {
   RotateCw,
   Settings,
 } from '@lucide/vue';
+import Button from 'primevue/button';
+import Message from 'primevue/message';
+import ProgressSpinner from 'primevue/progressspinner';
 
 import { useAccountProfile } from '@/composables/useAccountProfile.ts';
 import { useSemesters } from '@/composables/useSemesters.ts';
@@ -277,30 +280,40 @@ function retryCourses(): void {
       <h1 class="account-page__title">Личный кабинет</h1>
     </header>
 
-    <p
+    <div
       v-if="isLoading"
       class="account-page__status"
       role="status"
     >
+      <ProgressSpinner
+        class="account-page__spinner"
+        stroke-width="6"
+        aria-hidden="true"
+      />
       Загрузка профиля…
-    </p>
+    </div>
 
-    <div
+    <Message
       v-else-if="error !== null"
-      class="account-page__status account-page__status--error"
-      role="alert"
+      class="account-page__error"
+      severity="error"
     >
       <span>Не удалось загрузить данные: {{ error }}</span>
-      <button
+      <Button
         class="account-page__retry"
-        type="button"
+        severity="secondary"
+        variant="outlined"
+        rounded
+        size="small"
         aria-label="Повторить"
         title="Повторить"
         @click="retry"
       >
-        <RotateCw :size="16" />
-      </button>
-    </div>
+        <template #icon>
+          <RotateCw :size="16" />
+        </template>
+      </Button>
+    </Message>
 
     <div
       v-else-if="userStore.user !== null && profile !== null"
@@ -348,25 +361,40 @@ function retryCourses(): void {
           </ul>
 
           <!-- TODO: редактирование профиля и настройки — отдельные задачи -->
+          <!-- неактивная кнопка не ловит наведение, поэтому подсказка на обёртке -->
           <div class="account-page__actions">
-            <button
-              class="account-page__action account-page__action--primary"
-              type="button"
-              disabled
-              title="Скоро будет доступно"
+            <span
+              v-tooltip.top="'Скоро будет доступно'"
+              class="account-page__action-wrap"
             >
-              <Pencil :size="16" />
-              Редактировать
-            </button>
-            <button
-              class="account-page__action"
-              type="button"
-              disabled
-              title="Скоро будет доступно"
+              <Button
+                class="account-page__action"
+                label="Редактировать"
+                disabled
+                fluid
+              >
+                <template #icon>
+                  <Pencil :size="16" />
+                </template>
+              </Button>
+            </span>
+            <span
+              v-tooltip.top="'Скоро будет доступно'"
+              class="account-page__action-wrap"
             >
-              <Settings :size="16" />
-              Настройки
-            </button>
+              <Button
+                class="account-page__action"
+                label="Настройки"
+                severity="secondary"
+                variant="outlined"
+                disabled
+                fluid
+              >
+                <template #icon>
+                  <Settings :size="16" />
+                </template>
+              </Button>
+            </span>
           </div>
         </article>
 
@@ -402,30 +430,40 @@ function retryCourses(): void {
           {{ isStudent ? 'Текущие дисциплины' : 'Мои дисциплины' }}
         </h2>
 
-        <p
+        <div
           v-if="areCoursesLoading"
           class="account-page__status"
           role="status"
         >
+          <ProgressSpinner
+            class="account-page__spinner"
+            stroke-width="6"
+            aria-hidden="true"
+          />
           Загрузка дисциплин…
-        </p>
+        </div>
 
-        <div
+        <Message
           v-else-if="coursesError !== null"
-          class="account-page__status account-page__status--error"
-          role="alert"
+          class="account-page__error"
+          severity="error"
         >
           <span>Не удалось загрузить дисциплины: {{ coursesError }}</span>
-          <button
+          <Button
             class="account-page__retry"
-            type="button"
+            severity="secondary"
+            variant="outlined"
+            rounded
+            size="small"
             aria-label="Повторить"
             title="Повторить"
             @click="retryCourses"
           >
-            <RotateCw :size="16" />
-          </button>
-        </div>
+            <template #icon>
+              <RotateCw :size="16" />
+            </template>
+          </Button>
+        </Message>
 
         <template v-else-if="isStudent">
           <p
@@ -578,22 +616,21 @@ function retryCourses(): void {
   font-size: var(--font-size-md);
 }
 
-.account-page__status--error {
-  color: var(--color-error);
+.account-page__spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
 }
 
-.account-page__retry {
+/* текст ошибки и кнопка «Повторить» в одну строку */
+.account-page__error {
+  align-self: flex-start;
+}
+
+.account-page__error :deep(.p-message-text) {
   display: flex;
-  justify-content: center;
   align-items: center;
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
-  border: 1px solid var(--color-border);
-  border-radius: 50%;
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  cursor: pointer;
+  gap: 0.75rem;
 }
 
 .account-page__content {
@@ -711,32 +748,8 @@ function retryCourses(): void {
   gap: 0.5rem;
 }
 
-/* кнопка обрамляет одну строку текста — отступы в em */
-.account-page__action {
-  display: inline-flex;
+.account-page__action-wrap {
   flex: 1;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5em;
-  padding: 0.75em 1em;
-  border: 1px solid var(--color-border);
-  border-radius: 0.75em;
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  font-size: var(--font-size-md);
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.account-page__action--primary {
-  border-color: var(--color-accent);
-  background-color: var(--color-accent);
-  color: var(--color-surface);
-}
-
-.account-page__action:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .account-page__stats {

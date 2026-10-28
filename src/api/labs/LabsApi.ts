@@ -1,11 +1,13 @@
 import { semesters } from '@/mocks/courses.ts';
 import { labAttempts } from '@/mocks/labAttempts.ts';
 import { courseLabs } from '@/mocks/labs.ts';
+import { mockReviewQueue } from '@/mocks/reviewQueue.ts';
 import { getMockMode, MOCK_DELAY_MS, mockDelay } from '@/mocks/mockMode.ts';
 import type { CourseLabs } from '@/api/labs/CourseLabs.dto.ts';
 import type { Lab } from '@/api/labs/Lab.dto.ts';
 import type { LabAttempt } from '@/api/labs/LabAttempt.dto.ts';
 import type { LabSubmission } from '@/api/labs/LabSubmission.dto.ts';
+import type { ReviewQueueItem } from '@/api/labs/ReviewQueue.dto.ts';
 import { AttemptResult } from '@/types/AttemptResult.ts';
 import { LabStatus } from '@/types/LabStatus.ts';
 import { ApiRequestError } from '@/utils/ApiResolver.ts';
@@ -159,4 +161,22 @@ export async function submitLabAttemptStub(
     lab: submittedLab,
     attempts: labAttempts[labId],
   });
+}
+
+/**
+ * Очередь работ на проверку для преподавателя
+ */
+export async function getReviewQueueStub(): Promise<ReviewQueueItem[]> {
+  await mockDelay();
+  const mode = getMockMode();
+
+  if (mode === 'error') {
+    throw new ApiRequestError(503, 'Сервис временно недоступен');
+  }
+
+  if (mode === 'empty') {
+    return [];
+  }
+
+  return structuredClone(mockReviewQueue);
 }

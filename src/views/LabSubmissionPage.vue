@@ -3,11 +3,11 @@ import { computed, ref, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 
 import { ChevronLeft, RotateCw } from '@lucide/vue';
+import ProgressBar from 'primevue/progressbar';
 
 import FileDropzone from '@/components/FileDropzone.vue';
 import LabAttemptCard from '@/components/LabAttemptCard.vue';
 import LabStatusBar from '@/components/LabStatusBar.vue';
-import ProgressBar from '@/components/ProgressBar.vue';
 import SubmittedFileCard from '@/components/SubmittedFileCard.vue';
 import type { LabAttempt } from '@/api/labs/LabAttempt.dto.ts';
 import { useLabAttemptSubmit } from '@/composables/useLabAttemptSubmit.ts';
@@ -232,7 +232,7 @@ function retry(): void {
               </div>
               <ProgressBar
                 :value="progress"
-                :max="100"
+                :show-value="false"
               />
             </div>
             <div
