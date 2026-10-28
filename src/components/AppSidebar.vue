@@ -192,21 +192,28 @@ onUnmounted(() => {
       ref="menuToggle"
       class="mobile-header__toggle"
       type="button"
+      aria-label="Основная навигация"
+      aria-controls="mobile-navigation-drawer"
+      :aria-expanded="menuOpen"
       @click="menuOpen = !menuOpen"
     >
       <Menu
         :size="20"
         class="app-sidebar__icon"
+        aria-hidden="true"
       />
     </button>
   </header>
 
   <div
-    v-if="menuOpen"
+    v-show="menuOpen"
     class="mobile-navigation__backdrop"
     @click.self="closeMenu"
   >
-    <aside class="mobile-navigation__drawer">
+    <aside
+      id="mobile-navigation-drawer"
+      class="mobile-navigation__drawer"
+    >
       <span class="mobile-navigation__drawer-logo">Fluent</span>
 
       <nav class="app-sidebar__nav">

@@ -12,11 +12,19 @@ test.describe('мобильная навигация', () => {
     await page.goto('/?role=student');
 
     await expect(menuToggle(page)).toBeVisible();
+    await expect(menuToggle(page)).toHaveAccessibleName('Основная навигация');
+    await expect(menuToggle(page)).toHaveAttribute('aria-expanded', 'false');
+    await expect(menuToggle(page)).toHaveAttribute(
+      'aria-controls',
+      'mobile-navigation-drawer',
+    );
     await expect(page.locator('.app-sidebar')).toBeHidden();
+    await expect(drawer(page)).toBeHidden();
     await menuToggle(page).click();
 
     const mobileDrawer = drawer(page);
     await expect(mobileDrawer).toBeVisible();
+    await expect(menuToggle(page)).toHaveAttribute('aria-expanded', 'true');
     await expect(mobileDrawer).toContainText('Главная');
     await expect(mobileDrawer).toContainText('Дисциплины');
     await expect(mobileDrawer).toContainText('События');
@@ -35,7 +43,8 @@ test.describe('мобильная навигация', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'Дисциплины',
     );
-    await expect(drawer(page)).toHaveCount(0);
+    await expect(drawer(page)).toBeHidden();
+    await expect(menuToggle(page)).toHaveAttribute('aria-expanded', 'false');
   });
 
   test('закрывает меню по Escape, возвращает фокус на гамбургер', async ({
@@ -47,7 +56,8 @@ test.describe('мобильная навигация', () => {
 
     await page.keyboard.press('Escape');
 
-    await expect(drawer(page)).toHaveCount(0);
+    await expect(drawer(page)).toBeHidden();
+    await expect(menuToggle(page)).toHaveAttribute('aria-expanded', 'false');
     await expect(menuToggle(page)).toBeFocused();
   });
 
@@ -63,7 +73,8 @@ test.describe('мобильная навигация', () => {
       .locator('.mobile-navigation__backdrop')
       .click({ position: { x: 380, y: 420 } });
 
-    await expect(drawer(page)).toHaveCount(0);
+    await expect(drawer(page)).toBeHidden();
+    await expect(menuToggle(page)).toHaveAttribute('aria-expanded', 'false');
   });
 
   test('показывает role-aware меню преподавателя', async ({ page }) => {
@@ -88,5 +99,5 @@ test('на десктопной ширине остаётся боковая п�
 
   await expect(page.locator('.app-sidebar')).toBeVisible();
   await expect(menuToggle(page)).toBeHidden();
-  await expect(drawer(page)).toHaveCount(0);
+  await expect(drawer(page)).toBeHidden();
 });
