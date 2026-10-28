@@ -260,14 +260,6 @@ describe('LabSubmissionPage', () => {
       expect(submit.attributes('disabled')).toBeDefined();
     });
 
-    it('есть кнопка «Сохранить черновик»', async () => {
-      const wrapper = mountPage();
-      await flushPromises();
-
-      const buttons = wrapper.findAll('button').map((button) => button.text());
-      expect(buttons).toContain('Сохранить черновик');
-    });
-
     it('в истории сверху последняя попытка, у каждой — результат и комментарий преподавателя', async () => {
       const wrapper = mountPage();
       await flushPromises();
@@ -450,10 +442,6 @@ describe('LabSubmissionPage', () => {
       ).toBeDefined();
       expect(wrapper.find('textarea').attributes('disabled')).toBeDefined();
       expect(wrapper.find('.submitted-file-card__remove').exists()).toBe(false);
-      const draft = wrapper
-        .findAll('button')
-        .find((button) => button.text() === 'Сохранить черновик');
-      expect(draft?.attributes('disabled')).toBeDefined();
     });
 
     it('«Отменить загрузку» прерывает отправку, а файл и комментарий остаются', async () => {

@@ -262,14 +262,6 @@ function retry(): void {
               >
                 Отправить работу на проверку
               </button>
-              <!-- TODO: черновики появятся вместе с контрактом API -->
-              <button
-                class="lab-submission-page__button lab-submission-page__button--secondary"
-                type="button"
-                :disabled="isSubmitting"
-              >
-                Сохранить черновик
-              </button>
             </div>
           </form>
 
@@ -486,21 +478,6 @@ function retry(): void {
 
 .lab-submission-page__button--primary:hover:enabled {
   background-color: var(--color-text-secondary);
-}
-
-.lab-submission-page__button--secondary {
-  background-color: var(--color-surface);
-  color: var(--color-accent);
-}
-
-.lab-submission-page__button--secondary:disabled {
-  border-color: var(--color-border);
-  color: var(--color-text-secondary);
-  cursor: not-allowed;
-}
-
-.lab-submission-page__button--secondary:hover:enabled {
-  background-color: var(--color-accent-surface);
 }
 
 .lab-submission-page__upload {
