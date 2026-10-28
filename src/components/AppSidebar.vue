@@ -28,6 +28,7 @@ const props = defineProps<{
 const route = useRoute();
 const menuOpen = ref(false);
 const menuToggle = ref<HTMLButtonElement | null>(null);
+const mobileHeader = ref<HTMLElement | null>(null);
 
 const studentNavItems: NavItem[] = [
   { label: 'Главная', icon: House, to: { name: 'home' } },
@@ -65,6 +66,19 @@ function closeMenu(): void {
   menuOpen.value = false;
 }
 
+function isMobileHeaderVisible(): boolean {
+  return (
+    mobileHeader.value !== null &&
+    mobileHeader.value.getClientRects().length > 0
+  );
+}
+
+function closeMenuOnDesktop(): void {
+  if (!isMobileHeaderVisible()) {
+    closeMenu();
+  }
+}
+
 function handleKeydown(event: KeyboardEvent): void {
   if (!menuOpen.value) {
     return;
@@ -72,7 +86,6 @@ function handleKeydown(event: KeyboardEvent): void {
 
   if (event.key === 'Escape') {
     closeMenu();
-    menuToggle.value?.focus();
     return;
   }
 
@@ -104,7 +117,9 @@ function handleKeydown(event: KeyboardEvent): void {
 
 watch(menuOpen, async (isOpen) => {
   if (!isOpen) {
-    menuToggle.value?.focus();
+    if (isMobileHeaderVisible()) {
+      menuToggle.value?.focus();
+    }
     return;
   }
 
@@ -116,8 +131,10 @@ watch(menuOpen, async (isOpen) => {
 
 watch(() => route.fullPath, closeMenu);
 
+window.addEventListener('resize', closeMenuOnDesktop);
 window.addEventListener('keydown', handleKeydown);
 onUnmounted(() => {
+  window.removeEventListener('resize', closeMenuOnDesktop);
   window.removeEventListener('keydown', handleKeydown);
 });
 </script>
@@ -186,7 +203,10 @@ onUnmounted(() => {
     </RouterLink>
   </aside>
 
-  <header class="mobile-header">
+  <header
+    ref="mobileHeader"
+    class="mobile-header"
+  >
     <span class="mobile-header__logo">Fluent</span>
     <button
       ref="menuToggle"

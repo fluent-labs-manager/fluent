@@ -91,7 +91,7 @@ test.describe('мобильная навигация', () => {
   });
 });
 
-test('на десктопной ширине остаётся боковая панель без мобильной шапки', async ({
+test('на desktop ширине остаётся боковая панель без мобильной шапки', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
@@ -100,4 +100,21 @@ test('на десктопной ширине остаётся боковая п�
   await expect(page.locator('.app-sidebar')).toBeVisible();
   await expect(menuToggle(page)).toBeHidden();
   await expect(drawer(page)).toBeHidden();
+});
+
+test('закрывает мобильную панель при переходе на desktop ширину', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await menuToggle(page).click();
+  await expect(drawer(page)).toBeVisible();
+  await expect(menuToggle(page)).toHaveAttribute('aria-expanded', 'true');
+
+  await page.setViewportSize({ width: 1280, height: 900 });
+
+  await expect(page.locator('.app-sidebar')).toBeVisible();
+  await expect(menuToggle(page)).toBeHidden();
+  await expect(drawer(page)).toBeHidden();
+  await expect(menuToggle(page)).toHaveAttribute('aria-expanded', 'false');
 });
