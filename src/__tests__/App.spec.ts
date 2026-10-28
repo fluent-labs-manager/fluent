@@ -144,8 +144,8 @@ describe('App', () => {
       const wrapper = await mountAt('/');
 
       expect(menuOf(wrapper)).toEqual({
-        links: ['Главная', 'Очереди', 'Оценивание'],
-        inactive: ['Варианты', 'ИИ-предфильтр', 'Конструктор баллов'],
+        links: ['Главная', 'Очереди', 'Конструктор баллов', 'Оценивание'],
+        inactive: ['Варианты', 'ИИ-предфильтр'],
       });
       expect(wrapper.find('.app-sidebar__user-group').text()).toBe(
         'Преподаватель',
@@ -206,6 +206,45 @@ describe('App', () => {
 
       expect(router.currentRoute.value.name).toBe('courses');
       expect(wrapper.find('h1').text()).toBe('Дисциплины');
+    });
+  });
+
+  // конструктор баллов доступен только преподавателю
+  describe('доступ к конструктору баллов', () => {
+    function useTeacher(): void {
+      vi.mocked(getCurrentUserStub).mockResolvedValue(
+        structuredClone(teacherFixture),
+      );
+      vi.mocked(getAccountProfileStub).mockResolvedValue(
+        structuredClone(teacherProfileFixture),
+      );
+    }
+
+    it('преподавателю открывает конструктор и отмечает пункт меню', async () => {
+      useTeacher();
+      const wrapper = await mountAt('/score-builder');
+
+      expect(router.currentRoute.value.name).toBe('score-builder');
+      expect(wrapper.find('h1').text()).toBe('Конструктор баллов');
+      expect(wrapper.find('.app-sidebar__link--active').text()).toBe(
+        'Конструктор баллов',
+      );
+    });
+
+    it('студента по прямой ссылке уводит на главную', async () => {
+      const wrapper = await mountAt('/score-builder');
+
+      expect(router.currentRoute.value.name).toBe('home');
+      expect(wrapper.find('h1').text()).toBe('Главная');
+    });
+
+    it('не пускает студента при переходе внутри приложения', async () => {
+      await mountAt('/');
+
+      await router.push('/score-builder');
+      await flushPromises();
+
+      expect(router.currentRoute.value.name).toBe('home');
     });
   });
 });
