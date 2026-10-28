@@ -171,8 +171,15 @@ const handleDeleteFile = (): void => {
               <h2 class="attempt-title">
                 Попытка {{ attempt.attemptNumber }} — {{ attempt.date }}
               </h2>
-              <span class="attempt-badge attempt-badge--rejected">
-                ОТКЛОНЕНО
+              <span
+                class="attempt-badge"
+                :class="
+                  attempt.status === 'accepted'
+                    ? 'attempt-badge--accepted'
+                    : 'attempt-badge--rejected'
+                "
+              >
+                {{ attempt.status === 'accepted' ? 'ПРИНЯТО' : 'ОТКЛОНЕНО' }}
               </span>
             </div>
 
@@ -484,6 +491,11 @@ const handleDeleteFile = (): void => {
 .attempt-badge--rejected {
   background-color: #fce8e6;
   color: var(--color-error);
+}
+
+.attempt-badge--accepted {
+  background-color: var(--color-success-surface);
+  color: var(--color-success-text);
 }
 
 .attempt-feedback {
