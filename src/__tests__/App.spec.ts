@@ -144,8 +144,8 @@ describe('App', () => {
       const wrapper = await mountAt('/');
 
       expect(menuOf(wrapper)).toEqual({
-        links: ['Главная', 'Конструктор баллов'],
-        inactive: ['Варианты', 'ИИ-предфильтр', 'Очереди', 'Оценивание'],
+        links: ['Главная', 'Очереди', 'Конструктор баллов', 'Оценивание'],
+        inactive: ['Варианты', 'ИИ-предфильтр'],
       });
       expect(wrapper.find('.app-sidebar__user-group').text()).toBe(
         'Преподаватель',

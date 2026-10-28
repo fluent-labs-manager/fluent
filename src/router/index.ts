@@ -51,9 +51,31 @@ const routes: RouteRecordRaw[] = [
         meta: { roles: [UserRole.Teacher] },
       },
       {
+        path: 'courses/:courseId/labs/:labId',
+        name: 'lab-submission',
+        component: () => import('@/views/LabSubmissionPage.vue'),
+        props: (route) => ({
+          courseId: Number(route.params.courseId),
+          labId: Number(route.params.labId),
+        }),
+        meta: { roles: [UserRole.Student] },
+      },
+      {
         path: 'account',
         name: 'account',
         component: () => import('@/views/AccountPage.vue'),
+      },
+      {
+        path: 'grading',
+        name: 'grading',
+        component: () => import('@/views/TeacherGradingPage.vue'),
+        meta: { roles: [UserRole.Teacher] },
+      },
+      {
+        path: 'review-queue',
+        name: 'review-queue',
+        component: () => import('@/views/TeacherReviewQueuePage.vue'),
+        meta: { roles: [UserRole.Teacher] },
       },
     ],
   },
