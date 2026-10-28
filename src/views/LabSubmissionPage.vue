@@ -1,202 +1,314 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { ChevronLeft, FileText, Paperclip, RotateCw } from '@lucide/vue';
+import { computed, ref, watch } from 'vue';
+import { RouterLink } from 'vue-router';
+
+import { ChevronLeft, RotateCw } from '@lucide/vue';
+import ProgressBar from 'primevue/progressbar';
+
+import FileDropzone from '@/components/FileDropzone.vue';
+import LabAttemptCard from '@/components/LabAttemptCard.vue';
+import LabStatusBar from '@/components/LabStatusBar.vue';
+import SubmittedFileCard from '@/components/SubmittedFileCard.vue';
+import type { LabAttempt } from '@/api/labs/LabAttempt.dto.ts';
+import { useLabAttemptSubmit } from '@/composables/useLabAttemptSubmit.ts';
 import { useLabSubmission } from '@/composables/useLabSubmission.ts';
+import { useStrayFileDropGuard } from '@/composables/useStrayFileDropGuard.ts';
+import { LabStatus } from '@/types/LabStatus.ts';
+import { validateSubmissionFile } from '@/utils/FileValidation.ts';
 
-const router = useRouter();
-const route = useRoute();
+const props = defineProps<{
+  courseId: number;
+  labId: number;
+}>();
 
-const labId = computed<number>(() => Number(route.params.labId) || 3);
-const courseId = computed<number>(() => Number(route.params.courseId) || 1);
-
-const { submission, isLoading, error, reload, submitWork } = useLabSubmission(
-  labId.value,
+const { submission, isLoading, error, reload } = useLabSubmission(
+  () => props.courseId,
+  () => props.labId,
 );
 
-const comment = ref('');
+const {
+  progress,
+  isSubmitting,
+  error: submitError,
+  submit,
+  cancel,
+} = useLabAttemptSubmit(
+  () => props.courseId,
+  () => props.labId,
+);
 
-const isSubmitting = ref(false);
+useStrayFileDropGuard();
 
-const handleGoBack = (): void => {
-  void router.push({
-    name: 'course-labs',
-    params: { courseId: courseId.value },
-  });
-};
+const lab = computed(() => submission.value?.lab ?? null);
 
-const handleSubmit = async (): Promise<void> => {
-  isSubmitting.value = true;
-  await submitWork(comment.value);
-  isSubmitting.value = false;
-};
+// отправить файл можно только у несданной работы, остальные — для просмотра
+const canSubmit = computed<boolean>(
+  () => lab.value?.status === LabStatus.NotSubmitted,
+);
 
-const handleDeleteFile = (): void => {
-  if (submission.value?.currentFile) {
-    submission.value.currentFile = undefined;
+const latestAttempt = computed<LabAttempt | null>(() => {
+  const attempts = submission.value?.attempts ?? [];
+  return attempts[attempts.length - 1] ?? null;
+});
+
+// в истории сверху последняя попытка
+const history = computed<LabAttempt[]>(() =>
+  [...(submission.value?.attempts ?? [])].reverse(),
+);
+
+// файл и комментарий живут только на странице, пока работу не отправили
+const selectedFile = ref<File | null>(null);
+const comment = ref<string>('');
+// почему последний выбранный файл не принят
+const fileError = ref<string | null>(null);
+
+// у другой работы форма начинается заново
+watch(
+  () => [props.courseId, props.labId],
+  () => {
+    selectedFile.value = null;
+    comment.value = '';
+    fileError.value = null;
+  },
+);
+
+// неподходящий файл не принимается: прежний выбор остаётся пустым
+function selectFile(file: File): void {
+  fileError.value = validateSubmissionFile(file);
+  submitError.value = null;
+  if (fileError.value === null) {
+    selectedFile.value = file;
   }
-};
+}
+
+function removeFile(): void {
+  selectedFile.value = null;
+  submitError.value = null;
+}
+
+async function submitWork(): Promise<void> {
+  if (selectedFile.value === null) {
+    return;
+  }
+  const text = comment.value.trim();
+  // null — не отправилось или, пока файл грузился, открыли другую работу
+  const result = await submit(selectedFile.value, text === '' ? null : text);
+
+  if (result === null) {
+    return;
+  }
+  submission.value = result;
+  selectedFile.value = null;
+  comment.value = '';
+}
+
+function retry(): void {
+  void reload();
+}
 </script>
 
 <template>
   <main class="lab-submission-page">
-    <header class="page-header">
-      <button
-        class="back-btn"
-        type="button"
-        @click="handleGoBack"
-      >
-        <ChevronLeft :size="16" />
-        Назад
-      </button>
-
-      <h1 class="page-title">
-        {{ submission?.labTitle ?? 'Лабораторная работа' }}
-      </h1>
-    </header>
+    <!-- возвращает к дисциплине с этой же работой в карточке -->
+    <RouterLink
+      class="lab-submission-page__back"
+      :to="{
+        name: 'course-labs',
+        params: { courseId },
+        query: { lab: String(labId) },
+      }"
+    >
+      <ChevronLeft :size="16" />
+      Назад
+    </RouterLink>
 
     <p
       v-if="isLoading"
-      class="status-message"
+      class="lab-submission-page__status"
       role="status"
     >
-      Загрузка лабораторной работы…
+      Загрузка работы…
     </p>
 
     <div
       v-else-if="error !== null"
-      class="status-message status-message--error"
+      class="lab-submission-page__status lab-submission-page__status--error"
       role="alert"
     >
-      <span>Не удалось загрузить данные: {{ error }}</span>
+      <span>Не удалось загрузить работу: {{ error }}</span>
       <button
-        class="retry-btn"
+        class="lab-submission-page__retry"
         type="button"
         aria-label="Повторить"
         title="Повторить"
-        @click="reload"
+        @click="retry"
       >
         <RotateCw :size="16" />
       </button>
     </div>
 
-    <div
-      v-else-if="submission !== null"
-      class="submission-layout"
-    >
-      <section class="submission-form">
-        <div class="field-section">
-          <span class="section-label">ФАЙЛЫ</span>
+    <template v-else-if="lab !== null">
+      <h1 class="lab-submission-page__title">
+        Лабораторная работа {{ lab.number }}
+      </h1>
 
-          <div
-            v-if="submission.status === 'in_review'"
-            class="status-badge"
+      <p
+        v-if="lab.status === LabStatus.Locked"
+        class="lab-submission-page__empty"
+      >
+        Работа пока недоступна
+      </p>
+
+      <div
+        v-else
+        class="lab-submission-page__content"
+      >
+        <section
+          class="lab-submission-page__section"
+          aria-labelledby="files-heading"
+        >
+          <h2
+            id="files-heading"
+            class="lab-submission-page__section-title"
           >
-            <span class="status-dot"></span>
-            <span class="status-text">На проверке</span>
-          </div>
-
-          <div
-            v-if="submission.currentFile"
-            class="file-card"
-          >
-            <div class="file-icon-box">
-              <FileText :size="24" />
-            </div>
-
-            <div class="file-info">
-              <span class="file-name">{{ submission.currentFile.name }}</span>
-              <span class="file-meta">
-                Загружено {{ submission.currentFile.uploadedAt }} ·
-                {{ submission.currentFile.size }}
-              </span>
-            </div>
-
-            <span class="pdf-tag">PDF</span>
-
-            <button
-              class="delete-file-btn"
-              type="button"
-              @click="handleDeleteFile"
-            >
-              Удалить файл
-            </button>
-          </div>
-        </div>
-
-        <div class="field-section">
-          <label
-            class="section-label"
-            for="studentComment"
-            >КОММЕНТАРИЙ К СДАЧЕ</label
-          >
-          <input
-            id="studentComment"
-            v-model="comment"
-            class="comment-input"
-            type="text"
-            placeholder="Добавить текстовый комментарий для преподавателя..."
+            Файлы
+          </h2>
+          <LabStatusBar
+            class="lab-submission-page__status-bar"
+            :lab="lab"
           />
-        </div>
 
-        <div class="actions-row">
-          <button
-            class="submit-action-btn"
-            type="button"
-            :disabled="isSubmitting"
-            @click="handleSubmit"
+          <form
+            v-if="canSubmit"
+            class="lab-submission-page__form"
+            @submit.prevent="submitWork"
           >
-            Отправить работу на проверку
-          </button>
-
-          <button
-            class="draft-action-btn"
-            type="button"
-          >
-            Сохранить черновик
-          </button>
-        </div>
-      </section>
-
-      <aside class="submission-history">
-        <span class="section-label">ИСТОРИЯ</span>
-
-        <div class="history-list">
-          <article
-            v-for="attempt in submission.attempts"
-            :key="attempt.id"
-            class="attempt-card"
-          >
-            <div class="attempt-header">
-              <h2 class="attempt-title">
-                Попытка {{ attempt.attemptNumber }} — {{ attempt.date }}
-              </h2>
-              <span
-                class="attempt-badge"
-                :class="
-                  attempt.status === 'accepted'
-                    ? 'attempt-badge--accepted'
-                    : 'attempt-badge--rejected'
-                "
+            <SubmittedFileCard
+              v-if="selectedFile !== null"
+              :file="{ name: selectedFile.name, size: selectedFile.size }"
+              :removable="!isSubmitting"
+              @remove="removeFile"
+            />
+            <template v-else>
+              <FileDropzone @select="selectFile" />
+              <p
+                v-if="fileError !== null"
+                class="lab-submission-page__file-error"
+                role="alert"
               >
-                {{ attempt.status === 'accepted' ? 'ПРИНЯТО' : 'ОТКЛОНЕНО' }}
+                {{ fileError }}
+              </p>
+            </template>
+            <label class="lab-submission-page__field">
+              <span class="lab-submission-page__label">
+                Комментарий к работе
               </span>
+              <textarea
+                v-model="comment"
+                class="lab-submission-page__comment"
+                :disabled="isSubmitting"
+                rows="4"
+                placeholder="Необязательно"
+              />
+            </label>
+            <div
+              v-if="isSubmitting"
+              class="lab-submission-page__upload"
+              role="status"
+            >
+              <div class="lab-submission-page__upload-header">
+                <span class="lab-submission-page__upload-label">
+                  Загрузка файла… {{ progress }}%
+                </span>
+                <!-- при плохой связи загрузка может тянуться долго: её можно
+                     прервать, файл и комментарий останутся -->
+                <button
+                  class="lab-submission-page__cancel"
+                  type="button"
+                  @click="cancel"
+                >
+                  Отменить загрузку
+                </button>
+              </div>
+              <ProgressBar
+                :value="progress"
+                :show-value="false"
+              />
             </div>
+            <div
+              v-if="submitError !== null"
+              class="lab-submission-page__submit-error"
+              role="alert"
+            >
+              <span>Не удалось отправить работу: {{ submitError }}</span>
+              <!-- файл и комментарий на месте: повтор отправляет их же -->
+              <button
+                class="lab-submission-page__retry"
+                type="button"
+                aria-label="Повторить отправку"
+                title="Повторить отправку"
+                @click="submitWork"
+              >
+                <RotateCw :size="16" />
+              </button>
+            </div>
+            <div class="lab-submission-page__actions">
+              <!-- без выбранного файла отправлять нечего, а во время загрузки —
+                   второй раз нельзя -->
+              <button
+                class="lab-submission-page__button lab-submission-page__button--primary"
+                type="submit"
+                :disabled="selectedFile === null || isSubmitting"
+              >
+                Отправить работу на проверку
+              </button>
+            </div>
+          </form>
 
-            <p class="attempt-feedback">
-              {{ attempt.comment }}
+          <template v-else-if="latestAttempt !== null">
+            <SubmittedFileCard
+              :file="latestAttempt.file"
+              :uploaded-at="latestAttempt.submittedAt"
+            />
+            <p
+              v-if="latestAttempt.comment !== null"
+              class="lab-submission-page__note"
+            >
+              Ваш комментарий: {{ latestAttempt.comment }}
             </p>
+          </template>
+        </section>
 
-            <div class="attempt-file">
-              <Paperclip :size="14" />
-              <span class="attempt-file-name">
-                {{ attempt.fileName }} · {{ attempt.fileSize }}
-              </span>
-            </div>
-          </article>
-        </div>
-      </aside>
-    </div>
+        <section
+          class="lab-submission-page__section"
+          aria-labelledby="history-heading"
+        >
+          <h2
+            id="history-heading"
+            class="lab-submission-page__section-title"
+          >
+            История
+          </h2>
+          <p
+            v-if="history.length === 0"
+            class="lab-submission-page__empty"
+          >
+            Попыток пока не было.
+          </p>
+          <ul
+            v-else
+            class="lab-submission-page__history"
+          >
+            <li
+              v-for="attempt in history"
+              :key="attempt.id"
+            >
+              <LabAttemptCard :attempt="attempt" />
+            </li>
+          </ul>
+        </section>
+      </div>
+    </template>
   </main>
 </template>
 
@@ -208,53 +320,48 @@ const handleDeleteFile = (): void => {
   padding: var(--page-offset-top) 2.5rem 2.5rem;
 }
 
-.page-header {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.5rem;
-}
-
-.back-btn {
+.lab-submission-page__back {
   display: inline-flex;
   align-items: center;
-  gap: 0.25em;
-  padding: 0;
-  border: none;
-  background-color: transparent;
+  align-self: flex-start;
+  gap: 0.25rem;
   color: var(--color-text-secondary);
   font-size: var(--font-size-md);
-  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s ease;
 }
 
-.back-btn:hover {
+.lab-submission-page__back:hover {
   color: var(--color-text);
 }
 
-.page-title {
+.lab-submission-page__status-bar {
+  align-self: flex-start;
+}
+
+.lab-submission-page__title {
   margin: 0;
-  color: var(--color-text);
   font-size: var(--font-size-5xl);
   font-weight: 700;
   line-height: var(--page-title-line-height);
 }
 
-.status-message {
+.lab-submission-page__status {
   display: flex;
   align-items: center;
   gap: 1rem;
-  min-height: var(--nav-item-height);
   margin: 0;
   color: var(--color-text-secondary);
   font-size: var(--font-size-md);
 }
 
-.status-message--error {
+.lab-submission-page__status--error {
   color: var(--color-error);
 }
 
-.retry-btn {
+.lab-submission-page__retry {
   display: flex;
+  flex-shrink: 0;
   justify-content: center;
   align-items: center;
   width: 2rem;
@@ -265,251 +372,188 @@ const handleDeleteFile = (): void => {
   background-color: var(--color-surface);
   color: var(--color-text);
   cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
-.submission-layout {
-  display: flex;
-  align-items: flex-start;
-  gap: 2.5rem;
-}
-
-.submission-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  width: 41.25rem;
-}
-
-.field-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.section-label {
-  display: block;
-  color: var(--color-text-secondary);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-}
-
-.status-badge {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  height: 3.5rem;
-  padding: 0 1.25rem;
-  border-radius: 1rem;
-  background-color: var(--color-accent-surface);
-}
-
-.status-dot {
-  width: 0.5625rem;
-  height: 0.5625rem;
-  border-radius: 50%;
-  background-color: var(--color-accent);
-}
-
-.status-text {
-  color: var(--color-text);
-  font-size: var(--font-size-md);
-  font-weight: 700;
-}
-
-.file-card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  height: 6.5rem;
-  padding: 0 1.625rem;
-  border: 1px solid var(--color-border);
-  border-radius: 1rem;
-  background-color: var(--color-surface);
-  box-shadow: var(--shadow-card);
-}
-
-.file-icon-box {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 3.25rem;
-  height: 3.25rem;
-  border-radius: 0.75rem;
-  background-color: var(--color-accent-surface);
-  color: var(--color-text-secondary);
-}
-
-.file-info {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.file-name {
-  color: var(--color-text);
-  font-size: 1.125rem;
-  font-weight: 700;
-}
-
-.file-meta {
-  color: var(--color-text-secondary);
-  font-size: 0.75rem;
-}
-
-.pdf-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.375rem 0.625rem;
-  border-radius: 62.4375rem;
-  background-color: var(--color-accent-surface);
-  color: var(--color-text);
-  font-size: 0.6875rem;
-  font-weight: 700;
-}
-
-.delete-file-btn {
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: var(--color-error);
-  font-size: 0.75rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.delete-file-btn:hover {
-  text-decoration: underline;
-}
-
-.comment-input {
-  width: 100%;
-  height: 3rem;
-  padding: 0 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.75rem;
-  outline: none;
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  font-size: 0.875rem;
-}
-
-.comment-input:focus {
+.lab-submission-page__retry:hover {
   border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
-.actions-row {
+.lab-submission-page__content {
+  display: grid;
+  align-items: start;
+  gap: 1.5rem;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+}
+
+.lab-submission-page__section {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 0.75rem;
 }
 
-.submit-action-btn {
-  width: 16.875rem;
-  height: 2.875rem;
-  border: none;
-  border-radius: 0.75rem;
-  background-color: var(--color-btn-primary);
-  color: #fff;
-  font-size: 0.875rem;
+.lab-submission-page__section-title {
+  margin: 0;
+  font-size: var(--font-size-xs);
   font-weight: 700;
+  text-transform: uppercase;
+}
+
+.lab-submission-page__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.lab-submission-page__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.lab-submission-page__label {
+  font-size: var(--font-size-md);
+  font-weight: 500;
+}
+
+.lab-submission-page__comment {
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-md);
+  resize: vertical;
+}
+
+.lab-submission-page__comment:disabled {
+  background-color: var(--color-muted-surface);
+  color: var(--color-text-secondary);
+}
+
+.lab-submission-page__comment:focus {
+  border-color: var(--color-accent);
+  outline: none;
+}
+
+.lab-submission-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.lab-submission-page__button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  height: 2.5rem;
+  padding: 0 1.15em;
+  border: 1px solid var(--color-accent);
+  border-radius: 0.7em;
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  white-space: nowrap;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
-.submit-action-btn:hover {
-  background-color: var(--color-btn-primary-hover);
+.lab-submission-page__button--primary {
+  background-color: var(--color-accent);
+  color: var(--color-surface);
 }
 
-.submit-action-btn:disabled {
-  opacity: 0.6;
+.lab-submission-page__button--primary:disabled {
+  border-color: var(--color-border);
+  background-color: var(--color-muted-surface);
+  color: var(--color-text-secondary);
   cursor: not-allowed;
 }
 
-.draft-action-btn {
-  width: 11.875rem;
-  height: 2.875rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.75rem;
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  font-size: 0.875rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: border-color 0.15s ease;
+.lab-submission-page__button--primary:hover:enabled {
+  background-color: var(--color-text-secondary);
 }
 
-.draft-action-btn:hover {
-  border-color: var(--color-accent);
-}
-
-.submission-history {
+.lab-submission-page__upload {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  width: 25.625rem;
 }
 
-.history-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.875rem;
-}
-
-.attempt-card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: 1.25rem;
-  border: 1px solid var(--color-border);
-  border-radius: 1rem;
-  background-color: var(--color-surface);
-  box-shadow: var(--shadow-card);
-}
-
-.attempt-header {
+.lab-submission-page__upload-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
 }
 
-.attempt-title {
-  margin: 0;
-  color: var(--color-text);
-  font-size: 0.8125rem;
-  font-weight: 700;
-}
-
-.attempt-badge {
-  padding: 0.25rem 0.625rem;
-  border-radius: 62.4375rem;
-  font-size: 0.6875rem;
-  font-weight: 700;
-}
-
-.attempt-badge--rejected {
-  background-color: #fce8e6;
+.lab-submission-page__cancel {
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: none;
   color: var(--color-error);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  cursor: pointer;
 }
 
-.attempt-badge--accepted {
-  background-color: var(--color-success-surface);
-  color: var(--color-success-text);
+.lab-submission-page__cancel:hover {
+  text-decoration: underline;
 }
 
-.attempt-feedback {
-  margin: 0;
-  color: var(--color-text);
-  font-size: 0.8125rem;
-  line-height: 1.45;
-}
-
-.attempt-file {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4375rem;
+.lab-submission-page__upload-label {
   color: var(--color-text-secondary);
-  font-size: 0.6875rem;
+  font-size: var(--font-size-sm);
+}
+
+.lab-submission-page__submit-error {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--color-error);
+  font-size: var(--font-size-md);
+}
+
+.lab-submission-page__file-error {
+  margin: 0;
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}
+
+.lab-submission-page__note {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.lab-submission-page__history {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lab-submission-page__empty {
+  margin: 0;
+  padding: 1.5rem 1.375rem;
+  border: 1px dashed var(--color-border);
+  border-radius: 1rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+}
+
+@media (width <= 960px) {
+  .lab-submission-page__content {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 </style>

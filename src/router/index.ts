@@ -1,9 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import type { RouteRecordRaw } from 'vue-router';
+import type { LocationQueryValue, RouteRecordRaw } from 'vue-router';
 import MainLayout from '@/layouts/MainLayout.vue';
 import { canAccess } from '@/router/access.ts';
 import { useUserStore } from '@/stores/user.ts';
 import { UserRole } from '@/types/UserRole.ts';
+
+function parseLabId(
+  value: LocationQueryValue | LocationQueryValue[] | undefined,
+): number | null {
+  const id = typeof value === 'string' ? Number(value) : Number.NaN;
+  return Number.isInteger(id) ? id : null;
+}
 
 const routes: RouteRecordRaw[] = [
   {
@@ -41,7 +48,11 @@ const routes: RouteRecordRaw[] = [
         path: 'courses/:courseId',
         name: 'course-labs',
         component: () => import('@/views/CourseLabsViewingPage.vue'),
-        props: (route) => ({ courseId: Number(route.params.courseId) }),
+        // ?lab=102 — работа, открытая в карточке
+        props: (route) => ({
+          courseId: Number(route.params.courseId),
+          labId: parseLabId(route.query.lab),
+        }),
         meta: { roles: [UserRole.Student] },
       },
       {

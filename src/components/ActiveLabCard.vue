@@ -1,29 +1,40 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { RouterLink } from 'vue-router';
+import type { RouteLocationRaw } from 'vue-router';
 
-import type { NotSubmittedLab } from '@/api/labs/Lab.dto.ts';
+import LabStatusBadge from '@/components/LabStatusBadge.vue';
+import type { SelectableLab } from '@/api/labs/Lab.dto.ts';
 import type { DeadlineState } from '@/types/DeadlineState.ts';
+import { LabStatus } from '@/types/LabStatus.ts';
 import { formatDateTime } from '@/utils/DateFormatter.ts';
 import { getDeadlineState } from '@/utils/DeadlineState.ts';
 
-const props = withDefaults(
-  defineProps<{
-    lab: NotSubmittedLab;
-    // текущее время: от него зависит, близок ли срок
-    now: Date;
-    // уменьшенная карточка для сетки из нескольких активных работ
-    compact?: boolean;
-  }>(),
-  { compact: false },
-);
+const props = defineProps<{
+  lab: SelectableLab;
+  // текущее время: от него зависит, близок ли срок
+  now: Date;
+  // страница лабораторной, где работу сдают
+  submissionTo: RouteLocationRaw;
+}>();
 
 const emit = defineEmits<{
   openVariant: [];
   openTask: [];
 }>();
 
+// срок показывается только у несданной работы, у остальных — статус
+const isNotSubmitted = computed<boolean>(
+  () => props.lab.status === LabStatus.NotSubmitted,
+);
+
 const deadlineState = computed<DeadlineState>(() =>
   getDeadlineState(props.lab.deadline, props.now),
+);
+
+// несданную работу можно сдать и после срока, остальные — только посмотреть
+const submissionLabel = computed<string>(() =>
+  isNotSubmitted.value ? 'Сдать работу' : 'Открыть работу',
 );
 
 const deadline = computed<string>(() => {
@@ -35,15 +46,13 @@ const deadline = computed<string>(() => {
 </script>
 
 <template>
-  <article
-    class="active-lab-card"
-    :class="{ 'active-lab-card--compact': compact }"
-  >
+  <article class="active-lab-card">
     <div class="active-lab-card__meta">
       <span class="active-lab-card__number">
         Лабораторная работа {{ lab.number }}
       </span>
       <span
+        v-if="isNotSubmitted"
         class="active-lab-card__deadline"
         :class="{
           'active-lab-card__deadline--urgent': deadlineState !== 'normal',
@@ -51,6 +60,10 @@ const deadline = computed<string>(() => {
       >
         {{ deadline }}
       </span>
+      <LabStatusBadge
+        v-else
+        :status="lab.status"
+      />
     </div>
 
     <h3 class="active-lab-card__title">{{ lab.title }}</h3>
@@ -61,8 +74,15 @@ const deadline = computed<string>(() => {
     </div>
 
     <div class="active-lab-card__actions">
-      <button
+      <!-- главное действие идёт первым -->
+      <RouterLink
         class="active-lab-card__button active-lab-card__button--primary"
+        :to="submissionTo"
+      >
+        {{ submissionLabel }}
+      </RouterLink>
+      <button
+        class="active-lab-card__button active-lab-card__button--secondary"
         type="button"
         @click="emit('openVariant')"
       >
@@ -89,10 +109,6 @@ const deadline = computed<string>(() => {
   border-radius: 1rem;
   background-color: var(--color-summary);
   box-shadow: var(--shadow-card);
-}
-
-.active-lab-card--compact {
-  padding: 1rem;
 }
 
 .active-lab-card__meta {
@@ -127,13 +143,6 @@ const deadline = computed<string>(() => {
   line-height: 1.2;
 }
 
-/* название занимает свободное место, поэтому вариант и кнопки соседних
-   карточек стоят на одной линии */
-.active-lab-card--compact .active-lab-card__title {
-  flex-grow: 1;
-  font-size: var(--font-size-2xl);
-}
-
 .active-lab-card__variant {
   display: flex;
   justify-content: space-between;
@@ -164,24 +173,22 @@ const deadline = computed<string>(() => {
 }
 
 .active-lab-card__button {
-  min-width: 11.25rem;
-  height: 2.75rem;
-  padding: 0 1.7em;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  height: 2.5rem;
+  padding: 0 1.15em;
   border: 1px solid var(--color-accent);
   border-radius: 0.7em;
   font-size: var(--font-size-md);
   font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
   cursor: pointer;
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease,
     color 0.2s ease;
-}
-
-.active-lab-card--compact .active-lab-card__button {
-  flex: 1 1 7.5rem;
-  min-width: 0;
-  padding: 0 0.85em;
 }
 
 .active-lab-card__button--primary {
@@ -195,10 +202,10 @@ const deadline = computed<string>(() => {
 
 .active-lab-card__button--secondary {
   background-color: var(--color-surface);
-  color: var(--color-text);
+  color: var(--color-accent);
 }
 
 .active-lab-card__button--secondary:hover {
-  border-color: var(--color-text);
+  background-color: var(--color-accent-surface);
 }
 </style>

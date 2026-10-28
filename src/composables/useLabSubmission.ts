@@ -1,59 +1,63 @@
-import { ref } from 'vue';
-import type { Ref } from 'vue';
-import { getLabSubmissionStub, submitLabWorkStub } from '@/api/labs/LabsApi.ts';
-import type { LabSubmissionDetails } from '@/api/labs/LabSubmission.dto.ts';
+import { ref, toValue, watch } from 'vue';
+import type { MaybeRefOrGetter, Ref } from 'vue';
+
+import { getLabSubmissionStub } from '@/api/labs/LabsApi.ts';
+import type { LabSubmission } from '@/api/labs/LabSubmission.dto.ts';
 import { ApiRequestError } from '@/utils/ApiResolver.ts';
 
 interface UseLabSubmissionResult {
-  submission: Ref<LabSubmissionDetails | null>;
+  submission: Ref<LabSubmission | null>;
   isLoading: Ref<boolean>;
   error: Ref<string | null>;
   reload: () => Promise<void>;
-  submitWork: (comment: string) => Promise<void>;
 }
 
-export function useLabSubmission(labId: number): UseLabSubmissionResult {
-  const submission = ref<LabSubmissionDetails | null>(null);
+export function useLabSubmission(
+  courseId: MaybeRefOrGetter<number>,
+  labId: MaybeRefOrGetter<number>,
+): UseLabSubmissionResult {
+  const submission = ref<LabSubmission | null>(null);
   const isLoading = ref<boolean>(true);
   const error = ref<string | null>(null);
 
+  // номер последнего запроса: ответ на устаревший запрос не перезапишет данные
+  let lastRequestId = 0;
+
   async function reload(): Promise<void> {
+    lastRequestId += 1;
+    const requestId = lastRequestId;
     isLoading.value = true;
     error.value = null;
 
+    let data: LabSubmission | null = null;
+    let message: string | null = null;
     try {
-      submission.value = await getLabSubmissionStub(labId);
+      data = await getLabSubmissionStub(toValue(courseId), toValue(labId));
     } catch (loadError: unknown) {
-      error.value =
+      // TODO: обработать 401 — отправить пользователя на вход через ITMO ID.
+      message =
         loadError instanceof ApiRequestError
           ? loadError.message
           : 'Неизвестная ошибка';
-    } finally {
-      isLoading.value = false;
     }
+
+    if (requestId !== lastRequestId) {
+      return;
+    }
+    submission.value = data;
+    error.value = message;
+    isLoading.value = false;
   }
 
-  async function submitWork(comment: string): Promise<void> {
-    isLoading.value = true;
-    error.value = null;
+  // страница не пересоздаётся при переходе между работами, поэтому
+  // данные перезагружаются при смене courseId или labId
+  watch(
+    () => [toValue(courseId), toValue(labId)],
+    () => {
+      void reload();
+    },
+    { immediate: true },
+  );
 
-    try {
-      await submitLabWorkStub(labId, comment);
-      if (submission.value !== null) {
-        submission.value.status = 'in_review';
-        submission.value.studentComment = comment;
-      }
-    } catch (submitError: unknown) {
-      error.value =
-        submitError instanceof ApiRequestError
-          ? submitError.message
-          : 'Не удалось отправить работу';
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  void reload();
-
-  return { submission, isLoading, error, reload, submitWork };
+  return { submission, isLoading, error, reload };
 }
