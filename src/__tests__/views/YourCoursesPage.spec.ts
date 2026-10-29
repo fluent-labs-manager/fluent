@@ -134,7 +134,7 @@ describe('YourCoursesPage', () => {
 
     it('подписывает кнопку текущего семестра его названием', async () => {
       const wrapper = await mountPage();
-      expect(wrapper.findAll('.courses-page__filter')[0]?.text()).toBe(
+      expect(wrapper.findAll('.courses-page__filters button')[0]?.text()).toBe(
         'Осень 2026',
       );
     });
@@ -170,7 +170,7 @@ describe('YourCoursesPage', () => {
 
     it('отмечает выбранный семестр через aria-pressed', async () => {
       const wrapper = await mountPage();
-      const buttons = wrapper.findAll('.courses-page__filter');
+      const buttons = wrapper.findAll('.courses-page__filters button');
       expect(buttons[0]?.attributes('aria-pressed')).toBe('true');
       expect(buttons[1]?.attributes('aria-pressed')).toBe('false');
 
@@ -181,7 +181,9 @@ describe('YourCoursesPage', () => {
 
     it('во вкладке «Все семестры» показывает курсы всех семестров без сводки', async () => {
       const wrapper = await mountPage();
-      await wrapper.findAll('.courses-page__filter')[1]?.trigger('click');
+      await wrapper
+        .findAll('.courses-page__filters button')[1]
+        ?.trigger('click');
 
       expect(wrapper.findAll('.course-card')).toHaveLength(3);
       expect(wrapper.find('.semester-progress').exists()).toBe(false);

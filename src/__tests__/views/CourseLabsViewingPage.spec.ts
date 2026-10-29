@@ -62,6 +62,17 @@ async function mountPage(courseId = 11): Promise<ReturnType<typeof mount>> {
     props: { courseId },
     global: {
       stubs: { RouterLink: RouterLinkStub },
+      provide: {
+        router: {
+          push: vi.fn(),
+          replace: vi.fn(),
+          resolve: vi.fn(),
+        },
+        route: {
+          params: {},
+          query: {},
+        },
+      },
     },
   });
   await flushPromises();

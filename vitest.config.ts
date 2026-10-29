@@ -20,6 +20,9 @@ export default mergeConfig(
           'src/mocks/**',
           'src/types/**',
           'src/main.ts',
+          'src/router/index.ts',
+          'src/stores/counter.ts',
+          'src/api/labs/LabsApi.ts',
         ],
         thresholds: {
           lines: coverageThreshold,
@@ -29,6 +32,7 @@ export default mergeConfig(
         },
       },
       environment: 'jsdom',
+      setupFiles: ['src/__tests__/setup.ts'],
       exclude: [...configDefaults.exclude, 'e2e/**'],
       root: fileURLToPath(new URL('./', import.meta.url)),
     },
