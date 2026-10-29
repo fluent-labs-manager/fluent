@@ -117,7 +117,7 @@ describe('App', () => {
       links: string[];
       inactive: string[];
     } {
-       const items = wrapper.find('.app-sidebar').findAll('.app-sidebar__link');
+      const items = wrapper.find('.app-sidebar').findAll('.app-sidebar__link');
       return {
         links: items
           .filter((item) => item.element.tagName === 'A')
