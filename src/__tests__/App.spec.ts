@@ -80,7 +80,9 @@ describe('App', () => {
 
   it('подсвечивает в меню только текущий раздел', async () => {
     const wrapper = await mountAt('/courses');
-    const activeLinks = wrapper.findAll('.app-sidebar__link--active');
+    const activeLinks = wrapper
+      .find('.app-sidebar')
+      .findAll('.app-sidebar__link--active');
     expect(activeLinks).toHaveLength(1);
     expect(activeLinks[0]?.text()).toBe('Дисциплины');
   });
@@ -88,6 +90,7 @@ describe('App', () => {
   it('ведёт на главную из пункта меню «Главная»', async () => {
     const wrapper = await mountAt('/courses');
     const homeLink = wrapper
+      .find('.app-sidebar')
       .findAll('.app-sidebar__link')
       .find((link) => link.text() === 'Главная');
     expect(homeLink?.attributes('href')).toBe('/');
@@ -114,7 +117,7 @@ describe('App', () => {
       links: string[];
       inactive: string[];
     } {
-      const items = wrapper.findAll('.app-sidebar__link');
+      const items = wrapper.find('.app-sidebar').findAll('.app-sidebar__link');
       return {
         links: items
           .filter((item) => item.element.tagName === 'A')
