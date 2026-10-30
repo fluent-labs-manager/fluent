@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
 
 import { ArrowLeft, RotateCw } from '@lucide/vue';
 
@@ -14,6 +14,8 @@ import { LabStatus } from '@/types/LabStatus.ts';
 const props = defineProps<{
   courseId: number;
 }>();
+
+const router = useRouter();
 
 const { courseLabs, isLoading, error, reload } = useCourseLabs(
   () => props.courseId,
@@ -60,8 +62,15 @@ function openVariant(): void {
   // внешний ресурс) — ещё не решено.
 }
 
-function openTask(): void {
-  // TODO: перейти к заданию, когда появится страница сдачи лабораторной.
+function openTask(lab?: Lab): void {
+  const targetLabId = lab ? lab.id : (activeLabs.value[0]?.id ?? 3);
+  void router.push({
+    name: 'lab-submission',
+    params: {
+      courseId: props.courseId,
+      labId: targetLabId,
+    },
+  });
 }
 </script>
 
@@ -161,7 +170,7 @@ function openTask(): void {
               :now="now"
               :compact="isActiveLabsGrid"
               @open-variant="openVariant"
-              @open-task="openTask"
+              @open-task="openTask(lab)"
             />
           </div>
         </section>

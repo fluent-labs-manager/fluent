@@ -5,6 +5,7 @@ import { createPinia } from 'pinia';
 
 import App from './App.vue';
 import router from './router';
+import { installPrimeVue } from '@/plugins/primevue.ts';
 
 import * as Sentry from '@sentry/vue';
 import apiConf from '@/api/api.conf.ts';
@@ -22,5 +23,6 @@ Sentry.init({
 
 app.use(createPinia());
 app.use(router);
+installPrimeVue(app);
 
 app.mount('#app');
