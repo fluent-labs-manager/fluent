@@ -3,7 +3,7 @@ export function getPercent(value: number, max: number): number {
     return 0;
   }
 
-  return Math.min(100, Math.ceil((value * 1000) / max) / 10);
+  return Math.min(100, Math.round((value * 1000) / max) / 10);
 }
 
 const percentFormatter = new Intl.NumberFormat('ru-RU', {

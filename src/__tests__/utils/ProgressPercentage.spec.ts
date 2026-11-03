@@ -3,10 +3,10 @@ import { describe, it, expect } from 'vitest';
 import { formatPercent, getPercent } from '@/utils/ProgressPercentage.ts';
 
 describe('getPercent', () => {
-  it('округляет вверх до одного знака после запятой', () => {
+  it('округляет до одного знака после запятой', () => {
     expect(getPercent(4, 6)).toBe(66.7);
     expect(getPercent(11, 19)).toBe(57.9);
-    expect(getPercent(1, 3)).toBe(33.4);
+    expect(getPercent(1, 3)).toBe(33.3);
   });
 
   it('не округляет точные значения', () => {
