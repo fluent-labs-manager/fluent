@@ -26,7 +26,7 @@ const props = defineProps<{
 const studentNavItems: NavItem[] = [
   { label: 'Главная', icon: House, to: { name: 'home' } },
   { label: 'Дисциплины', icon: BookOpen, to: { name: 'courses' } },
-  { label: 'События', icon: Award },
+  { label: 'События', icon: Award, to: { name: 'events' } },
 ];
 
 // у преподавателя свои разделы и нет страницы «Дисциплины».

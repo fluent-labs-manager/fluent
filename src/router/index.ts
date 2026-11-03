@@ -71,6 +71,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/TeacherReviewQueuePage.vue'),
         meta: { roles: [UserRole.Teacher] },
       },
+      {
+        path: 'events',
+        name: 'events',
+        component: () => import('@/views/StudentEventsPage.vue'),
+        meta: { roles: [UserRole.Student] },
+      },
     ],
   },
 ];
