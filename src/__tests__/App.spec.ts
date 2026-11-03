@@ -4,9 +4,12 @@ import { createPinia, setActivePinia } from 'pinia';
 import App from '../App.vue';
 import router from '@/router/index.ts';
 import { getAccountProfileStub } from '@/api/account/AccountApi.ts';
+import { getCourseLabsStub, getLabSubmissionStub } from '@/api/labs/LabsApi.ts';
 import { getSemestersStub } from '@/api/semesters/SemestersApi.ts';
 import { getCurrentUserStub } from '@/api/users/UsersApi.ts';
 import {
+  courseLabsFixture,
+  labSubmissionFixture,
   semestersFixture,
   studentFixture,
   studentProfileFixture,
@@ -16,6 +19,11 @@ import {
 
 vi.mock('@/api/account/AccountApi.ts', () => ({
   getAccountProfileStub: vi.fn(),
+}));
+
+vi.mock('@/api/labs/LabsApi.ts', () => ({
+  getCourseLabsStub: vi.fn(),
+  getLabSubmissionStub: vi.fn(),
 }));
 
 vi.mock('@/api/semesters/SemestersApi.ts', () => ({
@@ -60,6 +68,12 @@ describe('App', () => {
     );
     vi.mocked(getAccountProfileStub).mockResolvedValue(
       structuredClone(studentProfileFixture),
+    );
+    vi.mocked(getCourseLabsStub).mockResolvedValue(
+      structuredClone(courseLabsFixture),
+    );
+    vi.mocked(getLabSubmissionStub).mockResolvedValue(
+      structuredClone(labSubmissionFixture),
     );
   });
 
@@ -206,6 +220,21 @@ describe('App', () => {
 
       expect(router.currentRoute.value.name).toBe('courses');
       expect(wrapper.find('h1').text()).toBe('Дисциплины');
+    });
+
+    it('студенту открывает страницу лабораторной', async () => {
+      const wrapper = await mountAt('/courses/11/labs/2');
+
+      expect(router.currentRoute.value.name).toBe('lab-submission');
+      expect(getLabSubmissionStub).toHaveBeenCalledWith(11, 2);
+      expect(wrapper.find('h1').text()).toBe('Лабораторная работа 2');
+    });
+
+    it('преподавателя по прямой ссылке на страницу лабораторной уводит на главную', async () => {
+      useTeacher();
+      await mountAt('/courses/11/labs/2');
+
+      expect(router.currentRoute.value.name).toBe('home');
     });
   });
 });

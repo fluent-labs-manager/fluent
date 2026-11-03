@@ -11,7 +11,7 @@ test.describe('страница лабораторных курса по пря�
     );
     await expect(page.getByText('1 из 3 выполнено')).toBeVisible();
     await expect(
-      page.getByRole('heading', { name: 'Активная работа' }),
+      page.getByRole('heading', { name: 'Выбранная работа' }),
     ).toBeVisible();
     await expect(
       page
@@ -34,6 +34,66 @@ test.describe('страница лабораторных курса по пря�
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'Разработка веб-приложений',
     );
+  });
+});
+
+// работа в карточке зависит от сроков, поэтому дата зафиксирована: 2 октября
+test.describe('выбор работы в карточке', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.clock.setFixedTime(new Date('2026-10-02T12:00:00+03:00'));
+  });
+
+  test('по нажатию на работу в списке открывает её в карточке и запоминает выбор после перезагрузки', async ({
+    page,
+  }) => {
+    const cardTitle = page
+      .getByRole('region', { name: 'Выбранная работа' })
+      .getByRole('heading', { level: 3 });
+
+    await page.goto('/courses/2');
+    await expect(cardTitle).toHaveText('Обучение многослойного перцептрона');
+
+    await page.getByRole('button', { name: 'Лаб №4: Свёрточные сети' }).click();
+
+    await expect(cardTitle).toHaveText('Свёрточные сети');
+    await expect(page).toHaveURL('/courses/2?lab=204');
+
+    await page.reload();
+
+    await expect(cardTitle).toHaveText('Свёрточные сети');
+  });
+
+  test('«Сдать работу» открывает страницу лабораторной, а «Назад» возвращает с той же работой в карточке', async ({
+    page,
+  }) => {
+    const cardTitle = page
+      .getByRole('region', { name: 'Выбранная работа' })
+      .getByRole('heading', { level: 3 });
+
+    await page.goto('/courses/2');
+    await expect(cardTitle).toHaveText('Обучение многослойного перцептрона');
+
+    await page.getByRole('link', { name: 'Сдать работу' }).click();
+
+    await expect(page).toHaveURL('/courses/2/labs/203');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'Лабораторная работа 3',
+    );
+
+    await page.getByRole('link', { name: 'Назад' }).click();
+
+    await expect(page).toHaveURL('/courses/2?lab=203');
+    await expect(cardTitle).toHaveText('Обучение многослойного перцептрона');
+  });
+
+  test('недоступную работу выбрать нельзя', async ({ page }) => {
+    await page.goto('/courses/1');
+
+    const allLabs = page.getByRole('region', { name: 'Все работы дисциплины' });
+    await expect(allLabs.getByText('Лаб №3: Интеграция API')).toBeVisible();
+    await expect(
+      allLabs.getByRole('button', { name: 'Лаб №3: Интеграция API' }),
+    ).toHaveCount(0);
   });
 });
 
