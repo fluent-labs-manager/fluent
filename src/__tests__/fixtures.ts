@@ -5,8 +5,10 @@ import type {
 import type { TaughtCourse } from '@/api/teaching/TaughtCourse.dto.ts';
 import type { Semester } from '@/api/semesters/Semester.dto.ts';
 import type { CourseLabs } from '@/api/labs/CourseLabs.dto.ts';
+import type { CourseGradebook } from '@/api/gradebook/CourseGradebook.dto.ts';
 import type { User } from '@/api/users/User.dto.ts';
 import { UserRole } from '@/types/UserRole.ts';
+import { BarsSection } from '@/types/BarsSection.ts';
 import { LabStatus } from '@/types/LabStatus.ts';
 import { toIsoDateTime } from '@/utils/IsoDateTime.ts';
 
@@ -128,5 +130,39 @@ export const courseLabsFixture: CourseLabs = {
       status: LabStatus.Locked,
       deadline: toIsoDateTime('2026-10-29T23:59:00+03:00'),
     },
+  ],
+};
+
+// ведомость дисциплины «Курс А»: две группы, одна работа разложена, две — нет.
+// Экзамен на 25 баллов нарочно больше лимита раздела — для проверок превышения
+export const courseGradebookFixture: CourseGradebook = {
+  courseId: 11,
+  courseTitle: 'Курс А',
+  groups: [
+    {
+      name: 'P0001',
+      students: [
+        { id: 1, fullName: 'Студент Первый', isuId: 100001, stream: 'Поток 1' },
+        { id: 2, fullName: 'Студент Второй', isuId: 100002, stream: 'Поток 1' },
+      ],
+    },
+    {
+      name: 'P0002',
+      students: [
+        { id: 3, fullName: 'Студент Третий', isuId: 100003, stream: 'Поток 1' },
+      ],
+    },
+  ],
+  sectionLimits: [
+    { section: BarsSection.ClassWork, limit: 20 },
+    { section: BarsSection.Labs, limit: 30 },
+    { section: BarsSection.Tests, limit: 20 },
+    { section: BarsSection.Midterm, limit: 10 },
+    { section: BarsSection.Exam, limit: 20 },
+  ],
+  works: [
+    { id: 1, title: 'Работа А', maxScore: 15, section: BarsSection.Labs },
+    { id: 2, title: 'Работа Б', maxScore: 10, section: null },
+    { id: 3, title: 'Экзамен', maxScore: 25, section: null },
   ],
 };
