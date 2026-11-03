@@ -33,7 +33,7 @@ const daysInMonth = Array.from({ length: 31 }, (_, i) => i + 1);
 const eventDays = [20, 21, 24, 27];
 
 const handleActionClick = (url?: string): void => {
-  if (url) {
+  if (typeof url === 'string' && url.length > 0) {
     window.open(url, '_blank');
   } else {
     alert('Подробная информация о событии');
@@ -119,18 +119,26 @@ const handleActionClick = (url?: string): void => {
       <aside class="calendar-column">
         <article class="calendar-card">
           <div class="month-nav">
-            <button class="month-btn" type="button" aria-label="Предыдущий месяц">
+            <button
+              class="month-btn"
+              type="button"
+              aria-label="Предыдущий месяц"
+            >
               <ChevronLeft :size="15" />
             </button>
             <span class="month-label">{{ data.currentMonth }}</span>
-            <button class="month-btn" type="button" aria-label="Следующий месяц">
+            <button
+              class="month-btn"
+              type="button"
+              aria-label="Следующий месяц"
+            >
               <ChevronRight :size="15" />
             </button>
           </div>
 
           <div class="weekdays-row">
             <span>ПН</span><span>ВТ</span><span>СР</span><span>ЧТ</span
-          ><span>ПТ</span><span>СБ</span><span>ВС</span>
+            ><span>ПТ</span><span>СБ</span><span>ВС</span>
           </div>
 
           <div class="days-grid">
@@ -149,7 +157,10 @@ const handleActionClick = (url?: string): void => {
               @click="selectedDay = day"
             >
               {{ day }}
-              <span v-if="eventDays.includes(day)" class="event-dot" />
+              <span
+                v-if="eventDays.includes(day)"
+                class="event-dot"
+              />
             </button>
           </div>
 
@@ -163,17 +174,24 @@ const handleActionClick = (url?: string): void => {
           <span class="milestone-label">БЛИЖАЙШАЯ КОНТРОЛЬНАЯ ТОЧКА</span>
           <h2 class="milestone-title">{{ data.upcomingMilestone.title }}</h2>
           <span class="milestone-date">
-            {{ data.upcomingMilestone.dateText }} · {{ data.upcomingMilestone.room }}
+            {{ data.upcomingMilestone.dateText }} ·
+            {{ data.upcomingMilestone.room }}
           </span>
         </article>
       </aside>
 
       <section class="events-column">
-        <div v-if="activeEvents.length === 0" class="empty-events">
+        <div
+          v-if="activeEvents.length === 0"
+          class="empty-events"
+        >
           {{ showArchive ? 'В архиве нет событий.' : 'Нет активных событий.' }}
         </div>
 
-        <ul v-else class="events-list">
+        <ul
+          v-else
+          class="events-list"
+        >
           <li
             v-for="event in activeEvents"
             :key="event.id"
@@ -189,16 +207,31 @@ const handleActionClick = (url?: string): void => {
             </div>
 
             <div class="event-icon-box">
-              <Video v-if="event.type === 'lecture'" :size="18" />
-              <Users v-else-if="event.type === 'conference'" :size="18" />
-              <GraduationCap v-else-if="event.type === 'exam'" :size="18" />
-              <MessageSquare v-else :size="18" />
+              <Video
+                v-if="event.type === 'lecture'"
+                :size="18"
+              />
+              <Users
+                v-else-if="event.type === 'conference'"
+                :size="18"
+              />
+              <GraduationCap
+                v-else-if="event.type === 'exam'"
+                :size="18"
+              />
+              <MessageSquare
+                v-else
+                :size="18"
+              />
             </div>
 
             <div class="event-body">
               <div class="event-meta-top">
                 <span class="time-range">{{ event.timeRange }}</span>
-                <span class="type-tag" :class="`type-tag--${event.type}`">
+                <span
+                  class="type-tag"
+                  :class="`type-tag--${event.type}`"
+                >
                   {{ event.typeLabel }}
                 </span>
               </div>
@@ -248,7 +281,10 @@ const handleActionClick = (url?: string): void => {
               <span class="quick-action-title">Добавить в календарь</span>
               <span class="quick-action-sub">Экспорт ближайших событий</span>
             </div>
-            <ChevronRight :size="16" class="quick-action-arrow" />
+            <ChevronRight
+              :size="16"
+              class="quick-action-arrow"
+            />
           </li>
 
           <li class="quick-action-item">
@@ -259,7 +295,10 @@ const handleActionClick = (url?: string): void => {
               <span class="quick-action-title">Напоминания</span>
               <span class="quick-action-sub">3 уведомления включены</span>
             </div>
-            <ChevronRight :size="16" class="quick-action-arrow" />
+            <ChevronRight
+              :size="16"
+              class="quick-action-arrow"
+            />
           </li>
 
           <li class="quick-action-item">
@@ -270,14 +309,22 @@ const handleActionClick = (url?: string): void => {
               <span class="quick-action-title">Онлайн-ссылки</span>
               <span class="quick-action-sub">2 активные встречи</span>
             </div>
-            <ChevronRight :size="16" class="quick-action-arrow" />
+            <ChevronRight
+              :size="16"
+              class="quick-action-arrow"
+            />
           </li>
         </ul>
 
         <article class="reminder-card">
-          <Video :size="20" class="reminder-icon" />
+          <Video
+            :size="20"
+            class="reminder-icon"
+          />
           <h2 class="reminder-title">Лекция начнётся через 45 минут</h2>
-          <span class="reminder-sub">Веб-программирование · Microsoft Teams</span>
+          <span class="reminder-sub"
+            >Веб-программирование · Microsoft Teams</span
+          >
           <button
             class="reminder-btn"
             type="button"

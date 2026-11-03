@@ -1,10 +1,7 @@
 import { computed, ref } from 'vue';
 import type { Ref } from 'vue';
 import { getStudentEventsStub } from '@/api/events/EventsApi.ts';
-import type {
-  EventsPageData,
-  StudentEvent,
-} from '@/api/events/Event.dto.ts';
+import type { EventsPageData, StudentEvent } from '@/api/events/Event.dto.ts';
 import { ApiRequestError } from '@/utils/ApiResolver.ts';
 
 interface UseStudentEventsResult {

@@ -1,11 +1,7 @@
 import type { IsoDateTime } from '@/types/IsoDateTime.ts';
 
 export type EventType =
-  | 'lecture'
-  | 'conference'
-  | 'milestone'
-  | 'consultation'
-  | 'exam';
+  'lecture' | 'conference' | 'milestone' | 'consultation' | 'exam';
 
 export interface StudentEvent {
   id: number;
