@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import {
   Bell,
   Calendar,
@@ -8,6 +8,7 @@ import {
   ExternalLink,
   GraduationCap,
   Link,
+  List,
   MessageSquare,
   RotateCw,
   Users,
@@ -29,11 +30,58 @@ const {
 
 const viewMode = ref<'list' | 'month'>('list');
 
-const daysInMonth = Array.from({ length: 31 }, (_, i) => i + 1);
+const months = [
+  'Январь',
+  'Февраль',
+  'Март',
+  'Апрель',
+  'Май',
+  'Июнь',
+  'Июль',
+  'Август',
+  'Сентябрь',
+  'Октябрь',
+  'Ноябрь',
+  'Декабрь',
+];
+const currentMonthIndex = ref(9);
+const currentYear = ref(2026);
+
+const currentMonthLabel = computed(
+  () => `${months[currentMonthIndex.value] ?? ''} ${String(currentYear.value)}`,
+);
+
+const handlePrevMonth = (): void => {
+  if (currentMonthIndex.value === 0) {
+    currentMonthIndex.value = 11;
+    currentYear.value -= 1;
+  } else {
+    currentMonthIndex.value -= 1;
+  }
+};
+
+const handleNextMonth = (): void => {
+  if (currentMonthIndex.value === 11) {
+    currentMonthIndex.value = 0;
+    currentYear.value += 1;
+  } else {
+    currentMonthIndex.value += 1;
+  }
+};
+
+const daysInMonth = computed(() => {
+  const daysCount = new Date(
+    currentYear.value,
+    currentMonthIndex.value + 1,
+    0,
+  ).getDate();
+  return Array.from({ length: daysCount }, (_, i) => i + 1);
+});
+
 const eventDays = [20, 21, 24, 27];
 
 const handleActionClick = (url?: string): void => {
-  if (typeof url === 'string' && url.length > 0) {
+  if (url !== undefined && url !== '') {
     window.open(url, '_blank');
   } else {
     alert('Подробная информация о событии');
@@ -57,6 +105,10 @@ const handleActionClick = (url?: string): void => {
             type="button"
             @click="viewMode = 'list'"
           >
+            <List
+              :size="14"
+              class="switch-icon"
+            />
             Список
           </button>
           <button
@@ -65,6 +117,10 @@ const handleActionClick = (url?: string): void => {
             type="button"
             @click="viewMode = 'month'"
           >
+            <Calendar
+              :size="14"
+              class="switch-icon"
+            />
             Месяц
           </button>
         </div>
@@ -113,6 +169,52 @@ const handleActionClick = (url?: string): void => {
     </div>
 
     <div
+      v-else-if="viewMode === 'month'"
+      class="month-view-container"
+    >
+      <div class="month-view-header">
+        <button
+          class="month-btn"
+          type="button"
+          aria-label="Предыдущий месяц"
+          @click="handlePrevMonth"
+        >
+          <ChevronLeft :size="18" />
+        </button>
+        <h2 class="month-view-title">{{ currentMonthLabel }}</h2>
+        <button
+          class="month-btn"
+          type="button"
+          aria-label="Следующий месяц"
+          @click="handleNextMonth"
+        >
+          <ChevronRight :size="18" />
+        </button>
+      </div>
+
+      <div class="month-grid-large">
+        <div
+          v-for="day in daysInMonth"
+          :key="day"
+          class="month-day-cell"
+          :class="{ 'month-day-cell--active': day === selectedDay }"
+          @click="
+            selectedDay = day;
+            viewMode = 'list';
+          "
+        >
+          <span class="month-day-num">{{ day }}</span>
+          <span
+            v-if="eventDays.includes(day)"
+            class="month-day-tag"
+          >
+            События
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div
       v-else-if="data !== null"
       class="events-workspace"
     >
@@ -123,14 +225,16 @@ const handleActionClick = (url?: string): void => {
               class="month-btn"
               type="button"
               aria-label="Предыдущий месяц"
+              @click="handlePrevMonth"
             >
               <ChevronLeft :size="15" />
             </button>
-            <span class="month-label">{{ data.currentMonth }}</span>
+            <span class="month-label">{{ currentMonthLabel }}</span>
             <button
               class="month-btn"
               type="button"
               aria-label="Следующий месяц"
+              @click="handleNextMonth"
             >
               <ChevronRight :size="15" />
             </button>
@@ -142,8 +246,8 @@ const handleActionClick = (url?: string): void => {
           </div>
 
           <div class="days-grid">
-            <div class="empty-day"></div>
-            <div class="empty-day"></div>
+            <div class="empty-day" />
+            <div class="empty-day" />
 
             <button
               v-for="day in daysInMonth"
@@ -389,6 +493,9 @@ const handleActionClick = (url?: string): void => {
 }
 
 .switch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
   padding: 0.4rem 0.875rem;
   border: none;
   border-radius: 0.5rem;
@@ -846,5 +953,65 @@ const handleActionClick = (url?: string): void => {
   border-radius: 1rem;
   color: var(--color-text-secondary);
   text-align: center;
+}
+
+.month-view-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 68.25rem;
+  padding: 1.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  background-color: var(--color-surface);
+}
+
+.month-view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.month-view-title {
+  margin: 0;
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+}
+
+.month-grid-large {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.month-day-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 5rem;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.month-day-cell--active {
+  border-color: var(--color-accent);
+  background-color: var(--color-accent-surface);
+}
+
+.month-day-num {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.month-day-tag {
+  margin-top: auto;
+  padding: 0.15rem 0.35rem;
+  border-radius: 0.25rem;
+  background-color: var(--color-accent);
+  color: #fff;
+  font-size: 0.625rem;
 }
 </style>

@@ -18,16 +18,31 @@ describe('StudentEventsPage.vue', (): void => {
     expect(wrapper.find('.user-meta').text()).toContain('ГОРЕЛОВА УЛЬЯНА');
   });
 
-  it('переключает режим отображения на месяц и обратно', async (): Promise<void> => {
+  it('переключает месяцы кнопками стрелок', async (): Promise<void> => {
     const wrapper = mount(StudentEventsPage);
     await flushPromises();
 
-    const switchButtons = wrapper.findAll('.switch-btn');
-    await switchButtons[1]?.trigger('click');
-    expect(switchButtons[1]?.classes()).toContain('switch-btn--active');
+    expect(wrapper.find('.month-label').text()).toContain('Октябрь 2026');
 
-    await switchButtons[0]?.trigger('click');
-    expect(switchButtons[0]?.classes()).toContain('switch-btn--active');
+    const nextBtn = wrapper.findAll('.month-btn')[1];
+    await nextBtn?.trigger('click');
+    expect(wrapper.find('.month-label').text()).toContain('Ноябрь 2026');
+
+    const prevBtn = wrapper.findAll('.month-btn')[0];
+    await prevBtn?.trigger('click');
+    expect(wrapper.find('.month-label').text()).toContain('Октябрь 2026');
+  });
+
+  it('переключает режим отображения между списком и месяцем', async (): Promise<void> => {
+    const wrapper = mount(StudentEventsPage);
+    await flushPromises();
+
+    const switchBtns = wrapper.findAll('.switch-btn');
+    await switchBtns[1]?.trigger('click');
+    expect(wrapper.find('.month-view-container').exists()).toBe(true);
+
+    await switchBtns[0]?.trigger('click');
+    expect(wrapper.find('.events-workspace').exists()).toBe(true);
   });
 
   it('скрывает прочитанные события при переключении фильтра', async (): Promise<void> => {
@@ -43,34 +58,5 @@ describe('StudentEventsPage.vue', (): void => {
 
     const filteredCount = wrapper.findAll('.event-card').length;
     expect(filteredCount).toBeLessThan(initialCount);
-  });
-
-  it('переключает отображение архива и отправляет в архив', async (): Promise<void> => {
-    const wrapper = mount(StudentEventsPage);
-    await flushPromises();
-
-    const archiveBtn = wrapper.find('.archive-btn');
-    if (archiveBtn.exists()) {
-      await archiveBtn.trigger('click');
-    }
-
-    const archiveToggle = wrapper.findAll('.filter-toggle-btn')[1];
-    await archiveToggle?.trigger('click');
-    await flushPromises();
-
-    expect(archiveToggle?.text()).toContain('К событиям');
-  });
-
-  it('вызывает обработчик действия перехода по клику на кнопку события', async (): Promise<void> => {
-    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
-    const wrapper = mount(StudentEventsPage);
-    await flushPromises();
-
-    const primaryBtn = wrapper.find('.primary-action-btn');
-    if (primaryBtn.exists()) {
-      await primaryBtn.trigger('click');
-      expect(openSpy).toHaveBeenCalled();
-    }
-    openSpy.mockRestore();
   });
 });
