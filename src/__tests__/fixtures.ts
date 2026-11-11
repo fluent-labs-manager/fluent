@@ -5,8 +5,10 @@ import type {
 import type { TaughtCourse } from '@/api/teaching/TaughtCourse.dto.ts';
 import type { Semester } from '@/api/semesters/Semester.dto.ts';
 import type { CourseLabs } from '@/api/labs/CourseLabs.dto.ts';
+import type { LabSubmission } from '@/api/labs/LabSubmission.dto.ts';
 import type { User } from '@/api/users/User.dto.ts';
 import { UserRole } from '@/types/UserRole.ts';
+import { AttemptResult } from '@/types/AttemptResult.ts';
 import { LabStatus } from '@/types/LabStatus.ts';
 import { toIsoDateTime } from '@/utils/IsoDateTime.ts';
 
@@ -110,6 +112,7 @@ export const courseLabsFixture: CourseLabs = {
       title: 'Работа А',
       status: LabStatus.Submitted,
       deadline: toIsoDateTime('2026-10-05T23:59:00+03:00'),
+      variant: 7,
       grade: 4.2,
       submittedAt: toIsoDateTime('2026-10-12T18:30:00+03:00'),
     },
@@ -127,6 +130,39 @@ export const courseLabsFixture: CourseLabs = {
       title: 'Работа В',
       status: LabStatus.Locked,
       deadline: toIsoDateTime('2026-10-29T23:59:00+03:00'),
+    },
+  ],
+};
+
+// несданная работа «Работа Б» из courseLabsFixture: две попытки вернули
+export const labSubmissionFixture: LabSubmission = {
+  course: courseLabsFixture.course,
+  lab: {
+    id: 2,
+    number: 2,
+    title: 'Работа Б',
+    status: LabStatus.NotSubmitted,
+    deadline: toIsoDateTime('2026-10-15T23:59:00+03:00'),
+    variant: 42,
+  },
+  attempts: [
+    {
+      id: 21,
+      number: 1,
+      submittedAt: toIsoDateTime('2026-09-18T20:10:00+03:00'),
+      file: { name: 'otchet_v1.pdf', size: 1_992_294 },
+      comment: 'Первая версия.',
+      teacherComment: 'Нет выводов.',
+      result: AttemptResult.Rejected,
+    },
+    {
+      id: 22,
+      number: 2,
+      submittedAt: toIsoDateTime('2026-10-08T09:30:00+03:00'),
+      file: { name: 'otchet_v2.pdf', size: 2_516_582 },
+      comment: null,
+      teacherComment: 'Графики без подписей.',
+      result: AttemptResult.Rejected,
     },
   ],
 };

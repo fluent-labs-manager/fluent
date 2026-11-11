@@ -12,6 +12,7 @@ export const courseLabs: Partial<Record<number, Lab[]>> = {
       title: 'Концептуальное ТЗ',
       status: LabStatus.Submitted,
       deadline: toIsoDateTime('2026-10-05T23:59:00+03:00'),
+      variant: 11,
       grade: 4.2,
       submittedAt: toIsoDateTime('2026-10-12T18:30:00+03:00'),
     },
@@ -31,7 +32,8 @@ export const courseLabs: Partial<Record<number, Lab[]>> = {
       deadline: toIsoDateTime('2026-10-29T23:59:00+03:00'),
     },
   ],
-  // две работы можно выполнять одновременно
+  // две несданные и одна на проверке: в карточке по умолчанию — несданная
+  // с ближайшим сроком
   2: [
     {
       id: 201,
@@ -39,6 +41,7 @@ export const courseLabs: Partial<Record<number, Lab[]>> = {
       title: 'Перцептрон Розенблатта',
       status: LabStatus.Submitted,
       deadline: toIsoDateTime('2026-09-22T23:59:00+03:00'),
+      variant: 3,
       grade: 5,
       submittedAt: toIsoDateTime('2026-09-20T12:00:00+03:00'),
     },
@@ -48,6 +51,7 @@ export const courseLabs: Partial<Record<number, Lab[]>> = {
       title: 'Градиентный спуск',
       status: LabStatus.PendingReview,
       deadline: toIsoDateTime('2026-10-06T23:59:00+03:00'),
+      variant: 14,
       submittedAt: toIsoDateTime('2026-10-04T21:15:00+03:00'),
     },
     {
@@ -67,7 +71,7 @@ export const courseLabs: Partial<Record<number, Lab[]>> = {
       variant: 19,
     },
   ],
-  // все работы сданы — активных нет
+  // все работы сданы: в карточке по умолчанию — первая по номеру
   3: [
     {
       id: 301,
@@ -75,6 +79,7 @@ export const courseLabs: Partial<Record<number, Lab[]>> = {
       title: 'Процессы и потоки',
       status: LabStatus.Submitted,
       deadline: toIsoDateTime('2026-09-18T23:59:00+03:00'),
+      variant: 8,
       grade: 5,
       submittedAt: toIsoDateTime('2026-09-17T16:40:00+03:00'),
     },
@@ -84,11 +89,12 @@ export const courseLabs: Partial<Record<number, Lab[]>> = {
       title: 'Планировщик задач',
       status: LabStatus.Submitted,
       deadline: toIsoDateTime('2026-10-02T23:59:00+03:00'),
+      variant: 21,
       grade: 4.8,
       submittedAt: toIsoDateTime('2026-10-01T11:05:00+03:00'),
     },
   ],
-  // три работы можно выполнять одновременно
+  // три несданные работы: пример выбора работы из списка
   4: [
     {
       id: 401,
@@ -96,6 +102,7 @@ export const courseLabs: Partial<Record<number, Lab[]>> = {
       title: 'Проектирование схемы данных',
       status: LabStatus.Submitted,
       deadline: toIsoDateTime('2026-09-15T23:59:00+03:00'),
+      variant: 2,
       grade: 4.7,
       submittedAt: toIsoDateTime('2026-09-14T19:20:00+03:00'),
     },
@@ -105,6 +112,7 @@ export const courseLabs: Partial<Record<number, Lab[]>> = {
       title: 'Нормализация',
       status: LabStatus.Submitted,
       deadline: toIsoDateTime('2026-09-25T23:59:00+03:00'),
+      variant: 9,
       grade: 5,
       submittedAt: toIsoDateTime('2026-09-24T15:45:00+03:00'),
     },
@@ -114,6 +122,7 @@ export const courseLabs: Partial<Record<number, Lab[]>> = {
       title: 'SQL-запросы',
       status: LabStatus.Submitted,
       deadline: toIsoDateTime('2026-10-03T23:59:00+03:00'),
+      variant: 16,
       grade: 4.4,
       submittedAt: toIsoDateTime('2026-10-02T22:10:00+03:00'),
     },

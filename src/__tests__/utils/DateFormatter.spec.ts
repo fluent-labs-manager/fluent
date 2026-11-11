@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { formatDateTime, formatDayMonth } from '@/utils/DateFormatter.ts';
+import {
+  formatDateTime,
+  formatDayMonth,
+  formatNumericDate,
+} from '@/utils/DateFormatter.ts';
 import { toIsoDateTime } from '@/utils/IsoDateTime.ts';
 
 describe('DateFormatter', () => {
@@ -39,6 +43,18 @@ describe('DateFormatter', () => {
   it('пишет однозначный день без нуля, а часы и минуты — с нулём', () => {
     expect(formatDateTime(toIsoDateTime('2026-10-05T09:05:00+03:00'))).toBe(
       '5 октября, 09:05',
+    );
+  });
+
+  it('выводит дату числами с нулями', () => {
+    expect(formatNumericDate(toIsoDateTime('2026-09-08T20:10:00+03:00'))).toBe(
+      '08.09.2026',
+    );
+  });
+
+  it('числовую дату тоже считает по Москве', () => {
+    expect(formatNumericDate(toIsoDateTime('2026-10-17T22:30:00Z'))).toBe(
+      '18.10.2026',
     );
   });
 });

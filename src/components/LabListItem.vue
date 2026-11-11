@@ -8,6 +8,7 @@ import { LabStatus } from '@/types/LabStatus.ts';
 import { formatDayMonth } from '@/utils/DateFormatter.ts';
 import { getDeadlineState } from '@/utils/DeadlineState.ts';
 import { formatGrade } from '@/utils/GradeFormatter.ts';
+import { isSelectableLab } from '@/utils/LabSelection.ts';
 
 const props = defineProps<{
   lab: Lab;
@@ -15,7 +16,16 @@ const props = defineProps<{
   previousLabNumber: number | null;
   // текущее время: от него зависит, близок ли срок
   now: Date;
+  // работа открыта в карточке
+  selected: boolean;
 }>();
+
+const emit = defineEmits<{
+  select: [];
+}>();
+
+// недоступную работу открыть в карточке нельзя
+const isSelectable = computed<boolean>(() => isSelectableLab(props.lab));
 
 // срок важен только для несданной работы
 const deadlineState = computed<DeadlineState | null>(() =>
@@ -48,13 +58,28 @@ const details = computed<string>(() => {
 </script>
 
 <template>
-  <article class="lab-list-item">
+  <article
+    class="lab-list-item"
+    :class="{
+      'lab-list-item--selectable': isSelectable,
+      'lab-list-item--selected': selected,
+    }"
+  >
     <div class="lab-list-item__info">
       <h3
         class="lab-list-item__title"
         :title="lab.title"
       >
-        Лаб №{{ lab.number }}: {{ lab.title }}
+        <button
+          v-if="isSelectable"
+          class="lab-list-item__select"
+          type="button"
+          :aria-pressed="selected"
+          @click="emit('select')"
+        >
+          Лаб №{{ lab.number }}: {{ lab.title }}
+        </button>
+        <template v-else>Лаб №{{ lab.number }}: {{ lab.title }}</template>
       </h3>
       <p
         class="lab-list-item__details"
@@ -73,6 +98,7 @@ const details = computed<string>(() => {
 
 <style scoped>
 .lab-list-item {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -98,6 +124,46 @@ const details = computed<string>(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* кнопка растянута на всю строку, поэтому выбрать работу можно кликом в любом месте */
+.lab-list-item__select {
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.lab-list-item__select::after {
+  content: '';
+  position: absolute;
+  border-radius: inherit;
+  inset: 0;
+}
+
+.lab-list-item__select:focus-visible {
+  outline: none;
+}
+
+.lab-list-item__select:focus-visible::after {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 0.125rem;
+}
+
+.lab-list-item--selectable {
+  transition: border-color 0.2s ease;
+}
+
+.lab-list-item--selectable:hover {
+  border-color: var(--color-accent);
+}
+
+.lab-list-item--selected {
+  border-color: var(--color-accent);
+  background-color: var(--color-accent-surface);
 }
 
 .lab-list-item__details {
