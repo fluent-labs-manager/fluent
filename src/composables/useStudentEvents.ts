@@ -10,7 +10,7 @@ interface UseStudentEventsResult {
   activeEvents: Ref<StudentEvent[]>;
   hideRead: Ref<boolean>;
   showArchive: Ref<boolean>;
-  selectedDay: Ref<number>;
+  selectedDay: Ref<number | null>;
   isLoading: Ref<boolean>;
   error: Ref<string | null>;
   reload: () => Promise<void>;
@@ -22,7 +22,7 @@ export function useStudentEvents(): UseStudentEventsResult {
   const data = ref<EventsPageData | null>(null);
   const hideRead = ref<boolean>(false);
   const showArchive = ref<boolean>(false);
-  const selectedDay = ref<number>(20);
+  const selectedDay = ref<number | null>(null);
   const isLoading = ref<boolean>(true);
   const error = ref<string | null>(null);
 
@@ -55,6 +55,10 @@ export function useStudentEvents(): UseStudentEventsResult {
 
     if (hideRead.value) {
       list = list.filter((event) => !event.isRead);
+    }
+
+    if (selectedDay.value !== null) {
+      list = list.filter((event) => event.dayNumber === selectedDay.value);
     }
 
     return list;

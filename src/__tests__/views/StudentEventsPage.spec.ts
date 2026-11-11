@@ -59,4 +59,29 @@ describe('StudentEventsPage.vue', (): void => {
     const filteredCount = wrapper.findAll('.event-card').length;
     expect(filteredCount).toBeLessThan(initialCount);
   });
+
+  it('помечает событие прочитанным при клике на карточку', async (): Promise<void> => {
+    const wrapper = mount(StudentEventsPage);
+    await flushPromises();
+
+    const firstCard = wrapper.find('.event-card');
+    await firstCard.trigger('click');
+    await flushPromises();
+
+    expect(firstCard.classes()).toContain('event-card--read');
+  });
+
+  it('фильтрует события по клику на день календаря', async (): Promise<void> => {
+    const wrapper = mount(StudentEventsPage);
+    await flushPromises();
+
+    const day20 = wrapper
+      .findAll('.day-cell')
+      .find((cell) => cell.text().includes('20'));
+    await day20?.trigger('click');
+    await flushPromises();
+
+    const cards = wrapper.findAll('.event-card');
+    expect(cards.length).toBe(2);
+  });
 });

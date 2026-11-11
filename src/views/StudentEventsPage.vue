@@ -18,6 +18,7 @@ import { useStudentEvents } from '@/composables/useStudentEvents.ts';
 
 const {
   data,
+  events,
   activeEvents,
   hideRead,
   showArchive,
@@ -25,6 +26,7 @@ const {
   isLoading,
   error,
   reload,
+  toggleRead,
   toggleArchive,
 } = useStudentEvents();
 
@@ -78,9 +80,25 @@ const daysInMonth = computed(() => {
   return Array.from({ length: daysCount }, (_, i) => i + 1);
 });
 
-const eventDays = [20, 21, 24, 27];
+const firstDayOffset = computed(() => {
+  const day = new Date(currentYear.value, currentMonthIndex.value, 1).getDay();
+  return day === 0 ? 6 : day - 1;
+});
 
-const handleActionClick = (url?: string): void => {
+const eventDays = computed(() => {
+  return events.value.map((e) => e.dayNumber);
+});
+
+const handleSelectDay = (day: number): void => {
+  if (selectedDay.value === day) {
+    selectedDay.value = null;
+  } else {
+    selectedDay.value = day;
+  }
+};
+
+const handleActionClick = (id: number, url?: string): void => {
+  toggleRead(id);
   if (url !== undefined && url !== '') {
     window.open(url, '_blank');
   } else {
@@ -192,14 +210,25 @@ const handleActionClick = (url?: string): void => {
         </button>
       </div>
 
+      <div class="weekdays-row weekdays-row--large">
+        <span>ПН</span><span>ВТ</span><span>СР</span><span>ЧТ</span
+        ><span>ПТ</span><span>СБ</span><span>ВС</span>
+      </div>
+
       <div class="month-grid-large">
+        <div
+          v-for="emptyIdx in firstDayOffset"
+          :key="`large-empty-${emptyIdx}`"
+          class="month-day-cell month-day-cell--empty"
+        />
+
         <div
           v-for="day in daysInMonth"
           :key="day"
           class="month-day-cell"
           :class="{ 'month-day-cell--active': day === selectedDay }"
           @click="
-            selectedDay = day;
+            handleSelectDay(day);
             viewMode = 'list';
           "
         >
@@ -246,8 +275,11 @@ const handleActionClick = (url?: string): void => {
           </div>
 
           <div class="days-grid">
-            <div class="empty-day" />
-            <div class="empty-day" />
+            <div
+              v-for="emptyIdx in firstDayOffset"
+              :key="`mini-empty-${emptyIdx}`"
+              class="empty-day"
+            />
 
             <button
               v-for="day in daysInMonth"
@@ -258,7 +290,7 @@ const handleActionClick = (url?: string): void => {
                 'day-cell--has-event': eventDays.includes(day),
               }"
               type="button"
-              @click="selectedDay = day"
+              @click="handleSelectDay(day)"
             >
               {{ day }}
               <span
@@ -270,7 +302,13 @@ const handleActionClick = (url?: string): void => {
 
           <div class="calendar-legend">
             <span class="legend-dot" />
-            <span>Запланировано {{ data.plannedEventsCount }} событий</span>
+            <span>
+              {{
+                selectedDay !== null
+                  ? `Фильтр: ${selectedDay} число`
+                  : `Запланировано ${data.plannedEventsCount} событий`
+              }}
+            </span>
           </div>
         </article>
 
@@ -289,7 +327,13 @@ const handleActionClick = (url?: string): void => {
           v-if="activeEvents.length === 0"
           class="empty-events"
         >
-          {{ showArchive ? 'В архиве нет событий.' : 'Нет активных событий.' }}
+          {{
+            showArchive
+              ? 'В архиве нет событий.'
+              : selectedDay !== null
+                ? `На ${selectedDay} число событий нет.`
+                : 'Нет активных событий.'
+          }}
         </div>
 
         <ul
@@ -304,6 +348,7 @@ const handleActionClick = (url?: string): void => {
               'event-card--read': event.isRead,
               'event-card--milestone': event.type === 'milestone',
             }"
+            @click="toggleRead(event.id)"
           >
             <div class="event-date-col">
               <span class="event-day">{{ event.dayNumber }}</span>
@@ -338,6 +383,11 @@ const handleActionClick = (url?: string): void => {
                 >
                   {{ event.typeLabel }}
                 </span>
+                <span
+                  v-if="event.isRead"
+                  class="read-indicator"
+                  >Прочитано</span
+                >
               </div>
               <h2 class="event-title">{{ event.title }}</h2>
               <span class="location-text">{{ event.locationOrUrl }}</span>
@@ -348,7 +398,7 @@ const handleActionClick = (url?: string): void => {
                 v-if="event.actionType === 'join'"
                 class="primary-action-btn"
                 type="button"
-                @click="handleActionClick(event.linkUrl)"
+                @click.stop="handleActionClick(event.id, event.linkUrl)"
               >
                 <ExternalLink :size="16" />
                 Перейти
@@ -357,7 +407,7 @@ const handleActionClick = (url?: string): void => {
                 v-else
                 class="outline-action-btn"
                 type="button"
-                @click="handleActionClick()"
+                @click.stop="handleActionClick(event.id)"
               >
                 Подробнее
               </button>
@@ -366,7 +416,7 @@ const handleActionClick = (url?: string): void => {
                 class="archive-btn"
                 type="button"
                 :title="event.isArchived ? 'Восстановить' : 'В архив'"
-                @click="toggleArchive(event.id)"
+                @click.stop="toggleArchive(event.id)"
               >
                 {{ event.isArchived ? '↩' : '×' }}
               </button>
@@ -432,7 +482,7 @@ const handleActionClick = (url?: string): void => {
           <button
             class="reminder-btn"
             type="button"
-            @click="handleActionClick('https://teams.microsoft.com')"
+            @click="handleActionClick(1, 'https://teams.microsoft.com')"
           >
             <ExternalLink :size="16" />
             Перейти к лекции
@@ -585,6 +635,11 @@ const handleActionClick = (url?: string): void => {
   text-align: center;
 }
 
+.weekdays-row--large {
+  padding: 0.5rem 0;
+  font-size: 0.8125rem;
+}
+
 .days-grid {
   display: grid;
   gap: 0.125rem;
@@ -694,6 +749,7 @@ const handleActionClick = (url?: string): void => {
   border-radius: 0.75rem;
   background-color: var(--color-surface);
   box-shadow: var(--shadow-card);
+  cursor: pointer;
 }
 
 .event-card--milestone {
@@ -701,7 +757,7 @@ const handleActionClick = (url?: string): void => {
 }
 
 .event-card--read {
-  opacity: 0.7;
+  opacity: 0.65;
 }
 
 .event-date-col {
@@ -775,6 +831,13 @@ const handleActionClick = (url?: string): void => {
 
 .type-tag--milestone {
   color: var(--color-error);
+}
+
+.read-indicator {
+  margin-left: auto;
+  color: var(--color-text-secondary);
+  font-size: 0.625rem;
+  font-style: italic;
 }
 
 .event-title {
@@ -994,6 +1057,12 @@ const handleActionClick = (url?: string): void => {
   border: 1px solid var(--color-border);
   border-radius: 0.5rem;
   cursor: pointer;
+}
+
+.month-day-cell--empty {
+  border-color: transparent;
+  background-color: transparent;
+  cursor: default;
 }
 
 .month-day-cell--active {
