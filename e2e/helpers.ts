@@ -29,3 +29,13 @@ export function courseCards(page: Page): Locator {
 export function userCard(page: Page): Locator {
   return page.getByRole('complementary').getByTitle('Личный кабинет');
 }
+
+/** Выдвижная панель мобильной навигации. */
+export function drawer(page: Page): Locator {
+  return page.locator('.mobile-navigation__drawer');
+}
+
+/** Кнопка-гамбургер мобильной шапки. */
+export function menuToggle(page: Page): Locator {
+  return page.locator('.mobile-header__toggle');
+}
