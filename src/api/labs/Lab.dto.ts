@@ -8,23 +8,25 @@ interface LabBase {
   deadline: IsoDateTime;
 }
 
+// на MVP вариант выдан у каждой работы, кроме недоступной
+interface IssuedLabBase extends LabBase {
+  variant: number;
+}
+
 // работа выполнена, только когда получена оценка
-interface GradedLab extends LabBase {
+interface GradedLab extends IssuedLabBase {
   status: typeof LabStatus.Submitted;
   grade: number;
   submittedAt: IsoDateTime;
 }
 
-interface PendingReviewLab extends LabBase {
+interface PendingReviewLab extends IssuedLabBase {
   status: typeof LabStatus.PendingReview;
   submittedAt: IsoDateTime;
 }
 
-// работа, которую можно выполнять сейчас: такие показывает блок активных работ
-export interface NotSubmittedLab extends LabBase {
+interface NotSubmittedLab extends IssuedLabBase {
   status: typeof LabStatus.NotSubmitted;
-  // на MVP вариант выдан у каждой доступной работы
-  variant: number;
 }
 
 interface LockedLab extends LabBase {
@@ -33,3 +35,6 @@ interface LockedLab extends LabBase {
 
 // оценка, дата сдачи и вариант есть только у тех статусов, где они имеют смысл
 export type Lab = GradedLab | PendingReviewLab | NotSubmittedLab | LockedLab;
+
+// работа, которую можно открыть в карточке: все, кроме недоступных
+export type SelectableLab = Exclude<Lab, LockedLab>;

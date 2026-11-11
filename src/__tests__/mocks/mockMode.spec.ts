@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { getMockRole } from '@/mocks/mockMode.ts';
+import { getMockMode, getMockRole } from '@/mocks/mockMode.ts';
 import { UserRole } from '@/types/UserRole.ts';
 
 describe('getMockRole', () => {
@@ -59,5 +59,24 @@ describe('getMockRole', () => {
     expect(getMockRole()).toBe(UserRole.Teacher);
     openAt('/account');
     expect(getMockRole()).toBe(UserRole.Student);
+  });
+});
+
+describe('getMockMode', () => {
+  afterEach(() => {
+    window.history.replaceState(null, '', '/');
+  });
+
+  it('читает режим из адреса', () => {
+    for (const mode of ['empty', 'error', 'upload-error']) {
+      window.history.replaceState(null, '', `/?mock=${mode}`);
+      expect(getMockMode()).toBe(mode);
+    }
+  });
+
+  it('незнакомый режим считает обычными данными', () => {
+    window.history.replaceState(null, '', '/?mock=other');
+
+    expect(getMockMode()).toBe('data');
   });
 });
