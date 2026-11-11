@@ -146,8 +146,8 @@ describe('App', () => {
       const wrapper = await mountAt('/');
 
       expect(menuOf(wrapper)).toEqual({
-        links: ['Главная', 'Дисциплины'],
-        inactive: ['События'],
+        links: ['Главная', 'Дисциплины', 'События'],
+        inactive: [],
       });
     });
 
