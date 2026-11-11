@@ -15,6 +15,7 @@ interface UseStudentEventsResult {
   error: Ref<string | null>;
   reload: () => Promise<void>;
   toggleRead: (id: number) => void;
+  markAsRead: (id: number) => void;
   toggleArchive: (id: number) => void;
 }
 
@@ -71,6 +72,13 @@ export function useStudentEvents(): UseStudentEventsResult {
     }
   }
 
+  function markAsRead(id: number): void {
+    const item = events.value.find((e) => e.id === id);
+    if (item !== undefined && !item.isRead) {
+      item.isRead = true;
+    }
+  }
+
   function toggleArchive(id: number): void {
     const item = events.value.find((e) => e.id === id);
     if (item !== undefined) {
@@ -91,6 +99,7 @@ export function useStudentEvents(): UseStudentEventsResult {
     error,
     reload,
     toggleRead,
+    markAsRead,
     toggleArchive,
   };
 }

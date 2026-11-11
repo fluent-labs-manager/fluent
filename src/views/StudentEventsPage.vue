@@ -27,6 +27,7 @@ const {
   error,
   reload,
   toggleRead,
+  markAsRead,
   toggleArchive,
 } = useStudentEvents();
 
@@ -98,7 +99,7 @@ const handleSelectDay = (day: number): void => {
 };
 
 const handleActionClick = (id: number, url?: string): void => {
-  toggleRead(id);
+  markAsRead(id);
   if (url !== undefined && url !== '') {
     window.open(url, '_blank');
   } else {
