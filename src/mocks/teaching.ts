@@ -11,7 +11,7 @@ export const taughtCourses: TaughtCourse[] = [
   {
     id: 6,
     title: 'Проектирование интерфейсов',
-    groups: ['P3312'],
+    groups: ['P3312', 'P3313'],
     pendingReviews: 2,
   },
   {

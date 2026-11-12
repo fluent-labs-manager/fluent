@@ -63,6 +63,18 @@ const FluentPreset = definePreset(Aura, {
       // у подсказки нет токена размера шрифта
       css: '.p-tooltip-text { font-size: 0.75rem; }',
     },
+    // вкладки компактнее, чем в Aura: над таблицей ведомости их бывает много
+    tabs: {
+      tablist: {
+        borderColor: 'var(--color-border)',
+      },
+      tab: {
+        borderColor: 'var(--color-border)',
+        hoverBorderColor: 'var(--color-border)',
+        padding: '0.625rem 1rem',
+        fontWeight: '700',
+      },
+    },
     togglebutton: {
       colorScheme: {
         light: {
