@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, useId } from 'vue';
 
 import Tab from 'primevue/tab';
 import TabList from 'primevue/tablist';
@@ -18,6 +18,7 @@ const props = defineProps<{
   admissionThreshold: number;
 }>();
 
+const idPrefix = useId();
 const selectedName = ref<string | null>(null);
 
 // если открытую группу сняли с ведомости, открыта первая из оставшихся
@@ -35,6 +36,11 @@ const filledSections = computed<SectionSummary[]>(() =>
 
 function selectGroup(name: string | number): void {
   selectedName.value = String(name);
+}
+
+// подпись лежит вне таблицы, поэтому таблица называется по её id
+function getCaptionId(group: StudentGroup): string {
+  return `${idPrefix}-caption-${group.name}`;
 }
 
 // «Группа P3322 · 6 студентов»
@@ -91,121 +97,137 @@ function getCaption(group: StudentGroup): string {
           </Tab>
         </TabList>
         <TabPanels class="gradebook-preview__panels">
-          <!-- панель прокручивается сама: на узком экране таблица шире страницы -->
+          <!-- сама панель не в порядке Tab: с клавиатуры прокручивают
+               область с таблицей внутри неё -->
           <TabPanel
             v-for="group in groups"
             :key="group.name"
             :value="group.name"
-            class="gradebook-preview__panel"
+            :pt="{ root: { tabindex: -1 } }"
           >
-            <table class="gradebook-preview__table">
-              <caption class="gradebook-preview__caption">
-                {{
-                  getCaption(group)
-                }}
-              </caption>
-              <thead>
-                <tr>
-                  <th
-                    class="gradebook-preview__head gradebook-preview__head--name"
-                    scope="col"
-                    rowspan="2"
-                  >
-                    ФИО
-                  </th>
-                  <th
-                    class="gradebook-preview__head"
-                    scope="col"
-                    rowspan="2"
-                  >
-                    ИСУ
-                  </th>
-                  <th
-                    class="gradebook-preview__head"
-                    scope="col"
-                    rowspan="2"
-                  >
-                    Поток
-                  </th>
-                  <th
-                    v-for="section in filledSections"
-                    :key="section.section"
-                    class="gradebook-preview__head gradebook-preview__head--section"
-                    scope="colgroup"
-                    :colspan="section.works.length"
-                  >
-                    {{ section.title }}
-                  </th>
-                  <th
-                    class="gradebook-preview__head gradebook-preview__head--total"
-                    scope="col"
-                    rowspan="2"
-                  >
-                    Итог
-                    <span class="gradebook-preview__note">сумма</span>
-                  </th>
-                  <th
-                    class="gradebook-preview__head gradebook-preview__head--total"
-                    scope="col"
-                    rowspan="2"
-                  >
-                    Допуск
-                    <span class="gradebook-preview__note">
-                      от {{ admissionThreshold }} баллов
-                    </span>
-                  </th>
-                </tr>
-                <tr>
-                  <template
-                    v-for="section in filledSections"
-                    :key="section.section"
-                  >
+            <!-- подпись над прокруткой: иначе уезжает вместе с таблицей -->
+            <p
+              :id="getCaptionId(group)"
+              class="gradebook-preview__caption"
+            >
+              {{ getCaption(group) }}
+            </p>
+            <!-- на узком экране таблица шире карточки и прокручивается здесь -->
+            <div
+              class="gradebook-preview__scroll"
+              role="region"
+              :aria-labelledby="getCaptionId(group)"
+              tabindex="0"
+            >
+              <table
+                class="gradebook-preview__table"
+                :aria-labelledby="getCaptionId(group)"
+              >
+                <thead>
+                  <tr>
                     <th
-                      v-for="work in section.works"
-                      :key="work.id"
-                      class="gradebook-preview__head gradebook-preview__head--work"
+                      class="gradebook-preview__head gradebook-preview__head--name"
                       scope="col"
+                      rowspan="2"
                     >
-                      {{ work.title }}
+                      ФИО
+                    </th>
+                    <th
+                      class="gradebook-preview__head"
+                      scope="col"
+                      rowspan="2"
+                    >
+                      ИСУ
+                    </th>
+                    <th
+                      class="gradebook-preview__head"
+                      scope="col"
+                      rowspan="2"
+                    >
+                      Поток
+                    </th>
+                    <th
+                      v-for="section in filledSections"
+                      :key="section.section"
+                      class="gradebook-preview__head gradebook-preview__head--section"
+                      scope="colgroup"
+                      :colspan="section.works.length"
+                    >
+                      {{ section.title }}
+                    </th>
+                    <th
+                      class="gradebook-preview__head gradebook-preview__head--total"
+                      scope="col"
+                      rowspan="2"
+                    >
+                      Итог
+                      <span class="gradebook-preview__note">сумма</span>
+                    </th>
+                    <th
+                      class="gradebook-preview__head gradebook-preview__head--total"
+                      scope="col"
+                      rowspan="2"
+                    >
+                      Допуск
                       <span class="gradebook-preview__note">
-                        из {{ work.maxScore }}
+                        от {{ admissionThreshold }} баллов
                       </span>
                     </th>
-                  </template>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="student in group.students"
-                  :key="student.id"
-                >
-                  <th
-                    class="gradebook-preview__cell gradebook-preview__cell--name"
-                    scope="row"
+                  </tr>
+                  <tr>
+                    <template
+                      v-for="section in filledSections"
+                      :key="section.section"
+                    >
+                      <th
+                        v-for="work in section.works"
+                        :key="work.id"
+                        class="gradebook-preview__head gradebook-preview__head--work"
+                        scope="col"
+                      >
+                        {{ work.title }}
+                        <span class="gradebook-preview__note">
+                          из {{ work.maxScore }}
+                        </span>
+                      </th>
+                    </template>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="student in group.students"
+                    :key="student.id"
                   >
-                    {{ student.fullName }}
-                  </th>
-                  <td class="gradebook-preview__cell">{{ student.isuId }}</td>
-                  <td class="gradebook-preview__cell">{{ student.stream }}</td>
-                  <template
-                    v-for="section in filledSections"
-                    :key="section.section"
-                  >
+                    <th
+                      class="gradebook-preview__cell gradebook-preview__cell--name"
+                      scope="row"
+                    >
+                      {{ student.fullName }}
+                    </th>
+                    <td class="gradebook-preview__cell">{{ student.isuId }}</td>
+                    <td class="gradebook-preview__cell">
+                      {{ student.stream }}
+                    </td>
+                    <template
+                      v-for="section in filledSections"
+                      :key="section.section"
+                    >
+                      <td
+                        v-for="work in section.works"
+                        :key="work.id"
+                        class="gradebook-preview__cell gradebook-preview__cell--score"
+                      ></td>
+                    </template>
                     <td
-                      v-for="work in section.works"
-                      :key="work.id"
                       class="gradebook-preview__cell gradebook-preview__cell--score"
                     ></td>
-                  </template>
-                  <td
-                    class="gradebook-preview__cell gradebook-preview__cell--score"
-                  ></td>
-                  <td
-                    class="gradebook-preview__cell gradebook-preview__cell--score"
-                  ></td>
-                </tr>
-              </tbody>
-            </table>
+                    <td
+                      class="gradebook-preview__cell gradebook-preview__cell--score"
+                    ></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </TabPanel>
         </TabPanels>
       </Tabs>
@@ -250,29 +272,55 @@ function getCaption(group: StudentGroup): string {
   padding: 0.75rem 0 0;
 }
 
-/* у TabPanel в корне фрагмент, и Vue не ставит на него метку scoped-стилей:
-   без :deep панель не прокручивается, а таблица растягивает всю страницу */
-.gradebook-preview :deep(.gradebook-preview__panel) {
+/* кнопка «›» лежит поверх ряда вкладок. PrimeVue прокручивает ряд
+   к выбранной вкладке, но кнопку не учитывает, а из-за дробной ширины
+   вкладок не замечает конец ряда и не прячет её. Поэтому в конце ряда
+   пустое место на ширину кнопки, а прокрутка держит такой же отступ —
+   последняя вкладка не уходит под кнопку */
+.gradebook-preview :deep(.p-tablist-viewport) {
+  scroll-padding-inline: var(--p-tabs-nav-button-width);
+}
+
+/* пустое место — отдельный элемент в конце ряда: отступ самого ряда
+   не сработает, вкладки выходят за его край */
+.gradebook-preview :deep(.p-tablist-tab-list)::after {
+  content: '';
+  flex: 0 0 var(--p-tabs-nav-button-width);
+}
+
+.gradebook-preview__caption {
+  margin: 0 0 0.5rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.gradebook-preview__scroll {
   max-width: 100%;
   overflow-x: auto;
 }
 
-.gradebook-preview__table {
-  min-width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-sm);
+.gradebook-preview__scroll:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 0.125rem;
 }
 
-.gradebook-preview__caption {
-  padding-bottom: 0.5rem;
-  color: var(--color-text-secondary);
-  text-align: left;
+/* рамки рисует каждая ячейка (справа и снизу), а не общая сетка таблицы:
+   при border-collapse закреплённая колонка ФИО не закрывает общие рамки,
+   и сквозь них видно ячейки, уехавшие под неё. Верхняя рамка — у таблицы,
+   левая — у колонки ФИО */
+.gradebook-preview__table {
+  min-width: 100%;
+  border-top: 1px solid var(--color-border);
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--font-size-sm);
 }
 
 .gradebook-preview__head,
 .gradebook-preview__cell {
   padding: 0.5rem 0.75rem;
-  border: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
   text-align: left;
 }
 
@@ -309,14 +357,13 @@ function getCaption(group: StudentGroup): string {
   font-weight: 400;
 }
 
-/* ФИО остаётся на месте, когда таблицу прокручивают вправо к работам.
-   Граница — тенью: при border-collapse обычная рамка уезжает вместе с ячейками */
+/* ФИО остаётся на месте, когда таблицу прокручивают вправо к работам */
 .gradebook-preview__head--name,
 .gradebook-preview__cell--name {
   position: sticky;
   left: 0;
   z-index: 1;
-  box-shadow: inset -1px 0 0 var(--color-border);
+  border-left: 1px solid var(--color-border);
 }
 
 /* пустые ячейки для баллов, как в только что созданной таблице */

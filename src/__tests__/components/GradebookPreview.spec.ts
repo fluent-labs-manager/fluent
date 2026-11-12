@@ -72,9 +72,28 @@ describe('GradebookPreview', () => {
     ]);
     // в ряд вкладок попадают по Tab только на выбранную, дальше — стрелками
     expect(tabs.map((tab) => tab.attributes('tabindex'))).toEqual(['0', '-1']);
-    expect(wrapper.find('caption').text()).toBe('Группа P0001 · 2 студента');
+    expect(wrapper.find('.gradebook-preview__caption').text()).toBe(
+      'Группа P0001 · 2 студента',
+    );
     // строится только таблица открытой группы
     expect(wrapper.findAll('table')).toHaveLength(1);
+  });
+
+  it('подпись группы — над прокручиваемой областью и называет таблицу', () => {
+    const wrapper = mountPreview();
+    const caption = wrapper.find('.gradebook-preview__caption');
+    const scroll = wrapper.find('.gradebook-preview__scroll');
+    const captionId = caption.attributes('id');
+
+    // при прокрутке таблицы вбок подпись остаётся на месте
+    expect(scroll.find('.gradebook-preview__caption').exists()).toBe(false);
+    expect(scroll.find('table').attributes('aria-labelledby')).toBe(captionId);
+    // прокручиваемую область можно выбрать с клавиатуры и прокрутить
+    expect(scroll.attributes('tabindex')).toBe('0');
+    expect(scroll.attributes('role')).toBe('region');
+    expect(scroll.attributes('aria-labelledby')).toBe(captionId);
+    // сама панель лишней остановкой Tab не становится
+    expect(wrapper.find('[role="tabpanel"]').attributes('tabindex')).toBe('-1');
   });
 
   it('у ряда вкладок есть подпись «Группы»', () => {
@@ -140,7 +159,9 @@ describe('GradebookPreview', () => {
 
     await wrapper.findAll('[role="tab"]')[1]?.trigger('click');
 
-    expect(wrapper.find('caption').text()).toBe('Группа P0002 · 1 студент');
+    expect(wrapper.find('.gradebook-preview__caption').text()).toBe(
+      'Группа P0002 · 1 студент',
+    );
     expect(wrapper.findAll('tbody tr')).toHaveLength(1);
   });
 

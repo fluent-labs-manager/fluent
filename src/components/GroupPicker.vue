@@ -75,14 +75,16 @@ function onChange(groupName: string, isChecked: boolean): void {
   font-weight: 500;
 }
 
+/* колонки одной ширины: у чипов разная длина подписи («6 студентов»,
+   «60 студентов»), и без сетки ряды получаются неровными */
 .group-picker__list {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
   gap: 0.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
 }
 
 .group-picker__option {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.875rem;

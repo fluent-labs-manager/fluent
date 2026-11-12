@@ -109,7 +109,7 @@ src/components/*.vue      компоненты получают данные т�
 | `/account?role=teacher&mock=empty`       | Кабинет преподавателя без дисциплин                       |
 | `/courses/1/labs/102?mock=upload-error`  | Первая отправка работы обрывается на 40%, повтор проходит |
 | `/score-builder?role=teacher`            | Конструктор баллов преподавателя                          |
-| `/score-builder?role=teacher&mock=empty` | Конструктор: у дисциплин нет работ                        |
+| `/score-builder?role=teacher&mock=empty` | Конструктор: у преподавателя нет дисциплин                |
 
 Роль из `?role=teacher` запоминается до закрытия вкладки, как будто пришла в токене: ссылки внутри приложения этот параметр теряют. Вернуться к студенту — `?role=student`.
 

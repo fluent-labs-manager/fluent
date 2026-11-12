@@ -195,10 +195,12 @@ test.describe('конструктор баллов: предпросмотр в�
     const preview = page.getByRole('region', {
       name: 'Предпросмотр ведомости',
     });
-    const table = preview.getByRole('table');
+    // таблицу называет подпись группы над ней
+    const table = preview.getByRole('table', {
+      name: 'Группа P3322 · 6 студентов',
+    });
 
     await expect(preview.getByRole('tab')).toHaveText(['P3322', 'P3323']);
-    await expect(table).toContainText('Группа P3322 · 6 студентов');
     await expect(
       table.getByRole('columnheader', { name: 'Лабораторные работы' }),
     ).toBeVisible();
@@ -206,8 +208,10 @@ test.describe('конструктор баллов: предпросмотр в�
 
     await preview.getByRole('tab', { name: 'P3323' }).click();
 
-    await expect(table).toContainText('Группа P3323 · 5 студентов');
-    await expect(table.getByRole('rowheader')).toHaveCount(5);
+    const secondTable = preview.getByRole('table', {
+      name: 'Группа P3323 · 5 студентов',
+    });
+    await expect(secondTable.getByRole('rowheader')).toHaveCount(5);
   });
 
   test('работа, перенесённая в раздел, становится колонкой', async ({
@@ -292,11 +296,32 @@ test.describe('конструктор баллов: узкий экран', () =
     );
     expect(hasPageScroll).toBe(false);
 
-    const panel = page.getByRole('tabpanel');
-    const isPanelScrollable = await panel.evaluate(
+    const scroll = page.getByRole('region', {
+      name: 'Группа P3322 · 6 студентов',
+    });
+    const isScrollable = await scroll.evaluate(
       (element) => element.scrollWidth > element.clientWidth,
     );
-    expect(isPanelScrollable).toBe(true);
+    expect(isScrollable).toBe(true);
+  });
+
+  test('при прокрутке таблицы подпись группы и колонка ФИО остаются на месте', async ({
+    page,
+  }) => {
+    const caption = page.getByText('Группа P3322 · 6 студентов');
+    const scroll = page.getByRole('region', {
+      name: 'Группа P3322 · 6 студентов',
+    });
+    const firstName = scroll.getByRole('rowheader').first();
+    const captionBefore = await caption.boundingBox();
+    const scrollBox = await scroll.boundingBox();
+
+    await scroll.evaluate((element) => {
+      element.scrollLeft = element.scrollWidth;
+    });
+
+    expect((await caption.boundingBox())?.x).toBe(captionBefore?.x);
+    expect((await firstName.boundingBox())?.x).toBe(scrollBox?.x);
   });
 
   test('меню чипа не выводит страницу за край экрана', async ({ page }) => {
