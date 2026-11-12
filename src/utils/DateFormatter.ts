@@ -9,6 +9,13 @@ const dayMonthFormatter = new Intl.DateTimeFormat('ru-RU', {
   timeZone: TIME_ZONE,
 });
 
+const numericDateFormatter = new Intl.DateTimeFormat('ru-RU', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  timeZone: TIME_ZONE,
+});
+
 const timeFormatter = new Intl.DateTimeFormat('ru-RU', {
   hour: '2-digit',
   minute: '2-digit',
@@ -18,6 +25,11 @@ const timeFormatter = new Intl.DateTimeFormat('ru-RU', {
 // «15 октября»
 export function formatDayMonth(isoDate: IsoDateTime): string {
   return dayMonthFormatter.format(new Date(isoDate));
+}
+
+// «18.10.2026»
+export function formatNumericDate(isoDate: IsoDateTime): string {
+  return numericDateFormatter.format(new Date(isoDate));
 }
 
 // «15 октября, 23:59»

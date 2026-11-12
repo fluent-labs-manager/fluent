@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 
 import { ArrowLeft, RotateCw } from '@lucide/vue';
@@ -8,12 +8,18 @@ import ActiveLabCard from '@/components/ActiveLabCard.vue';
 import LabListItem from '@/components/LabListItem.vue';
 import { useCourseLabs } from '@/composables/useCourseLabs.ts';
 import { useNow } from '@/composables/useNow.ts';
-import type { Lab, NotSubmittedLab } from '@/api/labs/Lab.dto.ts';
+import type { Lab, SelectableLab } from '@/api/labs/Lab.dto.ts';
 import { LabStatus } from '@/types/LabStatus.ts';
+import { getDefaultLab, isSelectableLab } from '@/utils/LabSelection.ts';
 
-const props = defineProps<{
-  courseId: number;
-}>();
+const props = withDefaults(
+  defineProps<{
+    courseId: number;
+    // работа из адреса (?lab=…); null — показать работу по умолчанию
+    labId?: number | null;
+  }>(),
+  { labId: null },
+);
 
 const router = useRouter();
 
@@ -26,18 +32,26 @@ const now = useNow();
 
 const labs = computed<Lab[]>(() => courseLabs.value?.labs ?? []);
 
-// активные работы — всё, что можно выполнять сейчас, по порядку номеров
-const activeLabs = computed<NotSubmittedLab[]>(() =>
-  labs.value
-    .filter((lab) => lab.status === LabStatus.NotSubmitted)
-    .sort((first, second) => first.number - second.number),
+const selectableLabs = computed<SelectableLab[]>(() =>
+  labs.value.filter(isSelectableLab),
 );
 
-// по макету: одна или две работы идут столбиком, три и больше — сеткой
-const isActiveLabsGrid = computed<boolean>(() => activeLabs.value.length >= 3);
+// выбор живёт на странице и дублируется в адресе: так он переживает
+// перезагрузку и возврат со страницы сдачи
+const selectedLabId = ref<number | null>(props.labId);
 
-const activeLabsTitle = computed<string>(() =>
-  activeLabs.value.length === 1 ? 'Активная работа' : 'Активные работы',
+watch(
+  () => props.labId,
+  (labId) => {
+    selectedLabId.value = labId;
+  },
+);
+
+// работа из адреса, если её можно открыть, иначе — работа по умолчанию
+const selectedLab = computed<SelectableLab | null>(
+  () =>
+    selectableLabs.value.find((lab) => lab.id === selectedLabId.value) ??
+    getDefaultLab(selectableLabs.value, now.value),
 );
 
 const completedLabs = computed<number>(
@@ -57,20 +71,24 @@ function retry(): void {
   void reload();
 }
 
+function selectLab(lab: Lab): void {
+  if (!isSelectableLab(lab)) {
+    return;
+  }
+  selectedLabId.value = lab.id;
+  // replace, а не push: «назад» уводит со страницы, а не по выбранным работам
+  void router.replace({
+    query: { ...router.currentRoute.value.query, lab: String(lab.id) },
+  });
+}
+
 function openVariant(): void {
   // TODO: перейти к условиям варианта. Куда именно (страница Fluent, PDF,
   // внешний ресурс) — ещё не решено.
 }
 
-function openTask(lab?: Lab): void {
-  const targetLabId = lab ? lab.id : (activeLabs.value[0]?.id ?? 3);
-  void router.push({
-    name: 'lab-submission',
-    params: {
-      courseId: props.courseId,
-      labId: targetLabId,
-    },
-  });
+function openTask(): void {
+  // TODO: перейти к заданию, когда появится страница сдачи лабораторной.
 }
 </script>
 
@@ -138,41 +156,34 @@ function openTask(lab?: Lab): void {
       <div
         v-else
         class="course-labs-page__content"
-        :class="{ 'course-labs-page__content--wide': isActiveLabsGrid }"
       >
         <section
           class="course-labs-page__section"
-          aria-labelledby="active-lab-heading"
+          aria-labelledby="selected-lab-heading"
         >
           <h2
-            id="active-lab-heading"
+            id="selected-lab-heading"
             class="course-labs-page__section-title"
           >
-            {{ activeLabsTitle }}
+            Выбранная работа
           </h2>
           <p
-            v-if="activeLabs.length === 0"
+            v-if="selectedLab === null"
             class="course-labs-page__empty"
           >
             Активных работ нет.
           </p>
-          <div
+          <ActiveLabCard
             v-else
-            class="course-labs-page__active-labs"
-            :class="{
-              'course-labs-page__active-labs--grid': isActiveLabsGrid,
+            :lab="selectedLab"
+            :now="now"
+            :submission-to="{
+              name: 'lab-submission',
+              params: { courseId, labId: selectedLab.id },
             }"
-          >
-            <ActiveLabCard
-              v-for="lab in activeLabs"
-              :key="lab.id"
-              :lab="lab"
-              :now="now"
-              :compact="isActiveLabsGrid"
-              @open-variant="openVariant"
-              @open-task="openTask(lab)"
-            />
-          </div>
+            @open-variant="openVariant"
+            @open-task="openTask"
+          />
         </section>
 
         <section
@@ -194,6 +205,8 @@ function openTask(lab?: Lab): void {
                 :lab="lab"
                 :previous-lab-number="getPreviousLabNumber(lab)"
                 :now="now"
+                :selected="lab.id === selectedLab?.id"
+                @select="selectLab(lab)"
               />
             </li>
           </ul>
@@ -312,11 +325,6 @@ function openTask(lab?: Lab): void {
   grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
 }
 
-/* сетке активных работ нужна колонка пошире */
-.course-labs-page__content--wide {
-  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr);
-}
-
 .course-labs-page__section {
   display: flex;
   flex-direction: column;
@@ -328,21 +336,6 @@ function openTask(lab?: Lab): void {
   font-size: var(--font-size-xs);
   font-weight: 700;
   text-transform: uppercase;
-}
-
-.course-labs-page__active-labs {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-/* не больше двух столбцов; в узкой колонке карточки встают в один */
-.course-labs-page__active-labs--grid {
-  display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(max(16.25rem, calc(50% - 0.5rem)), 1fr)
-  );
 }
 
 .course-labs-page__list {

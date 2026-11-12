@@ -50,3 +50,13 @@ export async function dragAndDrop(
   // dragend не нужен: после броска элемент уже в другом месте страницы
   await dataTransfer.dispose();
 }
+
+/** Выдвижная панель мобильной навигации. */
+export function drawer(page: Page): Locator {
+  return page.locator('.mobile-navigation__drawer');
+}
+
+/** Кнопка-гамбургер мобильной шапки. */
+export function menuToggle(page: Page): Locator {
+  return page.locator('.mobile-header__toggle');
+}

@@ -49,4 +49,10 @@ watch(
   flex-direction: column;
   min-width: 0;
 }
+
+@media (width <= 768px) {
+  .main-layout {
+    flex-direction: column;
+  }
+}
 </style>
