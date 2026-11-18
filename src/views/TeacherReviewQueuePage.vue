@@ -2,6 +2,8 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ChevronLeft, ChevronRight, Video } from '@lucide/vue';
+import Button from 'primevue/button';
+import Tag from 'primevue/tag';
 
 interface QueueStudent {
   id: number;
@@ -79,14 +81,14 @@ const handleGoBack = (): void => {
 <template>
   <main class="queue-page">
     <header class="queue-header">
-      <button
+      <Button
         class="back-btn"
         type="button"
         @click="handleGoBack"
       >
         <ChevronLeft :size="16" />
         Назад
-      </button>
+      </Button>
 
       <h1 class="queue-title">{{ courseTitle }}</h1>
     </header>
@@ -104,13 +106,12 @@ const handleGoBack = (): void => {
         </div>
       </div>
 
-      <button
+      <Button
         class="join-btn"
         type="button"
+        label="Войти"
         @click="handleJoinCall"
-      >
-        Войти
-      </button>
+      />
     </section>
 
     <section class="queue-section">
@@ -135,12 +136,11 @@ const handleGoBack = (): void => {
           </div>
 
           <div class="student-action">
-            <span
+            <Tag
               v-if="studentItem.grade"
               class="grade-badge"
-            >
-              {{ studentItem.grade }}
-            </span>
+              :value="studentItem.grade"
+            />
             <ChevronRight
               v-else
               :size="20"

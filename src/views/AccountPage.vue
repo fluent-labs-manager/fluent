@@ -269,14 +269,14 @@ function retryCourses(): void {
 <template>
   <main class="account-page">
     <header class="account-page__header">
-      <button
+      <Button
         class="account-page__back"
         type="button"
         @click="goBack"
       >
         <ChevronLeft :size="16" />
         Назад
-      </button>
+      </Button>
       <h1 class="account-page__title">Личный кабинет</h1>
     </header>
 

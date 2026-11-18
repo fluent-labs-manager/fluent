@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
 import { EMAIL_REGEX } from '@/constants/regex';
 
 const router = useRouter();
@@ -125,7 +127,7 @@ const handleClose = (): void => {
       <div class="content-inner">
         <header class="content-header">
           <span class="step-indicator">ШАГ 2 ИЗ 2</span>
-          <button
+          <Button
             class="close-btn"
             type="button"
             aria-label="Закрыть"
@@ -139,7 +141,7 @@ const handleClose = (): void => {
             >
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>
-          </button>
+          </Button>
         </header>
 
         <h2 class="title">Детали профиля</h2>
@@ -160,17 +162,22 @@ const handleClose = (): void => {
               >
                 УЧЕБНОЕ ЗАВЕДЕНИЕ (ВУЗ)
               </label>
-              <input
+              <InputText
                 id="university"
                 v-model="university"
                 type="text"
                 class="field-input"
                 :class="{ 'field-input--error': universityError }"
+                :invalid="Boolean(universityError)"
+                :aria-describedby="
+                  universityError ? 'university-error' : undefined
+                "
                 placeholder="ITMO"
                 @input="universityError = ''"
               />
               <p
                 v-if="universityError"
+                id="university-error"
                 class="field-error"
               >
                 {{ universityError }}
@@ -188,17 +195,20 @@ const handleClose = (): void => {
                     : 'АКАДЕМИЧЕСКАЯ ГРУППА'
                 }}
               </label>
-              <input
+              <InputText
                 id="groupOrDept"
                 v-model="academicGroupOrDept"
                 type="text"
                 class="field-input"
                 :class="{ 'field-input--error': groupOrDeptError }"
+                :invalid="Boolean(groupOrDeptError)"
+                :aria-describedby="groupOrDeptError ? 'group-error' : undefined"
                 :placeholder="role === 'teacher' ? 'Кафедра ВТ' : 'P3322'"
                 @input="groupOrDeptError = ''"
               />
               <p
                 v-if="groupOrDeptError"
+                id="group-error"
                 class="field-error"
               >
                 {{ groupOrDeptError }}
@@ -212,12 +222,14 @@ const handleClose = (): void => {
               >
                 КОД ПОДТВЕРЖДЕНИЯ
               </label>
-              <input
+              <InputText
                 id="verificationCode"
                 v-model="verificationCode"
                 type="text"
                 class="field-input"
                 :class="{ 'field-input--error': codeError }"
+                :invalid="Boolean(codeError)"
+                :aria-describedby="codeError ? 'code-error' : undefined"
                 placeholder="Введите 6-значный код"
                 maxlength="6"
                 inputmode="numeric"
@@ -225,6 +237,7 @@ const handleClose = (): void => {
               />
               <p
                 v-if="codeError"
+                id="code-error"
                 class="field-error"
               >
                 {{ codeError }}
@@ -239,25 +252,29 @@ const handleClose = (): void => {
                 ПОДТВЕРЖДЕНИЕ КОРПОРАТИВНОЙ ПОЧТЫ
               </label>
               <div class="verification-row">
-                <input
+                <InputText
                   id="corporateEmail"
                   v-model="corporateEmail"
                   type="text"
                   class="field-input verification-input"
                   :class="{ 'field-input--error': emailError }"
+                  :invalid="Boolean(emailError)"
+                  :aria-describedby="
+                    emailError ? 'corporate-email-error' : undefined
+                  "
                   placeholder="465591@niuitmo.ru"
                   @input="emailError = ''"
                 />
-                <button
+                <Button
                   class="code-btn"
                   type="button"
+                  label="Код"
                   @click="handleSendCode"
-                >
-                  Код
-                </button>
+                />
               </div>
               <p
                 v-if="emailError"
+                id="corporate-email-error"
                 class="field-error"
               >
                 {{ emailError }}
@@ -266,12 +283,11 @@ const handleClose = (): void => {
           </div>
 
           <div class="form-actions">
-            <button
+            <Button
               class="submit-btn"
               type="submit"
-            >
-              Завершить регистрацию
-            </button>
+              label="Завершить регистрацию"
+            />
           </div>
         </form>
       </div>

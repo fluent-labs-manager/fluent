@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
 import { EMAIL_REGEX, PASSWORD_REGEX } from '@/constants/regex';
 
 const router = useRouter();
@@ -79,15 +81,18 @@ const handleLogin = (): void => {
               />
               <path d="M22 6l-10 7L2 6" />
             </svg>
-            <input
+            <InputText
               id="email"
               v-model="email"
               type="text"
               placeholder="corporate@university.ru"
+              :invalid="Boolean(emailError)"
+              :aria-describedby="emailError ? 'email-error' : undefined"
             />
           </div>
           <p
             v-if="emailError"
+            id="email-error"
             class="field-error"
           >
             {{ emailError }}
@@ -114,16 +119,19 @@ const handleLogin = (): void => {
               />
               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
-            <input
+            <InputText
               id="password"
               v-model="password"
               type="password"
               placeholder="••••••••••••"
+              :invalid="Boolean(passwordError)"
+              :aria-describedby="passwordError ? 'password-error' : undefined"
             />
           </div>
 
           <p
             v-if="passwordError"
+            id="password-error"
             class="field-error"
           >
             {{ passwordError }}
@@ -133,12 +141,11 @@ const handleLogin = (): void => {
           </div>
         </div>
 
-        <button
+        <Button
           type="submit"
           class="submit-btn"
-        >
-          Войти в личный кабинет
-        </button>
+          label="Войти в личный кабинет"
+        />
       </form>
 
       <p class="card-footer">

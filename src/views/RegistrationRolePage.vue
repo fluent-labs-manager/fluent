@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
+import RadioButton from 'primevue/radiobutton';
 
 const router = useRouter();
 
@@ -53,7 +56,7 @@ const handleClose = (): void => {
       <div class="content-inner">
         <header class="content-header">
           <span class="step-indicator">ШАГ 1 ИЗ 2</span>
-          <button
+          <Button
             class="close-btn"
             type="button"
             aria-label="Закрыть"
@@ -67,7 +70,7 @@ const handleClose = (): void => {
             >
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>
-          </button>
+          </Button>
         </header>
 
         <h2 class="title">Регистрация</h2>
@@ -82,6 +85,14 @@ const handleClose = (): void => {
             :class="{ 'role-option--selected': selectedRole === 'student' }"
             @click="selectedRole = 'student'"
           >
+            <RadioButton
+              v-model="selectedRole"
+              class="role-option__radio"
+              input-id="role-student"
+              name="role"
+              value="student"
+              aria-label="Я студент"
+            />
             <div class="role-option__content">
               <h3 class="role-option__title">Я студент</h3>
               <p class="role-option__desc">
@@ -107,6 +118,14 @@ const handleClose = (): void => {
             :class="{ 'role-option--selected': selectedRole === 'teacher' }"
             @click="selectedRole = 'teacher'"
           >
+            <RadioButton
+              v-model="selectedRole"
+              class="role-option__radio"
+              input-id="role-teacher"
+              name="role"
+              value="teacher"
+              aria-label="Я преподаватель"
+            />
             <div class="role-option__content">
               <h3 class="role-option__title">Я преподаватель</h3>
               <p class="role-option__desc">
@@ -134,29 +153,31 @@ const handleClose = (): void => {
             for="fullName"
             >ФИО ПОЛНОСТЬЮ</label
           >
-          <input
+          <InputText
             id="fullName"
             v-model="fullName"
             type="text"
             class="field-input"
             :class="{ 'field-input--error': fullNameError }"
+            :invalid="Boolean(fullNameError)"
+            :aria-describedby="fullNameError ? 'full-name-error' : undefined"
             @input="fullNameError = ''"
           />
           <p
             v-if="fullNameError"
+            id="full-name-error"
             class="field-error"
           >
             {{ fullNameError }}
           </p>
         </div>
 
-        <button
+        <Button
           class="submit-btn"
           type="button"
+          label="Продолжить настройку"
           @click="goToNext"
-        >
-          Продолжить настройку
-        </button>
+        />
       </div>
     </main>
   </div>
@@ -305,6 +326,7 @@ const handleClose = (): void => {
 }
 
 .role-option {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -315,6 +337,18 @@ const handleClose = (): void => {
   background-color: var(--color-surface);
   cursor: pointer;
   transition: all 0.15s ease;
+}
+
+.role-option:focus-within {
+  border-color: var(--color-role-selected-border);
+}
+
+.role-option__radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
 }
 
 .role-option:hover {
