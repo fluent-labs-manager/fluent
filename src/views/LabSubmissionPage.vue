@@ -3,7 +3,9 @@ import { computed, ref, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 
 import { ChevronLeft, RotateCw } from '@lucide/vue';
+import Button from 'primevue/button';
 import ProgressBar from 'primevue/progressbar';
+import Textarea from 'primevue/textarea';
 
 import FileDropzone from '@/components/FileDropzone.vue';
 import LabAttemptCard from '@/components/LabAttemptCard.vue';
@@ -203,7 +205,7 @@ function retry(): void {
               <span class="lab-submission-page__label">
                 Комментарий к работе
               </span>
-              <textarea
+              <Textarea
                 v-model="comment"
                 class="lab-submission-page__comment"
                 :disabled="isSubmitting"
@@ -255,13 +257,12 @@ function retry(): void {
             <div class="lab-submission-page__actions">
               <!-- без выбранного файла отправлять нечего, а во время загрузки —
                    второй раз нельзя -->
-              <button
+              <Button
                 class="lab-submission-page__button lab-submission-page__button--primary"
                 type="submit"
                 :disabled="selectedFile === null || isSubmitting"
-              >
-                Отправить работу на проверку
-              </button>
+                label="Отправить работу на проверку"
+              />
             </div>
           </form>
 
