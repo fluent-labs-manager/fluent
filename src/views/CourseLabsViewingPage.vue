@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 
 import { ArrowLeft, RotateCw } from '@lucide/vue';
+import Button from 'primevue/button';
 
 import ActiveLabCard from '@/components/ActiveLabCard.vue';
 import LabListItem from '@/components/LabListItem.vue';
@@ -118,7 +119,7 @@ function openTask(): void {
         role="alert"
       >
         <span>Не удалось загрузить лабораторные работы: {{ error }}</span>
-        <button
+        <Button
           class="course-labs-page__retry"
           type="button"
           aria-label="Повторить"
@@ -126,7 +127,7 @@ function openTask(): void {
           @click="retry"
         >
           <RotateCw :size="16" />
-        </button>
+        </Button>
       </div>
 
       <template v-else-if="courseLabs !== null">
